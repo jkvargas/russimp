@@ -1,0 +1,4 @@
+target
+assimp-sys/target
+Cargo.lock
+.idea/

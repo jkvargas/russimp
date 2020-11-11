@@ -1,0 +1,10 @@
+[package]
+name = "russimp"
+version = "0.1.0"
+authors = ["Jhonny Vargas <vargasj@ryanair.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies.assimp-sys]
+path = "./assimp-sys"
