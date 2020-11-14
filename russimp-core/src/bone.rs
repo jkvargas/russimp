@@ -1,5 +1,7 @@
-use russimp_sys::{aiBone, aiVertexWeight};
-use crate::RusString;
+use russimp_sys::{
+    aiBone,
+    aiVertexWeight,
+};
 
 pub struct Bone {
     bone: *mut aiBone
@@ -36,8 +38,5 @@ impl VertexWeight {
 }
 
 impl Bone {
-    pub fn get_name(&self) -> String {
-        let content : RusString = unsafe { (*self.bone).mName }.into();
-        content.into()
-    }
+    pub fn get_name(&self) -> String { unsafe { (*self.bone).mName }.into() }
 }

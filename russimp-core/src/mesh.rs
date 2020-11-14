@@ -12,7 +12,6 @@ use crate::{
     bone::Bone,
     Vector3d,
     FromRawVec,
-    RusString,
     Color4d,
 };
 use std::ops::BitOr;
@@ -96,10 +95,7 @@ impl Mesh {
         res.iter().map(|x| x.into()).collect()
     }
 
-    pub fn get_name(&self) -> String {
-        let temp: RusString = unsafe { (*self.mesh).mName }.into();
-        temp.into()
-    }
+    pub fn get_name(&self) -> String { unsafe { (*self.mesh).mName }.into() }
 
     pub fn get_bones(&self) -> Vec<Bone> {
         Self::get_vec(unsafe { (*self.mesh).mBones }, unsafe { (*self.mesh).mNumBones } as usize)

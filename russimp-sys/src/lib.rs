@@ -4,3 +4,11 @@
 
 mod bindings;
 pub use bindings::*;
+use std::ffi::CStr;
+
+impl Into<String> for aiString {
+    fn into(self) -> String {
+        let content = unsafe { CStr::from_ptr(self.data.as_ptr()) };
+        content.to_str().unwrap().to_string()
+    }
+}

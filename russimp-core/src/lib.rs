@@ -3,7 +3,7 @@ use std::{
     fmt,
     fmt::{Display, Formatter},
     ffi::{CStr, IntoStringError},
-    str::Utf8Error
+    str::Utf8Error,
 };
 use russimp_sys::{aiString, aiVector3D, aiColor4D};
 
@@ -41,10 +41,6 @@ impl Display for RussimpError {
 
 impl Error for RussimpError {}
 
-struct RusString {
-    ai_string: aiString
-}
-
 impl Into<RussimpError> for Utf8Error {
     fn into(self) -> RussimpError {
         RussimpError::Primitive(self.to_string())
@@ -58,21 +54,6 @@ impl Into<RussimpError> for IntoStringError {
 }
 
 pub type Russult<T> = Result<T, RussimpError>;
-
-impl Into<String> for RusString {
-    fn into(self) -> String {
-        let content = unsafe { CStr::from_ptr(self.ai_string.data.as_ptr()) };
-        content.to_str().unwrap().to_string()
-    }
-}
-
-impl Into<RusString> for aiString {
-    fn into(self) -> RusString {
-        RusString {
-            ai_string: self
-        }
-    }
-}
 
 pub struct Vector3d(f32, f32, f32);
 

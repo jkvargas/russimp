@@ -1,6 +1,6 @@
 use russimp_sys::{aiMaterial, aiMaterialProperty};
 use std::ffi::CString;
-use crate::{RussimpError, RusString, FromRawVec, Russult};
+use crate::{RussimpError, FromRawVec, Russult};
 
 pub struct Material {
     material: *mut aiMaterial
@@ -44,10 +44,7 @@ impl MaterialProperty {
         unsafe { (*self.property).mIndex }
     }
 
-    pub fn get_key(&self) -> String {
-        let content: RusString = unsafe { (*self.property).mKey.into() };
-        content.into()
-    }
+    pub fn get_key(&self) -> String { unsafe { (*self.property).mKey.into() } }
 
     pub fn get_semantic(&self) -> u32 {
         unsafe { (*self.property).mSemantic }

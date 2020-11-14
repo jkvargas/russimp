@@ -43,7 +43,7 @@ use russimp_sys::{
 use std::{
     ffi::{
         CString,
-        CStr
+        CStr,
     },
     ops::BitOr,
 };
@@ -58,7 +58,7 @@ use crate::{
     light::Light,
     mesh::Mesh,
     metadata::MetaData,
-    node::Node
+    node::Node,
 };
 
 pub struct Scene {

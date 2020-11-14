@@ -11,3 +11,7 @@ impl Into<Node> for *mut aiNode {
         }
     }
 }
+
+impl Node {
+    pub fn get_name(&self) -> String { unsafe { (*self.node).mName }.into() }
+}
