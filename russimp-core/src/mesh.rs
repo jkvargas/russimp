@@ -143,4 +143,9 @@ impl Mesh {
     pub fn get_texture_coords(&self) -> Vec<Vector3d> {
         unsafe { (*self.mesh).mTextureCoords }.to_vec().iter().map(|x| x.into()).collect()
     }
+
+    pub fn get_vertices(&self) -> Vec<Vector3d> {
+        let res = unsafe { std::slice::from_raw_parts_mut((*self.mesh).mVertices, (*self.mesh).mNumVertices as usize) };
+        res.iter().map(|x| x.into()).collect()
+    }
 }
