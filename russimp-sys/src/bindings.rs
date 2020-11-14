@@ -1400,6 +1400,35 @@ fn bindgen_test_layout_aiBone() {
         )
     );
 }
+#[doc = " A point primitive."]
+#[doc = ""]
+#[doc = " This is just a single vertex in the virtual world,"]
+#[doc = " #aiFace contains just one index for such a primitive."]
+pub const aiPrimitiveType_aiPrimitiveType_POINT: aiPrimitiveType = 1;
+#[doc = " A line primitive."]
+#[doc = ""]
+#[doc = " This is a line defined through a start and an end position."]
+#[doc = " #aiFace contains exactly two indices for such a primitive."]
+pub const aiPrimitiveType_aiPrimitiveType_LINE: aiPrimitiveType = 2;
+#[doc = " A triangular primitive."]
+#[doc = ""]
+#[doc = " A triangle consists of three indices."]
+pub const aiPrimitiveType_aiPrimitiveType_TRIANGLE: aiPrimitiveType = 4;
+#[doc = " A higher-level polygon with more than 3 edges."]
+#[doc = ""]
+#[doc = " A triangle is a polygon, but polygon in this context means"]
+#[doc = " \"all polygons that are not triangles\". The \"Triangulate\"-Step"]
+#[doc = " is provided for your convenience, it splits all polygons in"]
+#[doc = " triangles (which are much easier to handle)."]
+pub const aiPrimitiveType_aiPrimitiveType_POLYGON: aiPrimitiveType = 8;
+pub const aiPrimitiveType__aiPrimitiveType_Force32Bit: aiPrimitiveType = 2147483647;
+#[doc = " @brief Enumerates the types of geometric primitives supported by Assimp."]
+#[doc = ""]
+#[doc = "  @see aiFace Face data structure"]
+#[doc = "  @see aiProcess_SortByPType Per-primitive sorting of meshes"]
+#[doc = "  @see aiProcess_Triangulate Automatic triangulation"]
+#[doc = "  @see AI_CONFIG_PP_SBP_REMOVE Removal of specific primitive types."]
+pub type aiPrimitiveType = ::std::os::raw::c_uint;
 #[doc = " @brief An AnimMesh is an attachment to an #aiMesh stores per-vertex"]
 #[doc = "  animations for a particular frame."]
 #[doc = ""]

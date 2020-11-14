@@ -1,6 +1,6 @@
 use russimp_sys::{aiMaterial, aiMaterialProperty};
 use std::ffi::CString;
-use crate::{RussimpError, RusString};
+use crate::{RussimpError, RusString, FromRawVec, Russult};
 
 pub struct Material {
     material: *mut aiMaterial
@@ -27,7 +27,7 @@ impl Into<MaterialProperty> for *mut aiMaterialProperty {
 }
 
 impl MaterialProperty {
-    pub fn get_data(&self) -> Result<String, RussimpError> {
+    pub fn get_data(&self) -> Russult<String> {
         let c_string = unsafe { CString::from_raw((*self.property).mData) };
 
         match c_string.into_string() {
@@ -59,6 +59,8 @@ impl MaterialProperty {
         }
     }
 }
+
+impl FromRawVec<aiMaterialProperty, MaterialProperty> for Material {}
 
 impl Material {
     pub fn get_material_properties(&self) -> Vec<MaterialProperty> {

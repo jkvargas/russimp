@@ -5,7 +5,7 @@ use std::{
     ffi::{CStr, IntoStringError},
     str::Utf8Error
 };
-use russimp_sys::{aiString, aiVector3D};
+use russimp_sys::{aiString, aiVector3D, aiColor4D};
 
 mod material;
 mod scene;
@@ -16,6 +16,7 @@ mod camera;
 mod light;
 mod metadata;
 mod node;
+mod face;
 
 
 #[derive(Debug)]
@@ -75,15 +76,35 @@ impl Into<RusString> for aiString {
 
 pub struct Vector3d(f32, f32, f32);
 
+pub struct Color4d(f32, f32, f32, f32);
+
+impl Into<Color4d> for &*mut aiColor4D {
+    fn into(self) -> Color4d {
+        Color4d(unsafe { (*(*self)).r }, unsafe { (*(*self)).g }, unsafe { (*(*self)).b }, unsafe { (*(*self)).a })
+    }
+}
+
 impl Into<Vector3d> for *mut aiVector3D {
     fn into(self) -> Vector3d {
         Vector3d(unsafe { (*self).x }, unsafe { (*self).y }, unsafe { (*self).z })
     }
 }
 
+impl Into<Vector3d> for &aiVector3D {
+    fn into(self) -> Vector3d {
+        Vector3d(self.x, self.y, self.z)
+    }
+}
+
 impl Into<Vector3d> for aiVector3D {
     fn into(self) -> Vector3d {
         Vector3d(self.x, self.y, self.z)
+    }
+}
+
+impl Into<Vector3d> for &*mut aiVector3D {
+    fn into(self) -> Vector3d {
+        Vector3d(unsafe { (*(*self)).x }, unsafe { (*(*self)).y }, unsafe { (*(*self)).z })
     }
 }
 
