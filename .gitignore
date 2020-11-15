@@ -1,5 +1,4 @@
 target
 russimp-sys/target
-russimp-sys/assimp
 Cargo.lock
 .idea/
