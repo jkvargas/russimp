@@ -100,30 +100,6 @@ pub enum PostProcessSteps {
     GenBoundingBoxes = aiPostProcessSteps_aiProcess_GenBoundingBoxes,
 }
 
-impl BitOr<PostProcessSteps> for PostProcessSteps {
-    type Output = u32;
-
-    fn bitor(self, rhs: PostProcessSteps) -> Self::Output {
-        self | rhs
-    }
-}
-
-impl BitOr<u32> for PostProcessSteps {
-    type Output = ();
-
-    fn bitor(self, rhs: u32) -> Self::Output {
-        self | rhs
-    }
-}
-
-impl BitOr<PostProcessSteps> for u32 {
-    type Output = u32;
-
-    fn bitor(self, rhs: PostProcessSteps) -> Self::Output {
-        self | rhs
-    }
-}
-
 impl Drop for Scene {
     fn drop(&mut self) {
         unsafe {
@@ -143,9 +119,10 @@ impl FromRawVec<aiLight, Light> for Scene {}
 impl FromRawVec<aiMesh, Mesh> for Scene {}
 
 impl Scene {
-    pub fn from(file_path: &str, flags: u32) -> Russult<Self> {
+    pub fn from(file_path: &str, flags: Vec<PostProcessSteps>) -> Russult<Self> {
+        let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
         let c_str = CString::new(file_path).unwrap();
-        let scene_import: *const aiScene = unsafe { aiImportFile(c_str.as_ptr(), flags) };
+        let scene_import: *const aiScene = unsafe { aiImportFile(c_str.as_ptr(), bitwise_flag) };
 
         if scene_import.is_null() {
             let error_buf = unsafe { aiGetErrorString() };
@@ -198,4 +175,28 @@ impl Scene {
     pub fn get_node(&self) -> Node {
         unsafe { (*self.scene).mRootNode }.into()
     }
+}
+
+#[test]
+fn importing_invalid_file_returns_error() {
+    let current_directory_buf = std::env::current_dir().unwrap().join("../russimp-sys/assimp/test/models/box.blend");
+
+    let scene = Scene::from(current_directory_buf.to_str().unwrap(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]);
+
+    assert!(scene.is_err())
+}
+
+#[test]
+fn importing_valid_file_returns_scene() {
+    let current_directory_buf = std::env::current_dir().unwrap().join("../russimp-sys/assimp/test/models/BLEND/box.blend");
+
+    let scene = Scene::from(current_directory_buf.to_str().unwrap(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
 }
