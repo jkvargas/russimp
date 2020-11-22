@@ -48,21 +48,12 @@ use std::{
     ops::BitOr,
 };
 
-use crate::{
-    RussimpError,
-    Russult,
-    FromRawVec,
-    material::Material,
-    animation::Animation,
-    camera::Camera,
-    light::Light,
-    mesh::Mesh,
-    metadata::MetaData,
-    node::Node,
-};
+use crate::{Russult, RussimpError};
+use crate::material::Material;
 
-pub struct Scene {
-    scene: *const aiScene
+pub struct Scene<'scene_lifetime> {
+    scene: &'scene_lifetime aiScene,
+    pub materials: Vec<Material<'scene_lifetime>>
 }
 
 #[repr(u32)]
@@ -100,7 +91,7 @@ pub enum PostProcessSteps {
     GenBoundingBoxes = aiPostProcessSteps_aiProcess_GenBoundingBoxes,
 }
 
-impl Drop for Scene {
+impl<'scene_lifetime> Drop for Scene<'scene_lifetime> {
     fn drop(&mut self) {
         unsafe {
             aiReleaseImport(self.scene);
@@ -108,18 +99,18 @@ impl Drop for Scene {
     }
 }
 
-impl FromRawVec<aiMaterial, Material> for Scene {}
+// impl FromRawVec<aiMaterial, Material> for Scene {}
+//
+// impl FromRawVec<aiAnimation, Animation> for Scene {}
+//
+// impl FromRawVec<aiCamera, Camera> for Scene {}
+//
+// impl FromRawVec<aiLight, Light> for Scene {}
+//
+// impl FromRawVec<aiMesh, Mesh> for Scene {}
 
-impl FromRawVec<aiAnimation, Animation> for Scene {}
-
-impl FromRawVec<aiCamera, Camera> for Scene {}
-
-impl FromRawVec<aiLight, Light> for Scene {}
-
-impl FromRawVec<aiMesh, Mesh> for Scene {}
-
-impl Scene {
-    pub fn from(file_path: &str, flags: Vec<PostProcessSteps>) -> Russult<Self> {
+impl<'scene_lifetime> Scene<'scene_lifetime> {
+    pub fn from(file_path: &str, flags: Vec<PostProcessSteps>) -> Russult<Scene<'scene_lifetime>> {
         let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
         let c_str = CString::new(file_path).unwrap();
         let scene_import: *const aiScene = unsafe { aiImportFile(c_str.as_ptr(), bitwise_flag) };
@@ -130,56 +121,61 @@ impl Scene {
             return Err(RussimpError::Import(error));
         }
 
+        let scene = unsafe { scene_import.as_ref() }.unwrap();
+        let materials = Self::get_materials(scene);
+
         Ok(Self {
-            scene: scene_import
+            scene,
+            materials
         })
     }
 
-    pub fn get_materials(&self) -> Vec<Material> {
-        Self::get_vec(unsafe { (*self.scene).mMaterials }, unsafe { (*self.scene).mNumMaterials } as usize)
+    fn get_materials(scene: &'scene_lifetime aiScene) -> Vec<Material<'scene_lifetime>> {
+        let vec_raw: Vec<*mut aiMaterial> = unsafe { Vec::from_raw_parts(scene.mMaterials, scene.mNumMaterials as usize, scene.mNumMaterials as usize) };
+        vec_raw.iter().map(|x| unsafe { (*x).as_ref() }.unwrap().into()).collect()
     }
 
-    pub fn get_animations(&self) -> Vec<Animation> {
-        Self::get_vec(unsafe { (*self.scene).mAnimations }, unsafe { (*self.scene).mNumAnimations } as usize)
-    }
-
-    pub fn get_cameras(&self) -> Vec<Camera> {
-        Self::get_vec(unsafe { (*self.scene).mCameras }, unsafe { (*self.scene).mNumCameras } as usize)
-    }
-
-    pub fn get_flags(&self) -> u32 {
-        unsafe { (*self.scene).mFlags }
-    }
-
-    pub fn get_lights(&self) -> Vec<Light> {
-        Self::get_vec(unsafe { (*self.scene).mLights }, unsafe { (*self.scene).mNumLights } as usize)
-    }
-
-    pub fn get_meshes(&self) -> Vec<Mesh> {
-        Self::get_vec(unsafe { (*self.scene).mMeshes }, unsafe { (*self.scene).mNumMeshes } as usize)
-    }
-
-    pub fn get_meta_data(&self) -> MetaData {
-        unsafe { (*self.scene).mMetaData }.into()
-    }
-
-    pub fn get_private(&self) -> Russult<String> {
-        let string_raw = unsafe { CString::from_raw(unsafe { (*self.scene).mPrivate }) };
-
-        match string_raw.into_string() {
-            Ok(content) => Ok(content),
-            Err(err) => Err(err.into())
-        }
-    }
-
-    pub fn get_node(&self) -> Node {
-        unsafe { (*self.scene).mRootNode }.into()
-    }
+    // pub fn get_animations(&self) -> Vec<Animation> {
+    //     Self::get_vec(unsafe { (*self.scene).mAnimations }, unsafe { (*self.scene).mNumAnimations } as usize)
+    // }
+    //
+    // pub fn get_cameras(&self) -> Vec<Camera> {
+    //     Self::get_vec(unsafe { (*self.scene).mCameras }, unsafe { (*self.scene).mNumCameras } as usize)
+    // }
+    //
+    // pub fn get_flags(&self) -> u32 {
+    //     unsafe { (*self.scene).mFlags }
+    // }
+    //
+    // pub fn get_lights(&self) -> Vec<Light> {
+    //     Self::get_vec(unsafe { (*self.scene).mLights }, unsafe { (*self.scene).mNumLights } as usize)
+    // }
+    //
+    // pub fn get_meshes(&self) -> Vec<Mesh> {
+    //     Self::get_vec(unsafe { (*self.scene).mMeshes }, unsafe { (*self.scene).mNumMeshes } as usize)
+    // }
+    //
+    // pub fn get_meta_data(&self) -> MetaData {
+    //     unsafe { (*self.scene).mMetaData }.into()
+    // }
+    //
+    // pub fn get_private(&self) -> Russult<String> {
+    //     let string_raw = unsafe { CString::from_raw(unsafe { (*self.scene).mPrivate }) };
+    //
+    //     match string_raw.into_string() {
+    //         Ok(content) => Ok(content),
+    //         Err(err) => Err(err.into())
+    //     }
+    // }
+    //
+    // pub fn get_node(&self) -> Node {
+    //     unsafe { (*self.scene).mRootNode }.into()
+    // }
 }
 
 #[test]
 fn importing_invalid_file_returns_error() {
-    let current_directory_buf = std::env::current_dir().unwrap().join("../russimp-sys/assimp/test/models/box.blend");
+    let current_directory_buf = std::env::current_dir().unwrap().join("russimp-sys/assimp/test/models/box.blend");
 
     let scene = Scene::from(current_directory_buf.to_str().unwrap(),
                             vec![PostProcessSteps::CalcTangentSpace,
@@ -192,11 +188,11 @@ fn importing_invalid_file_returns_error() {
 
 #[test]
 fn importing_valid_file_returns_scene() {
-    let current_directory_buf = std::env::current_dir().unwrap().join("../russimp-sys/assimp/test/models/BLEND/box.blend");
+    let current_directory_buf = std::env::current_dir().unwrap().join("russimp-sys/assimp/test/models/BLEND/box.blend");
 
-    let scene = Scene::from(current_directory_buf.to_str().unwrap(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
+    Scene::from(current_directory_buf.to_str().unwrap(),
+                vec![PostProcessSteps::CalcTangentSpace,
+                     PostProcessSteps::Triangulate,
+                     PostProcessSteps::JoinIdenticalVertices,
+                     PostProcessSteps::SortByPType]).unwrap();
 }

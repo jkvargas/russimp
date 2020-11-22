@@ -7,14 +7,10 @@ use russimp_sys::{
     aiPrimitiveType_aiPrimitiveType_POINT,
     aiPrimitiveType_aiPrimitiveType_POLYGON,
     aiPrimitiveType_aiPrimitiveType_TRIANGLE};
-use crate::{
-    face::Face,
-    bone::Bone,
-    Vector3d,
-    FromRawVec,
-    Color4d,
-};
 use std::ops::BitOr;
+use crate::{FromRawVec, Vector3d, Color4d};
+use crate::bone::Bone;
+use crate::face::Face;
 
 pub struct Mesh {
     mesh: *mut aiMesh
