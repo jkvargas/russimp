@@ -42,12 +42,12 @@ impl<'scene_lifetime> Drop for MaterialProperty<'scene_lifetime> {
 
 impl<'scene_lifetime> Into<MaterialProperty<'scene_lifetime>> for &'scene_lifetime aiMaterialProperty {
     fn into(self) -> MaterialProperty<'scene_lifetime> {
-        // let slice = slice_from_raw_parts(self.mData as *const u8, self.mDataLength as usize);
-        // let data = unsafe { slice.as_ref() }.unwrap();
+        let slice = slice_from_raw_parts(self.mData as *const u8, self.mDataLength as usize);
+        let data = unsafe { slice.as_ref() }.unwrap();
 
         MaterialProperty {
             property: self,
-            data: &[0x24]
+            data
         }
     }
 }
