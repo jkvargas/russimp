@@ -50,10 +50,11 @@ use std::{
 
 use crate::{Russult, RussimpError};
 use crate::material::Material;
+use std::ptr::slice_from_raw_parts;
 
-pub struct Scene<'scene_lifetime> {
-    scene: &'scene_lifetime aiScene,
-    pub materials: Vec<Material<'scene_lifetime>>
+pub struct Scene<'a> {
+    scene: *const aiScene,
+    pub materials: Vec<Material<'a>>,
 }
 
 #[repr(u32)]
@@ -91,7 +92,7 @@ pub enum PostProcessSteps {
     GenBoundingBoxes = aiPostProcessSteps_aiProcess_GenBoundingBoxes,
 }
 
-impl<'scene_lifetime> Drop for Scene<'scene_lifetime> {
+impl<'a> Drop for Scene<'a> {
     fn drop(&mut self) {
         unsafe {
             aiReleaseImport(self.scene);
@@ -109,8 +110,8 @@ impl<'scene_lifetime> Drop for Scene<'scene_lifetime> {
 //
 // impl FromRawVec<aiMesh, Mesh> for Scene {}
 
-impl<'scene_lifetime> Scene<'scene_lifetime> {
-    pub fn from(file_path: &str, flags: Vec<PostProcessSteps>) -> Russult<Scene<'scene_lifetime>> {
+impl<'a> Scene<'a> {
+    pub fn from(file_path: &str, flags: Vec<PostProcessSteps>) -> Russult<Scene<'a>> {
         let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
         let c_str = CString::new(file_path).unwrap();
         let scene_import: *const aiScene = unsafe { aiImportFile(c_str.as_ptr(), bitwise_flag) };
@@ -121,18 +122,15 @@ impl<'scene_lifetime> Scene<'scene_lifetime> {
             return Err(RussimpError::Import(error));
         }
 
-        let scene = unsafe { scene_import.as_ref() }.unwrap();
-        let materials = Self::get_materials(scene);
+        let materials = unsafe { (*scene_import).mMaterials };
+        let num_materials = unsafe { (*scene_import).mNumMaterials } as usize;
+        let slice = slice_from_raw_parts(materials, num_materials);
+        let raw = unsafe { slice.as_ref() }.unwrap();
 
         Ok(Self {
-            scene,
-            materials
+            scene: scene_import,
+            materials: raw.iter().map(|x| unsafe { x.as_ref() }.unwrap().into()).collect()
         })
-    }
-
-    fn get_materials(scene: &'scene_lifetime aiScene) -> Vec<Material<'scene_lifetime>> {
-        let vec_raw: Vec<*mut aiMaterial> = unsafe { Vec::from_raw_parts(scene.mMaterials, scene.mNumMaterials as usize, scene.mNumMaterials as usize) };
-        vec_raw.iter().map(|x| unsafe { (*x).as_ref() }.unwrap().into()).collect()
     }
 
     // pub fn get_animations(&self) -> Vec<Animation> {

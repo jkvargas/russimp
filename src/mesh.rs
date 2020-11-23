@@ -8,7 +8,7 @@ use russimp_sys::{
     aiPrimitiveType_aiPrimitiveType_POLYGON,
     aiPrimitiveType_aiPrimitiveType_TRIANGLE};
 use std::ops::BitOr;
-use crate::{FromRawVec, Vector3d, Color4d};
+use crate::{Vector3d, Color4d};
 use crate::bone::Bone;
 use crate::face::Face;
 
@@ -69,10 +69,6 @@ impl BitOr<PrimitiveType> for u32 {
     }
 }
 
-impl FromRawVec<aiAnimMesh, AnimMesh> for Mesh {}
-
-impl FromRawVec<aiBone, Bone> for Mesh {}
-
 impl Mesh {
     pub fn get_aabb_max(&self) -> Vector3d {
         unsafe { (*self.mesh).mAABB.mMax }.into()
@@ -82,9 +78,9 @@ impl Mesh {
         unsafe { (*self.mesh).mAABB.mMin }.into()
     }
 
-    pub fn get_anim_meshes(&self) -> Vec<AnimMesh> {
-        Self::get_vec(unsafe { (*self.mesh).mAnimMeshes }, unsafe { (*self.mesh).mNumAnimMeshes } as usize)
-    }
+    // pub fn get_anim_meshes(&self) -> Vec<AnimMesh> {
+    //     Self::get_vec(unsafe { (*self.mesh).mAnimMeshes }, unsafe { (*self.mesh).mNumAnimMeshes } as usize)
+    // }
 
     pub fn get_bitangents(&self) -> Vec<Vector3d> {
         let res = unsafe { std::slice::from_raw_parts_mut((*self.mesh).mBitangents, (*self.mesh).mNumVertices as usize) };
@@ -93,9 +89,9 @@ impl Mesh {
 
     pub fn get_name(&self) -> String { unsafe { (*self.mesh).mName }.into() }
 
-    pub fn get_bones(&self) -> Vec<Bone> {
-        Self::get_vec(unsafe { (*self.mesh).mBones }, unsafe { (*self.mesh).mNumBones } as usize)
-    }
+    // pub fn get_bones(&self) -> Vec<Bone> {
+    //     Self::get_vec(unsafe { (*self.mesh).mBones }, unsafe { (*self.mesh).mNumBones } as usize)
+    // }
 
     pub fn get_colors(&self) -> Vec<Color4d> {
         unsafe { (*self.mesh).mColors }.to_vec().iter().map(|x| x.into()).collect()

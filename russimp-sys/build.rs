@@ -23,6 +23,7 @@ fn main() {
         .whitelist_function("aiImportFile")
         .whitelist_type("aiPostProcessSteps")
         .whitelist_type("aiPrimitiveType")
+        .whitelist_type("aiTextureType")
         .whitelist_function("aiReleaseImport")
         .whitelist_function("aiGetErrorString")
         .generate()

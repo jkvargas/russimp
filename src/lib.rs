@@ -6,6 +6,11 @@ use std::{
     str::Utf8Error,
 };
 use russimp_sys::{aiVector3D, aiColor4D, aiMatrix4x4};
+use std::os::raw::c_uint;
+use std::ptr::slice_from_raw_parts;
+
+#[macro_use]
+extern crate num_derive;
 
 mod bone;
 mod animation;
@@ -156,12 +161,5 @@ impl Into<Vector3d> for &*mut aiVector3D {
             y: unsafe { (*(*self)).y },
             z: unsafe { (*(*self)).z },
         }
-    }
-}
-
-trait FromRawVec<TRawType, TResultType> where *mut TRawType: Into<TResultType> {
-    fn get_vec(raw: *mut *mut TRawType, length: usize) -> Vec<TResultType> {
-        let vec_raw: Vec<*mut TRawType> = unsafe { Vec::from_raw_parts(raw, length, length) };
-        vec_raw.into_iter().map(|x| x.into()).collect()
     }
 }
