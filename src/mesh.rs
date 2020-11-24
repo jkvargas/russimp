@@ -1,25 +1,27 @@
-use russimp_sys::{
-    aiMesh,
-    aiAnimMesh,
-    aiBone,
-    aiPrimitiveType__aiPrimitiveType_Force32Bit,
-    aiPrimitiveType_aiPrimitiveType_LINE,
-    aiPrimitiveType_aiPrimitiveType_POINT,
-    aiPrimitiveType_aiPrimitiveType_POLYGON,
-    aiPrimitiveType_aiPrimitiveType_TRIANGLE};
+use russimp_sys::{aiMesh, aiAnimMesh, aiBone, aiPrimitiveType__aiPrimitiveType_Force32Bit, aiPrimitiveType_aiPrimitiveType_LINE, aiPrimitiveType_aiPrimitiveType_POINT, aiPrimitiveType_aiPrimitiveType_POLYGON, aiPrimitiveType_aiPrimitiveType_TRIANGLE, aiVector3D};
 use std::ops::BitOr;
-use crate::{Vector3d, Color4d};
+use crate::FromRawVec;
 use crate::bone::Bone;
 use crate::face::Face;
+use crate::scene::{PostProcessSteps, Scene};
+use std::ptr::slice_from_raw_parts;
 
-pub struct Mesh {
-    mesh: *mut aiMesh
+pub struct Mesh<'a> {
+    mesh: &'a aiMesh,
+    normals: Vec<&'a aiVector3D>,
+    name: String,
+    vertices: Vec<&'a aiVector3D>,
 }
 
-impl Into<Mesh> for *mut aiMesh {
-    fn into(self) -> Mesh {
+impl<'a> FromRawVec for Mesh<'a> {}
+
+impl<'a> Into<Mesh<'a>> for &'a aiMesh {
+    fn into(self) -> Mesh<'a> {
         Mesh {
-            mesh: self
+            mesh: self,
+            normals: Mesh::get_vec_from_raw_mut(self.mNormals, self.mNumVertices),
+            name: self.mName.into(),
+            vertices: Mesh::get_vec_from_raw_mut(self.mVertices, self.mNumVertices),
         }
     }
 }
@@ -69,71 +71,18 @@ impl BitOr<PrimitiveType> for u32 {
     }
 }
 
-impl Mesh {
-    pub fn get_aabb_max(&self) -> Vector3d {
-        unsafe { (*self.mesh).mAABB.mMax }.into()
-    }
 
-    pub fn get_aabb_min(&self) -> Vector3d {
-        unsafe { (*self.mesh).mAABB.mMin }.into()
-    }
+#[test]
+pub fn mesh_available() {
+    let current_directory_buf = std::env::current_dir().unwrap().join("russimp-sys/assimp/test/models/BLEND/box.blend");
 
-    // pub fn get_anim_meshes(&self) -> Vec<AnimMesh> {
-    //     Self::get_vec(unsafe { (*self.mesh).mAnimMeshes }, unsafe { (*self.mesh).mNumAnimMeshes } as usize)
-    // }
+    let scene = Scene::from(current_directory_buf.to_str().unwrap(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
 
-    pub fn get_bitangents(&self) -> Vec<Vector3d> {
-        let res = unsafe { std::slice::from_raw_parts_mut((*self.mesh).mBitangents, (*self.mesh).mNumVertices as usize) };
-        res.iter().map(|x| x.into()).collect()
-    }
-
-    pub fn get_name(&self) -> String { unsafe { (*self.mesh).mName }.into() }
-
-    // pub fn get_bones(&self) -> Vec<Bone> {
-    //     Self::get_vec(unsafe { (*self.mesh).mBones }, unsafe { (*self.mesh).mNumBones } as usize)
-    // }
-
-    pub fn get_colors(&self) -> Vec<Color4d> {
-        unsafe { (*self.mesh).mColors }.to_vec().iter().map(|x| x.into()).collect()
-    }
-
-    pub fn get_faces(&self) -> Vec<Face> {
-        let res = unsafe { std::slice::from_raw_parts_mut((*self.mesh).mFaces, (*self.mesh).mNumFaces as usize) };
-        res.iter().map(|x| x.clone().into()).collect()
-    }
-
-    pub fn get_method(&self) -> u32 {
-        unsafe { (*self.mesh).mMethod }
-    }
-
-    pub fn get_material(&self) -> usize {
-        (unsafe { (*self.mesh).mMaterialIndex }) as usize
-    }
-
-    pub fn get_normals(&self) -> Vec<Vector3d> {
-        let res = unsafe { std::slice::from_raw_parts_mut((*self.mesh).mNormals, (*self.mesh).mNumVertices as usize) };
-        res.iter().map(|x| x.into()).collect()
-    }
-
-    pub fn get_num_uv_components(&self) -> Vec<u32> {
-        unsafe { (*self.mesh).mNumUVComponents }.to_vec()
-    }
-
-    pub fn get_primitive_types(&self) -> u32 {
-        unsafe { (*self.mesh).mPrimitiveTypes }
-    }
-
-    pub fn get_tangents(&self) -> Vec<Vector3d> {
-        let res = unsafe { std::slice::from_raw_parts_mut((*self.mesh).mTangents, (*self.mesh).mNumVertices as usize) };
-        res.iter().map(|x| x.into()).collect()
-    }
-
-    pub fn get_texture_coords(&self) -> Vec<Vector3d> {
-        unsafe { (*self.mesh).mTextureCoords }.to_vec().iter().map(|x| x.into()).collect()
-    }
-
-    pub fn get_vertices(&self) -> Vec<Vector3d> {
-        let res = unsafe { std::slice::from_raw_parts_mut((*self.mesh).mVertices, (*self.mesh).mNumVertices as usize) };
-        res.iter().map(|x| x.into()).collect()
-    }
+    assert_eq!(1, scene.meshes.len());
+    assert_eq!(8, scene.meshes[0].normals.len());
+    assert_eq!(8, scene.meshes[0].vertices.len());
 }

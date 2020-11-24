@@ -1,6 +1,5 @@
 use russimp_sys::aiNode;
 use crate::metadata::MetaData;
-use crate::Matrix4x4;
 
 pub struct Node {
     node: *mut aiNode
@@ -34,7 +33,7 @@ impl Node {
         unsafe { (*self.node).mParent }.into()
     }
 
-    pub fn get_transformation(&self) -> Matrix4x4 {
-        unsafe { (*self.node).mTransformation }.into()
-    }
+    // pub fn get_transformation(&self) -> Matrix4x4 {
+    //     unsafe { (*self.node).mTransformation }.into()
+    // }
 }

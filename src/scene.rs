@@ -46,15 +46,18 @@ use std::{
         CStr,
     },
     ops::BitOr,
+    ptr::slice_from_raw_parts,
 };
 
 use crate::{Russult, RussimpError};
 use crate::material::Material;
-use std::ptr::slice_from_raw_parts;
+use crate::mesh::Mesh;
+use std::os::raw::c_uint;
 
 pub struct Scene<'a> {
     scene: *const aiScene,
     pub materials: Vec<Material<'a>>,
+    pub meshes: Vec<Mesh<'a>>,
 }
 
 #[repr(u32)]
@@ -100,16 +103,6 @@ impl<'a> Drop for Scene<'a> {
     }
 }
 
-// impl FromRawVec<aiMaterial, Material> for Scene {}
-//
-// impl FromRawVec<aiAnimation, Animation> for Scene {}
-//
-// impl FromRawVec<aiCamera, Camera> for Scene {}
-//
-// impl FromRawVec<aiLight, Light> for Scene {}
-//
-// impl FromRawVec<aiMesh, Mesh> for Scene {}
-
 impl<'a> Scene<'a> {
     pub fn from(file_path: &str, flags: Vec<PostProcessSteps>) -> Russult<Scene<'a>> {
         let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
@@ -122,53 +115,18 @@ impl<'a> Scene<'a> {
             return Err(RussimpError::Import(error));
         }
 
-        let materials = unsafe { (*scene_import).mMaterials };
-        let num_materials = unsafe { (*scene_import).mNumMaterials } as usize;
-        let slice = slice_from_raw_parts(materials, num_materials);
-        let raw = unsafe { slice.as_ref() }.unwrap();
-
         Ok(Self {
             scene: scene_import,
-            materials: raw.iter().map(|x| unsafe { x.as_ref() }.unwrap().into()).collect()
+            materials: Self::get_vec_from_raw(unsafe { (*scene_import).mMaterials }, unsafe { (*scene_import).mNumMaterials }),
+            meshes: Self::get_vec_from_raw(unsafe { (*scene_import).mMeshes }, unsafe { (*scene_import).mNumMeshes }),
         })
     }
 
-    // pub fn get_animations(&self) -> Vec<Animation> {
-    //     Self::get_vec(unsafe { (*self.scene).mAnimations }, unsafe { (*self.scene).mNumAnimations } as usize)
-    // }
-    //
-    // pub fn get_cameras(&self) -> Vec<Camera> {
-    //     Self::get_vec(unsafe { (*self.scene).mCameras }, unsafe { (*self.scene).mNumCameras } as usize)
-    // }
-    //
-    // pub fn get_flags(&self) -> u32 {
-    //     unsafe { (*self.scene).mFlags }
-    // }
-    //
-    // pub fn get_lights(&self) -> Vec<Light> {
-    //     Self::get_vec(unsafe { (*self.scene).mLights }, unsafe { (*self.scene).mNumLights } as usize)
-    // }
-    //
-    // pub fn get_meshes(&self) -> Vec<Mesh> {
-    //     Self::get_vec(unsafe { (*self.scene).mMeshes }, unsafe { (*self.scene).mNumMeshes } as usize)
-    // }
-    //
-    // pub fn get_meta_data(&self) -> MetaData {
-    //     unsafe { (*self.scene).mMetaData }.into()
-    // }
-    //
-    // pub fn get_private(&self) -> Russult<String> {
-    //     let string_raw = unsafe { CString::from_raw(unsafe { (*self.scene).mPrivate }) };
-    //
-    //     match string_raw.into_string() {
-    //         Ok(content) => Ok(content),
-    //         Err(err) => Err(err.into())
-    //     }
-    // }
-    //
-    // pub fn get_node(&self) -> Node {
-    //     unsafe { (*self.scene).mRootNode }.into()
-    // }
+    fn get_vec_from_raw<TComponent, TRaw>(raw_source: *mut *mut TRaw, num_raw_items: c_uint) -> Vec<TComponent> where &'a TRaw: Into<TComponent> + 'a {
+        let slice = slice_from_raw_parts(raw_source, num_raw_items as usize);
+        let raw = unsafe { slice.as_ref() }.unwrap();
+        raw.iter().map(|x| unsafe { x.as_ref() }.unwrap().into()).collect()
+    }
 }
 
 #[test]
