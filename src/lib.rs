@@ -8,6 +8,7 @@ use std::{
 use russimp_sys::{aiVector3D, aiColor4D, aiMatrix4x4};
 use std::os::raw::c_uint;
 use std::ptr::slice_from_raw_parts;
+use std::ops::BitAnd;
 
 #[macro_use]
 extern crate num_derive;
@@ -61,9 +62,25 @@ impl Into<RussimpError> for IntoStringError {
 pub type Russult<T> = Result<T, RussimpError>;
 
 trait FromRawVec {
-    fn get_vec_from_raw_mut<'a, TRaw, TComponent>(raw: *mut TRaw, len: c_uint) -> Vec<TComponent> where &'a TRaw: Into<TComponent> + 'a {
+    fn get_optional_vec<'a, TRaw, TComponent>(raw: *mut TRaw, len: c_uint) -> Option<Vec<TComponent>> where &'a TRaw: Into<TComponent> + 'a {
+        let slice = slice_from_raw_parts(raw as *const TRaw, len as usize);
+        if slice.is_null() {
+            return None;
+        }
+
+        let raw = unsafe { slice.as_ref() }.unwrap();
+        Some(raw.iter().map(|x| x.into()).collect())
+    }
+
+    fn get_vec<'a, TRaw, TComponent>(raw: *mut TRaw, len: c_uint) -> Vec<TComponent> where &'a TRaw: Into<TComponent> + 'a {
         let slice = slice_from_raw_parts(raw as *const TRaw, len as usize);
         let raw = unsafe { slice.as_ref() }.unwrap();
         raw.iter().map(|x| x.into()).collect()
+    }
+
+    fn get_vec_from_raw<'a, TComponent, TRaw>(raw_source: *mut *mut TRaw, num_raw_items: c_uint) -> Vec<TComponent> where &'a TRaw: Into<TComponent> + 'a {
+        let slice = slice_from_raw_parts(raw_source, num_raw_items as usize);
+        let raw = unsafe { slice.as_ref() }.unwrap();
+        raw.iter().map(|x| unsafe { x.as_ref() }.unwrap().into()).collect()
     }
 }

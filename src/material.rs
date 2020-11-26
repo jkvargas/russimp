@@ -8,22 +8,20 @@ use std::{
 
 use crate::scene::{PostProcessSteps, Scene};
 use num_traits::FromPrimitive;
+use crate::FromRawVec;
 
 pub struct Material<'a> {
     material: &'a aiMaterial,
     properties: Vec<MaterialProperty<'a>>,
 }
 
+impl<'a> FromRawVec for Material<'a> {}
+
 impl<'a> Into<Material<'a>> for &'a aiMaterial {
     fn into(self) -> Material<'a> {
-        let materials_properties = self.mProperties;
-        let num_materials_properties = self.mNumProperties as usize;
-        let slice = slice_from_raw_parts(materials_properties, num_materials_properties);
-        let raw = unsafe { slice.as_ref() }.unwrap();
-
         Material {
             material: self,
-            properties: raw.iter().map(|x| unsafe { x.as_ref() }.unwrap().into()).collect(),
+            properties: Material::get_vec_from_raw(self.mProperties, self.mNumProperties),
         }
     }
 }

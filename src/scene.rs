@@ -49,7 +49,7 @@ use std::{
     ptr::slice_from_raw_parts,
 };
 
-use crate::{Russult, RussimpError};
+use crate::{Russult, RussimpError, FromRawVec};
 use crate::material::Material;
 use crate::mesh::Mesh;
 use std::os::raw::c_uint;
@@ -103,6 +103,8 @@ impl<'a> Drop for Scene<'a> {
     }
 }
 
+impl<'a> FromRawVec for Scene<'a> {}
+
 impl<'a> Scene<'a> {
     pub fn from(file_path: &str, flags: Vec<PostProcessSteps>) -> Russult<Scene<'a>> {
         let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
@@ -117,15 +119,9 @@ impl<'a> Scene<'a> {
 
         Ok(Self {
             scene: scene_import,
-            materials: Self::get_vec_from_raw(unsafe { (*scene_import).mMaterials }, unsafe { (*scene_import).mNumMaterials }),
-            meshes: Self::get_vec_from_raw(unsafe { (*scene_import).mMeshes }, unsafe { (*scene_import).mNumMeshes }),
+            materials: Scene::get_vec_from_raw(unsafe { (*scene_import).mMaterials }, unsafe { (*scene_import).mNumMaterials }),
+            meshes: Scene::get_vec_from_raw(unsafe { (*scene_import).mMeshes }, unsafe { (*scene_import).mNumMeshes }),
         })
-    }
-
-    fn get_vec_from_raw<TComponent, TRaw>(raw_source: *mut *mut TRaw, num_raw_items: c_uint) -> Vec<TComponent> where &'a TRaw: Into<TComponent> + 'a {
-        let slice = slice_from_raw_parts(raw_source, num_raw_items as usize);
-        let raw = unsafe { slice.as_ref() }.unwrap();
-        raw.iter().map(|x| unsafe { x.as_ref() }.unwrap().into()).collect()
     }
 }
 
