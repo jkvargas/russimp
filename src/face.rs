@@ -1,13 +1,18 @@
 use russimp_sys::aiFace;
+use crate::FromRawVec;
 
-pub struct Face {
-    face: aiFace
+pub struct Face<'a> {
+    face: &'a aiFace,
+    pub indices: Vec<u32>,
 }
 
-impl<'a> Into<Face> for aiFace {
+impl FromRawVec for Face {}
+
+impl<'a> Into<Face> for &'a aiFace {
     fn into(self) -> Face {
         Face {
-            face: self
+            face: self,
+            indices: Face::get_vec(self.mIndices, self.mNumIndices)
         }
     }
 }

@@ -1,26 +1,33 @@
-use russimp_sys::{aiMesh, aiAnimMesh, aiBone, aiPrimitiveType__aiPrimitiveType_Force32Bit, aiPrimitiveType_aiPrimitiveType_LINE, aiPrimitiveType_aiPrimitiveType_POINT, aiPrimitiveType_aiPrimitiveType_POLYGON, aiPrimitiveType_aiPrimitiveType_TRIANGLE, aiVector3D};
-use std::ops::{BitOr, BitAnd};
+use russimp_sys::{aiMesh, aiAnimMesh, aiBone, aiPrimitiveType__aiPrimitiveType_Force32Bit, aiPrimitiveType_aiPrimitiveType_LINE, aiPrimitiveType_aiPrimitiveType_POINT, aiPrimitiveType_aiPrimitiveType_POLYGON, aiPrimitiveType_aiPrimitiveType_TRIANGLE, aiVector3D, aiColor4D, aiAABB};
+use std::{
+    ops::{BitOr, BitAnd},
+    ptr::slice_from_raw_parts
+};
 use crate::{
     FromRawVec,
     bone::Bone,
     face::Face,
     scene::{PostProcessSteps, Scene},
 };
-use std::ptr::slice_from_raw_parts;
 use num_traits::ToPrimitive;
 
 pub struct Mesh<'a> {
     mesh: &'a aiMesh,
-    normals: Option<Vec<&'a aiVector3D>>,
-    name: String,
-    vertices: Vec<&'a aiVector3D>,
-    texture_coords: Option<Vec<&'a aiVector3D>>,
-    tangents: Option<Vec<&'a aiVector3D>>,
-    bitangents: Option<Vec<&'a aiVector3D>>,
-    primitive_types: u32,
-    uv_components: Vec<u32>,
-    material_index: u32,
-    method: u32,
+    pub normals: Option<Vec<&'a aiVector3D>>,
+    pub name: String,
+    pub vertices: Vec<&'a aiVector3D>,
+    pub texture_coords: Option<Vec<&'a aiVector3D>>,
+    pub tangents: Option<Vec<&'a aiVector3D>>,
+    pub bitangents: Option<Vec<&'a aiVector3D>>,
+    pub primitive_types: u32,
+    pub uv_components: Vec<u32>,
+    pub material_index: u32,
+    pub method: u32,
+    pub anim_meshes: Vec<AnimMesh<'a>>,
+    pub faces: Vec<Face<'a>>,
+    pub colors: Option<Vec<&'a aiColor4D>>,
+    pub bones: Vec<Bone<'a>>,
+    pub aabb: aiAABB,
 }
 
 #[derive(FromPrimitive, Debug, PartialEq, ToPrimitive)]
@@ -49,18 +56,27 @@ impl<'a> Into<Mesh<'a>> for &'a aiMesh {
             material_index: self.mMaterialIndex,
             method: self.mMethod,
             bitangents: Mesh::get_optional_vec(self.mBitangents, self.mNumVertices),
+            anim_meshes: Mesh::get_vec(self.mAnimMeshes, self.mNumAnimMeshes),
+            faces: Mesh::get_vec(self.mFaces, self.mNumFaces),
+            colors: self.mColors.iter().map(|x| unsafe { x.as_ref() }).collect(),
+            bones: Mesh::get_vec_from_raw(self.mBones, self.mNumBones),
+            aabb: self.mAABB
         }
     }
 }
 
-pub struct AnimMesh {
-    anim_mesh: *mut aiAnimMesh
+pub struct AnimMesh<'a> {
+    anim_mesh: &'a aiAnimMesh,
+    bitangents: Option<Vec<&'a aiVector3D>>,
 }
 
-impl Into<AnimMesh> for *mut aiAnimMesh {
+impl FromRawVec for AnimMesh {}
+
+impl<'a> Into<AnimMesh> for &'a aiAnimMesh {
     fn into(self) -> AnimMesh {
         AnimMesh {
-            anim_mesh: self
+            bitangents: Mesh::get_optional_vec(self.mBitangents, self.mNumVertices),
+            anim_mesh: self,
         }
     }
 }
