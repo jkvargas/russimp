@@ -2,19 +2,14 @@ use std::{
     error::Error,
     fmt,
     fmt::{Display, Formatter},
-    ffi::{CStr, IntoStringError},
+    ffi::IntoStringError,
     str::Utf8Error,
 };
-use russimp_sys::{aiVector3D, aiColor4D, aiMatrix4x4};
 use std::os::raw::c_uint;
 use std::ptr::slice_from_raw_parts;
-use std::ops::BitAnd;
 
 #[macro_use]
 extern crate num_derive;
-
-#[macro_use]
-extern crate derivative;
 
 mod bone;
 mod animation;
@@ -64,7 +59,11 @@ impl Into<RussimpError> for IntoStringError {
 
 pub type Russult<T> = Result<T, RussimpError>;
 
-trait FromRawVec {
+trait FromRaw {
+    fn get_raw<'a, TRaw, TComponent>(raw: *mut TRaw) -> Option<TComponent> where &'a TRaw: Into<TComponent> + 'a {
+        unsafe { raw.as_ref() }.map_or(None, |x| Some(x.into()))
+    }
+
     fn get_vec<'a, TRaw, TComponent>(raw: *mut TRaw, len: c_uint) -> Vec<TComponent> where &'a TRaw: Into<TComponent> + 'a {
         let slice = slice_from_raw_parts(raw as *const TRaw, len as usize);
         if slice.is_null() {

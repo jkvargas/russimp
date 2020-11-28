@@ -33,27 +33,23 @@ use russimp_sys::{
     aiPostProcessSteps_aiProcess_ForceGenNormals,
     aiPostProcessSteps_aiProcess_DropNormals,
     aiPostProcessSteps_aiProcess_GenBoundingBoxes,
-    aiGetErrorString,
-    aiMaterial,
-    aiAnimation,
-    aiCamera,
-    aiLight,
-    aiMesh};
+    aiGetErrorString};
 
 use std::ffi::{
     CString,
     CStr,
 };
 
-use crate::{Russult, RussimpError, FromRawVec};
+use crate::{Russult, RussimpError, FromRaw};
 use crate::material::Material;
 use crate::mesh::Mesh;
-use std::os::raw::c_uint;
+use crate::metadata::MetaData;
 
 pub struct Scene<'a> {
-    scene: *const aiScene,
+    scene: &'a aiScene,
     pub materials: Vec<Material<'a>>,
     pub meshes: Vec<Mesh<'a>>,
+    pub metadata: Option<MetaData<'a>>,
 }
 
 #[repr(u32)]
@@ -99,25 +95,30 @@ impl<'a> Drop for Scene<'a> {
     }
 }
 
-impl<'a> FromRawVec for Scene<'a> {}
+impl<'a> FromRaw for Scene<'a> {}
 
 impl<'a> Scene<'a> {
     pub fn from(file_path: &str, flags: Vec<PostProcessSteps>) -> Russult<Scene<'a>> {
         let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
-        let c_str = CString::new(file_path).unwrap();
-        let scene_import: *const aiScene = unsafe { aiImportFile(c_str.as_ptr(), bitwise_flag) };
+        let file_path = CString::new(file_path).unwrap();
 
-        if scene_import.is_null() {
-            let error_buf = unsafe { aiGetErrorString() };
-            let error = unsafe { CStr::from_ptr(error_buf).to_string_lossy().into_owned() };
-            return Err(RussimpError::Import(error));
-        }
+        Scene::get_scene_from_file(file_path, bitwise_flag).map_or(Err(Scene::get_error()), |scene| Ok(Self {
+            scene,
+            materials: Scene::get_vec_from_raw(scene.mMaterials, scene.mNumMaterials),
+            meshes: Scene::get_vec_from_raw(scene.mMeshes, scene.mNumMeshes),
+            metadata: Scene::get_raw(scene.mMetaData)
+        }))
+    }
 
-        Ok(Self {
-            scene: scene_import,
-            materials: Scene::get_vec_from_raw(unsafe { (*scene_import).mMaterials }, unsafe { (*scene_import).mNumMaterials }),
-            meshes: Scene::get_vec_from_raw(unsafe { (*scene_import).mMeshes }, unsafe { (*scene_import).mNumMeshes }),
-        })
+    #[inline]
+    fn get_scene_from_file(string: CString, flags: u32) -> Option<&'a aiScene> {
+        unsafe { aiImportFile(string.as_ptr(), flags).as_ref() }
+    }
+
+    fn get_error() -> RussimpError {
+        let error_buf = unsafe { aiGetErrorString() };
+        let error = unsafe { CStr::from_ptr(error_buf).to_string_lossy().into_owned() };
+        return RussimpError::Import(error);
     }
 }
 

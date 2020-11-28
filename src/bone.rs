@@ -1,5 +1,5 @@
 use russimp_sys::{aiBone, aiVertexWeight, aiMatrix4x4};
-use crate::FromRawVec;
+use crate::FromRaw;
 
 // #[derive(Debug, Derivative)]
 pub struct Bone<'a> {
@@ -10,7 +10,7 @@ pub struct Bone<'a> {
     pub offset_matrix: aiMatrix4x4
 }
 
-impl<'a> FromRawVec for Bone<'a> {}
+impl<'a> FromRaw for Bone<'a> {}
 
 impl<'a> Into<Bone<'a>> for &'a aiBone {
     fn into(self) -> Bone<'a> {

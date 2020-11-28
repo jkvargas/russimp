@@ -1,10 +1,7 @@
-use russimp_sys::{aiMesh, aiAnimMesh, aiBone, aiPrimitiveType__aiPrimitiveType_Force32Bit, aiPrimitiveType_aiPrimitiveType_LINE, aiPrimitiveType_aiPrimitiveType_POINT, aiPrimitiveType_aiPrimitiveType_POLYGON, aiPrimitiveType_aiPrimitiveType_TRIANGLE, aiVector3D, aiColor4D, aiAABB};
-use std::{
-    ops::{BitOr, BitAnd},
-    ptr::slice_from_raw_parts
-};
+use russimp_sys::{aiMesh, aiAnimMesh, aiPrimitiveType__aiPrimitiveType_Force32Bit, aiPrimitiveType_aiPrimitiveType_LINE, aiPrimitiveType_aiPrimitiveType_POINT, aiPrimitiveType_aiPrimitiveType_POLYGON, aiPrimitiveType_aiPrimitiveType_TRIANGLE, aiVector3D, aiColor4D, aiAABB};
+use std::ops::BitAnd;
 use crate::{
-    FromRawVec,
+    FromRaw,
     bone::Bone,
     face::Face,
     scene::{PostProcessSteps, Scene},
@@ -40,7 +37,7 @@ pub enum PrimitiveType {
     Triangle = aiPrimitiveType_aiPrimitiveType_TRIANGLE,
 }
 
-impl<'a> FromRawVec for Mesh<'a> {}
+impl<'a> FromRaw for Mesh<'a> {}
 
 impl<'a> Into<Mesh<'a>> for &'a aiMesh {
     fn into(self) -> Mesh<'a> {
@@ -70,7 +67,7 @@ pub struct AnimMesh<'a> {
     bitangents: Vec<&'a aiVector3D>,
 }
 
-impl<'a> FromRawVec for AnimMesh<'a> {}
+impl<'a> FromRaw for AnimMesh<'a> {}
 
 impl<'a> Into<AnimMesh<'a>> for &'a aiAnimMesh {
     fn into(self) -> AnimMesh<'a> {
