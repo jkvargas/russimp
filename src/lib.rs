@@ -83,4 +83,14 @@ trait FromRawVec {
         let raw = unsafe { slice.as_ref() }.unwrap();
         raw.iter().map(|x| unsafe { x.as_ref() }.unwrap().into()).collect()
     }
+
+    fn get_optional_vec_from_raw<'a, TComponent, TRaw>(raw_source: *mut *mut TRaw, num_raw_items: c_uint) -> Option<Vec<TComponent>> where &'a TRaw: Into<TComponent> + 'a {
+        let slice = slice_from_raw_parts(raw_source, num_raw_items as usize);
+        if slice.is_null() {
+            return None;
+        }
+
+        let raw = unsafe { slice.as_ref() }.unwrap();
+        Some(raw.iter().map(|x| unsafe { x.as_ref() }.unwrap().into()).collect())
+    }
 }

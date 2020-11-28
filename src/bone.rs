@@ -1,17 +1,19 @@
 use russimp_sys::{aiBone, aiVertexWeight, aiMatrix4x4};
 use crate::FromRawVec;
 
+// #[derive(Debug, Derivative)]
 pub struct Bone<'a> {
+    // #[derivative(Debug="ignore")]
     bone: &'a aiBone,
     pub weights: Vec<VertexWeight<'a>>,
     pub name: String,
     pub offset_matrix: aiMatrix4x4
 }
 
-impl FromRawVec for Bone {}
+impl<'a> FromRawVec for Bone<'a> {}
 
-impl<'a> Into<Bone> for &'a aiBone {
-    fn into(self) -> Bone {
+impl<'a> Into<Bone<'a>> for &'a aiBone {
+    fn into(self) -> Bone<'a> {
         Bone {
             bone: self,
             weights: Bone::get_vec(self.mWeights, self.mNumWeights),
@@ -21,14 +23,16 @@ impl<'a> Into<Bone> for &'a aiBone {
     }
 }
 
+#[derive(Debug)]
 pub struct VertexWeight<'a> {
+    // #[derivative(Debug="ignore")]
     vertex_weight: &'a aiVertexWeight,
     pub weight: f32,
     pub vertex_id: u32
 }
 
-impl<'a> Into<VertexWeight> for &'a aiVertexWeight {
-    fn into(self) -> VertexWeight {
+impl<'a> Into<VertexWeight<'a>> for &'a aiVertexWeight {
+    fn into(self) -> VertexWeight<'a> {
         VertexWeight {
             vertex_weight: self,
             vertex_id: self.mVertexId,

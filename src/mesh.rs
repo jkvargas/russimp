@@ -19,15 +19,15 @@ pub struct Mesh<'a> {
     pub texture_coords: Option<Vec<&'a aiVector3D>>,
     pub tangents: Option<Vec<&'a aiVector3D>>,
     pub bitangents: Option<Vec<&'a aiVector3D>>,
-    pub primitive_types: u32,
     pub uv_components: Vec<u32>,
+    pub primitive_types: u32,
+    pub bones: Option<Vec<Bone<'a>>>,
     pub material_index: u32,
     pub method: u32,
-    pub anim_meshes: Vec<AnimMesh<'a>>,
-    pub faces: Vec<Face<'a>>,
-    pub colors: Option<Vec<&'a aiColor4D>>,
-    pub bones: Vec<Bone<'a>>,
-    pub aabb: aiAABB,
+    pub anim_meshes: Option<Vec<AnimMesh<'a>>>,
+    // pub faces: Vec<Face<'a>>,
+    // pub colors: Option<Vec<&'a aiColor4D>>,
+    // pub aabb: aiAABB,
 }
 
 #[derive(FromPrimitive, Debug, PartialEq, ToPrimitive)]
@@ -51,16 +51,17 @@ impl<'a> Into<Mesh<'a>> for &'a aiMesh {
             vertices: Mesh::get_vec(self.mVertices, self.mNumVertices),
             texture_coords: self.mTextureCoords.iter().map(|x| unsafe { x.as_ref() }).collect(),
             tangents: Mesh::get_optional_vec(self.mTangents, self.mNumVertices),
-            primitive_types: self.mPrimitiveTypes as u32,
+            bitangents: Mesh::get_optional_vec(self.mBitangents, self.mNumVertices),
             uv_components: self.mNumUVComponents.to_vec(),
+            primitive_types: self.mPrimitiveTypes as u32,
+            bones: Mesh::get_optional_vec_from_raw(self.mBones, self.mNumBones),
             material_index: self.mMaterialIndex,
             method: self.mMethod,
-            bitangents: Mesh::get_optional_vec(self.mBitangents, self.mNumVertices),
-            anim_meshes: Mesh::get_vec(self.mAnimMeshes, self.mNumAnimMeshes),
-            faces: Mesh::get_vec(self.mFaces, self.mNumFaces),
-            colors: self.mColors.iter().map(|x| unsafe { x.as_ref() }).collect(),
-            bones: Mesh::get_vec_from_raw(self.mBones, self.mNumBones),
-            aabb: self.mAABB
+            anim_meshes: Mesh::get_optional_vec_from_raw(self.mAnimMeshes, self.mNumAnimMeshes),
+            // faces: Mesh::get_vec(self.mFaces, self.mNumFaces),
+            // colors: self.mColors.iter().map(|x| unsafe { x.as_ref() }).collect(),
+
+            // aabb: self.mAABB
         }
     }
 }
@@ -70,10 +71,10 @@ pub struct AnimMesh<'a> {
     bitangents: Option<Vec<&'a aiVector3D>>,
 }
 
-impl FromRawVec for AnimMesh {}
+impl<'a> FromRawVec for AnimMesh<'a> {}
 
-impl<'a> Into<AnimMesh> for &'a aiAnimMesh {
-    fn into(self) -> AnimMesh {
+impl<'a> Into<AnimMesh<'a>> for &'a aiAnimMesh {
+    fn into(self) -> AnimMesh<'a> {
         AnimMesh {
             bitangents: Mesh::get_optional_vec(self.mBitangents, self.mNumVertices),
             anim_mesh: self,
@@ -120,25 +121,34 @@ fn mesh_available() {
     assert_eq!(8, scene.meshes[0].vertices.len());
     assert!(scene.meshes[0].texture_coords.is_none());
     assert!(scene.meshes[0].tangents.is_none());
+    assert!(scene.meshes[0].bitangents.is_none());
     assert_eq!(8, scene.meshes[0].uv_components.len());
     assert_eq!(true, scene.meshes[0].uv_components.iter().all(|x| *x == 0));
     assert_eq!(4, scene.meshes[0].primitive_types);
-    assert!(&scene.meshes[0].bitangents.is_none());
+    assert!(scene.meshes[0].bones.is_none());
+    assert!(scene.meshes[0].anim_meshes.is_none());
+
+    // dbg!(&scene.meshes[0].anim_meshes);
+    // dbg!(&scene.meshes[0].method);
+    // dbg!(&scene.meshes[0].material_index);
+    // dbg!(&scene.meshes[0].aabb);
+    // dbg!(&scene.meshes[0].colors);
+    dbg!(&scene.meshes[0].name);
 }
 
-#[test]
-fn bitwise_primitive_types() {
-    let current_directory_buf = std::env::current_dir().unwrap().join("russimp-sys/assimp/test/models/BLEND/box.blend");
-
-    let scene = Scene::from(current_directory_buf.to_str().unwrap(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
-
-    assert_eq!(4, scene.meshes[0].primitive_types & PrimitiveType::Force32Bit);
-    assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Line);
-    assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Point);
-    assert_eq!(4, scene.meshes[0].primitive_types & PrimitiveType::Triangle);
-    assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Polygon);
-}
+// #[test]
+// fn bitwise_primitive_types() {
+//     let current_directory_buf = std::env::current_dir().unwrap().join("russimp-sys/assimp/test/models/BLEND/box.blend");
+//
+//     let scene = Scene::from(current_directory_buf.to_str().unwrap(),
+//                             vec![PostProcessSteps::CalcTangentSpace,
+//                                  PostProcessSteps::Triangulate,
+//                                  PostProcessSteps::JoinIdenticalVertices,
+//                                  PostProcessSteps::SortByPType]).unwrap();
+//
+//     assert_eq!(4, scene.meshes[0].primitive_types & PrimitiveType::Force32Bit);
+//     assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Line);
+//     assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Point);
+//     assert_eq!(4, scene.meshes[0].primitive_types & PrimitiveType::Triangle);
+//     assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Polygon);
+// }

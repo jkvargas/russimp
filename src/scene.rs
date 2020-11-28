@@ -40,13 +40,9 @@ use russimp_sys::{
     aiLight,
     aiMesh};
 
-use std::{
-    ffi::{
-        CString,
-        CStr,
-    },
-    ops::BitOr,
-    ptr::slice_from_raw_parts,
+use std::ffi::{
+    CString,
+    CStr,
 };
 
 use crate::{Russult, RussimpError, FromRawVec};
