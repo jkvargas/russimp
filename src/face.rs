@@ -14,11 +14,9 @@ impl<'a> FromRawVec for Face<'a> {}
 
 impl<'a> Into<Face<'a>> for &'a aiFace {
     fn into(self) -> Face<'a> {
-        let raw = slice_from_raw_parts(self.mIndices as *const c_uint, self.mNumIndices as usize);
-
         Face {
             face: self,
-            indices: unsafe { raw.as_ref().unwrap() }.iter().collect()
+            indices: Face::get_rawvec(self.mIndices, self.mNumIndices)
         }
     }
 }
