@@ -1,4 +1,16 @@
-use russimp_sys::{aiMetadata, aiMetadataType_AI_AISTRING, aiMetadataType_AI_AIVECTOR3D, aiMetadataType_AI_BOOL, aiMetadataType_AI_FLOAT, aiMetadataType_AI_DOUBLE, aiMetadataType_AI_INT32, aiMetadataType_AI_UINT64, aiMetadataType_AI_META_MAX, aiMetadataType_FORCE_32BIT, aiMetadataEntry, aiVector3D};
+use russimp_sys::{aiMetadata,
+                  aiMetadataType_AI_AISTRING,
+                  aiMetadataType_AI_AIVECTOR3D,
+                  aiMetadataType_AI_BOOL,
+                  aiMetadataType_AI_FLOAT,
+                  aiMetadataType_AI_DOUBLE,
+                  aiMetadataType_AI_INT32,
+                  aiMetadataType_AI_UINT64,
+                  aiMetadataType_AI_META_MAX,
+                  aiMetadataType_FORCE_32BIT,
+                  aiMetadataEntry,
+                  aiVector3D,
+};
 
 use crate::{FromRaw,
             scene::{PostProcessSteps, Scene},
@@ -8,18 +20,118 @@ use crate::{FromRaw,
 use std::{
     any::Any,
     ffi::CStr,
-    os::raw::c_char,
+    os::raw::{c_char, c_int},
     borrow::Borrow,
+    ptr::slice_from_raw_parts,
 };
-use std::ptr::slice_from_raw_parts;
 
-pub trait MetaDataEntryCast<'a> {
+trait MetaDataEntryCast<'a> {
     fn can_cast(&self) -> bool;
     fn cast(&self) -> Russult<MetadataType<'a>>;
 }
 
 struct MetaDataEntryString<'a> {
     data: &'a aiMetadataEntry,
+}
+
+struct MetaDataEntryBool<'a> {
+    data: &'a aiMetadataEntry,
+}
+
+struct MetaDataEntryFloat<'a> {
+    data: &'a aiMetadataEntry,
+}
+
+struct MetaDataEntryDouble<'a> {
+    data: &'a aiMetadataEntry,
+}
+
+struct MetaDataEntryInteger<'a> {
+    data: &'a aiMetadataEntry,
+}
+
+struct MetaDataEntryULong<'a> {
+    data: &'a aiMetadataEntry,
+}
+
+impl<'a> MetaDataEntryCast<'a> for MetaDataEntryULong<'a> {
+    fn can_cast(&self) -> bool {
+        (self.data.mType & aiMetadataType_AI_UINT64) != 0
+    }
+
+    fn cast(&self) -> Russult<MetadataType<'a>> {
+        let raw = (self.data.mData as *mut u64);
+
+        if let Some(result) = unsafe { raw.as_ref() } {
+            return Ok(MetadataType::ULong(result.clone()));
+        }
+
+        Err(RussimpError::MetadataError("Cant convert from bool".to_string()))
+    }
+}
+
+impl<'a> MetaDataEntryCast<'a> for MetaDataEntryInteger<'a> {
+    fn can_cast(&self) -> bool {
+        (self.data.mType & aiMetadataType_AI_INT32) != 0
+    }
+
+    fn cast(&self) -> Russult<MetadataType<'a>> {
+        let raw = (self.data.mData as *mut i32);
+
+        if let Some(result) = unsafe { raw.as_ref() } {
+            return Ok(MetadataType::Int(result.clone()));
+        }
+
+        Err(RussimpError::MetadataError("Cant convert from bool".to_string()))
+    }
+}
+
+impl<'a> MetaDataEntryCast<'a> for MetaDataEntryBool<'a> {
+    fn can_cast(&self) -> bool {
+        (self.data.mType & aiMetadataType_AI_BOOL) != 0
+    }
+
+    fn cast(&self) -> Russult<MetadataType<'a>> {
+        let raw = (self.data.mData as *mut bool);
+
+        if let Some(result) = unsafe { raw.as_ref() } {
+            return Ok(MetadataType::Bool(result.clone()));
+        }
+
+        Err(RussimpError::MetadataError("Cant convert from bool".to_string()))
+    }
+}
+
+impl<'a> MetaDataEntryCast<'a> for MetaDataEntryDouble<'a> {
+    fn can_cast(&self) -> bool {
+        (self.data.mType & aiMetadataType_AI_DOUBLE) != 0
+    }
+
+    fn cast(&self) -> Russult<MetadataType<'a>> {
+        let raw = (self.data.mData as *mut f64);
+
+        if let Some(result) = unsafe { raw.as_ref() } {
+            return Ok(MetadataType::Double(result.clone()));
+        }
+
+        Err(RussimpError::MetadataError("Cant convert from bool".to_string()))
+    }
+}
+
+impl<'a> MetaDataEntryCast<'a> for MetaDataEntryFloat<'a> {
+    fn can_cast(&self) -> bool {
+        (self.data.mType & aiMetadataType_AI_FLOAT) != 0
+    }
+
+    fn cast(&self) -> Russult<MetadataType<'a>> {
+        let raw = (self.data.mData as *mut f32);
+
+        if let Some(result) = unsafe { raw.as_ref() } {
+            return Ok(MetadataType::Float(result.clone()));
+        }
+
+        Err(RussimpError::MetadataError("Cant convert from bool".to_string()))
+    }
 }
 
 impl<'a> MetaDataEntryCast<'a> for MetaDataEntryString<'a> {
@@ -62,13 +174,13 @@ pub struct MetaData<'a> {
 pub enum MetadataType<'a> {
     String(String),
     Vector3d(&'a aiVector3D),
-    // Bool = aiMetadataType_AI_BOOL,
-    // Float = aiMetadataType_AI_FLOAT,
-    // Double = aiMetadataType_AI_DOUBLE,
-    // Int = aiMetadataType_AI_INT32,
-    // Long = aiMetadataType_AI_UINT64,
-    // MetaMax = aiMetadataType_AI_META_MAX,
-    // Force32 = aiMetadataType_FORCE_32BIT,
+    Bool(bool),
+    Float(f32),
+    Double(f64),
+    Int(i32),
+    ULong(u64),
+    // MetaMax = aiMetadataType_AI_META_MAX, -- Not sure what it does
+    // Force32 = aiMetadataType_FORCE_32BIT, -- Not sure what it does
 }
 
 pub struct MetaDataEntry<'a> {
@@ -78,11 +190,22 @@ pub struct MetaDataEntry<'a> {
 
 impl<'a> MetaDataEntry<'a> {
     fn cast_data(data: &'a aiMetadataEntry) -> Russult<MetadataType<'a>> {
-        let casters: Vec<Box<dyn MetaDataEntryCast<'a>>> = vec![Box::new(MetaDataVector3d {
-            data
-        }), Box::new(MetaDataEntryString {
-            data
-        })];
+        let casters: Vec<Box<dyn MetaDataEntryCast<'a>>> = vec![
+            Box::new(MetaDataVector3d {
+                data
+            }), Box::new(MetaDataEntryString {
+                data
+            }), Box::new(MetaDataEntryBool {
+                data
+            }), Box::new(MetaDataEntryFloat {
+                data
+            }), Box::new(MetaDataEntryDouble {
+                data
+            }), Box::new(MetaDataEntryInteger {
+                data
+            }), Box::new(MetaDataEntryULong {
+                data
+            })];
 
         for caster in casters {
             if caster.can_cast() {
