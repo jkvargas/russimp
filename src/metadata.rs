@@ -1,20 +1,56 @@
-use russimp_sys::{aiMetadata,
-                  aiMetadataType_AI_AISTRING,
-                  aiMetadataType_AI_AIVECTOR3D,
-                  aiMetadataType_AI_BOOL,
-                  aiMetadataType_AI_FLOAT,
-                  aiMetadataType_AI_DOUBLE,
-                  aiMetadataType_AI_INT32,
-                  aiMetadataType_AI_UINT64,
-                  aiMetadataType_AI_META_MAX,
-                  aiMetadataType_FORCE_32BIT,
-                  aiMetadataEntry
+use russimp_sys::{aiMetadata, aiMetadataType_AI_AISTRING, aiMetadataType_AI_AIVECTOR3D, aiMetadataType_AI_BOOL, aiMetadataType_AI_FLOAT, aiMetadataType_AI_DOUBLE, aiMetadataType_AI_INT32, aiMetadataType_AI_UINT64, aiMetadataType_AI_META_MAX, aiMetadataType_FORCE_32BIT, aiMetadataEntry, aiVector3D};
+
+use crate::{FromRaw,
+            scene::{PostProcessSteps, Scene},
+            Russult,
+            RussimpError};
+
+use std::{
+    any::Any,
+    ffi::CStr,
+    os::raw::c_char,
+    borrow::Borrow
 };
 
-use crate::{
-    FromRaw,
-    scene::{PostProcessSteps, Scene}
-};
+pub trait MetaDataEntryCast<'a> {
+    fn can_cast(metadata_entry: &'a aiMetadataEntry) -> bool;
+    fn cast(&mut self, metadata_entry: &'a aiMetadataEntry) -> Russult<&'a dyn Any>;
+}
+
+#[derive(Default)]
+struct MetaDataEntryString {
+    result: String
+}
+
+impl<'a> MetaDataEntryCast<'a> for MetaDataEntryString {
+    fn can_cast(metadata_entry: &'a aiMetadataEntry) -> bool {
+        (metadata_entry.mType & aiMetadataType_AI_AISTRING) != 0
+    }
+
+    fn cast(&mut self, metadata_entry: &'a aiMetadataEntry) -> Russult<&'a dyn Any> {
+        let cstr = unsafe { CStr::from_ptr(metadata_entry.mData as *const c_char) };
+        cstr.to_str().map_or_else(|e| Err(e.into()), |r| {
+            self.result = r.to_string();
+            Ok(&self.result)
+        })
+    }
+}
+
+#[derive(Default)]
+struct MetaDataVector3d<'a> {
+    result: &'a aiVector3D
+}
+
+impl<'a> MetaDataEntryCast<'a> for MetaDataVector3d<'a> {
+    fn can_cast(metadata_entry: &'a aiMetadataEntry) -> bool {
+        (metadata_entry.mType & aiMetadataType_AI_AIVECTOR3D) != 0
+    }
+
+    fn cast(&mut self, metadata_entry: &'a aiMetadataEntry) -> Russult<&'a dyn Any> {
+        self.result = unsafe { (metadata_entry.mData as *const aiVector3D).as_ref() }.unwrap();
+        Ok(self.result)
+    }
+}
 
 pub struct MetaData<'a> {
     meta_data: &'a aiMetadata,
@@ -23,29 +59,31 @@ pub struct MetaData<'a> {
 }
 
 pub struct MetaDataEntry<'a> {
-    raw: &'a aiMetadataEntry
+    raw: &'a aiMetadataEntry,
+    pub data: Russult<&'a dyn Any>,
+}
+
+impl<'a> MetaDataEntry<'a> {
+    fn cast_data(data: &'a aiMetadataEntry) -> Russult<&'a dyn Any> {
+        let mut casters: Vec<Box<dyn MetaDataEntryCast>> = vec![Box::new(MetaDataEntryString::default())];
+
+        for caster in &mut casters {
+            if caster.can_cast(data) {
+                return caster.cast(data);
+            }
+        }
+
+        Err(RussimpError::MetadataError("could not find caster for metadata type".to_string()))
+    }
 }
 
 impl<'a> Into<MetaDataEntry<'a>> for &'a aiMetadataEntry {
     fn into(self) -> MetaDataEntry<'a> {
         MetaDataEntry {
-            raw: self
+            raw: self,
+            data: MetaDataEntry::cast_data(self),
         }
     }
-}
-
-#[derive(FromPrimitive, Debug, PartialEq)]
-#[repr(u32)]
-pub enum MetadataType {
-    String = aiMetadataType_AI_AISTRING,
-    Vector3d = aiMetadataType_AI_AIVECTOR3D,
-    Bool = aiMetadataType_AI_BOOL,
-    Float = aiMetadataType_AI_FLOAT,
-    Double = aiMetadataType_AI_DOUBLE,
-    Int = aiMetadataType_AI_INT32,
-    Long = aiMetadataType_AI_UINT64,
-    MetaMax = aiMetadataType_AI_META_MAX,
-    Force32 = aiMetadataType_FORCE_32BIT,
 }
 
 impl<'a> FromRaw for MetaData<'a> {}

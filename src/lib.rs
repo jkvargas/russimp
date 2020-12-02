@@ -26,6 +26,7 @@ mod mesh;
 #[derive(Debug)]
 pub enum RussimpError {
     Import(String),
+    MetadataError(String),
     MeterialError(String),
     Primitive(String),
 }
