@@ -44,12 +44,14 @@ use crate::{Russult, RussimpError, FromRaw};
 use crate::material::Material;
 use crate::mesh::Mesh;
 use crate::metadata::MetaData;
+use crate::animation::Animation;
 
 pub struct Scene<'a> {
     scene: &'a aiScene,
     pub materials: Vec<Material<'a>>,
     pub meshes: Vec<Mesh<'a>>,
     pub metadata: Option<MetaData<'a>>,
+    pub animations: Vec<Animation<'a>>
 }
 
 #[repr(u32)]
@@ -106,7 +108,8 @@ impl<'a> Scene<'a> {
             scene,
             materials: Scene::get_vec_from_raw(scene.mMaterials, scene.mNumMaterials),
             meshes: Scene::get_vec_from_raw(scene.mMeshes, scene.mNumMeshes),
-            metadata: Scene::get_raw(scene.mMetaData)
+            metadata: Scene::get_raw(scene.mMetaData),
+            animations: Scene::get_vec_from_raw(scene.mAnimations, scene.mNumAnimations),
         }))
     }
 
