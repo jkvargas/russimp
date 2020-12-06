@@ -7,6 +7,8 @@ use std::{
 };
 use std::os::raw::c_uint;
 use std::ptr::slice_from_raw_parts;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 #[macro_use]
 extern crate num_derive;
@@ -65,6 +67,10 @@ trait FromRaw {
         unsafe { raw.as_ref() }.map_or(None, |x| Some(x.into()))
     }
 
+    fn get_rc_raw<'a, TRaw, TComponent>(raw: *mut TRaw) -> Option<Rc<RefCell<TComponent>>> where &'a TRaw: Into<TComponent> + 'a {
+        unsafe { raw.as_ref() }.map_or(None, |x| Some(Rc::new(RefCell::new(x.into()))))
+    }
+
     fn get_vec<'a, TRaw, TComponent>(raw: *mut TRaw, len: c_uint) -> Vec<TComponent> where &'a TRaw: Into<TComponent> + 'a {
         let slice = slice_from_raw_parts(raw as *const TRaw, len as usize);
         if slice.is_null() {
@@ -93,6 +99,16 @@ trait FromRaw {
 
         let raw = unsafe { slice.as_ref() }.unwrap();
         raw.iter().map(|x| unsafe { x.as_ref() }.unwrap().into()).collect()
+    }
+
+    fn get_vec_rc_from_raw<'a, TComponent, TRaw>(raw_source: *mut *mut TRaw, num_raw_items: c_uint) -> Vec<Rc<RefCell<TComponent>>> where &'a TRaw: Into<TComponent> + 'a {
+        let slice = slice_from_raw_parts(raw_source, num_raw_items as usize);
+        if slice.is_null() {
+            return vec![];
+        }
+
+        let raw = unsafe { slice.as_ref() }.unwrap();
+        raw.iter().map(|x| Rc::new(RefCell::new(unsafe { x.as_ref() }.unwrap().into()))).collect()
     }
 
     fn get_rawvec_from_slice<'a, TRaw>(raw: &[*mut TRaw]) -> Vec<Option<&'a TRaw>> {

@@ -33,28 +33,28 @@ pub struct Light<'a> {
 }
 
 impl<'a> Light<'a> {
-    fn get_light_source_type_from(mType: &aiLightSourceType) -> LightSourceType {
-        if (ToPrimitive::to_u32(&LightSourceType::Area).unwrap() & *mType) != 0 {
+    fn get_light_source_type_from(m_type: &aiLightSourceType) -> LightSourceType {
+        if (ToPrimitive::to_u32(&LightSourceType::Area).unwrap() & *m_type) != 0 {
             return LightSourceType::Area;
         }
 
-        if (ToPrimitive::to_u32(&LightSourceType::Ambient).unwrap() & *mType) != 0 {
+        if (ToPrimitive::to_u32(&LightSourceType::Ambient).unwrap() & *m_type) != 0 {
             return LightSourceType::Ambient;
         }
 
-        if (ToPrimitive::to_u32(&LightSourceType::Spot).unwrap() & *mType) != 0 {
+        if (ToPrimitive::to_u32(&LightSourceType::Spot).unwrap() & *m_type) != 0 {
             return LightSourceType::Spot;
         }
 
-        if (ToPrimitive::to_u32(&LightSourceType::Point).unwrap() & *mType) != 0 {
+        if (ToPrimitive::to_u32(&LightSourceType::Point).unwrap() & *m_type) != 0 {
             return LightSourceType::Point;
         }
 
-        if (ToPrimitive::to_u32(&LightSourceType::Directional).unwrap() & *mType) != 0 {
+        if (ToPrimitive::to_u32(&LightSourceType::Directional).unwrap() & *m_type) != 0 {
             return LightSourceType::Directional;
         }
 
-        if (ToPrimitive::to_u32(&LightSourceType::Undefined).unwrap() & *mType) != 0 {
+        if (ToPrimitive::to_u32(&LightSourceType::Undefined).unwrap() & *m_type) != 0 {
             return LightSourceType::Undefined;
         }
 

@@ -72,7 +72,7 @@ impl<'a> Into<MaterialProperty<'a>> for &'a aiMaterialProperty {
     fn into(self) -> MaterialProperty<'a> {
         let slice = slice_from_raw_parts(self.mData as *const u8, self.mDataLength as usize);
         let data = unsafe { slice.as_ref() }.unwrap();
-
+        
         MaterialProperty {
             property: self,
             key: self.mKey.into(),

@@ -35,18 +35,27 @@ use russimp_sys::{
     aiPostProcessSteps_aiProcess_GenBoundingBoxes,
     aiGetErrorString};
 
-use std::ffi::{
-    CString,
-    CStr,
+use std::{
+    ffi::{
+        CString,
+        CStr,
+    },
+    rc::Rc,
 };
 
-use crate::{Russult, RussimpError, FromRaw};
-use crate::material::Material;
-use crate::mesh::Mesh;
-use crate::metadata::MetaData;
-use crate::animation::Animation;
-use crate::camera::Camera;
-use crate::light::Light;
+use crate::{
+    Russult,
+    RussimpError,
+    FromRaw,
+    material::Material,
+    mesh::Mesh,
+    metadata::MetaData,
+    animation::Animation,
+    camera::Camera,
+    light::Light,
+    node::Node,
+};
+use std::cell::RefCell;
 
 pub struct Scene<'a> {
     scene: &'a aiScene,
@@ -56,6 +65,7 @@ pub struct Scene<'a> {
     pub animations: Vec<Animation<'a>>,
     pub cameras: Vec<Camera<'a>>,
     pub lights: Vec<Light<'a>>,
+    pub root: Option<Rc<RefCell<Node<'a>>>>,
 }
 
 #[repr(u32)]
@@ -116,6 +126,7 @@ impl<'a> Scene<'a> {
             animations: Scene::get_vec_from_raw(scene.mAnimations, scene.mNumAnimations),
             cameras: Scene::get_vec_from_raw(scene.mCameras, scene.mNumCameras),
             lights: Scene::get_vec_from_raw(scene.mLights, scene.mNumLights),
+            root: Scene::get_rc_raw(scene.mRootNode),
         }))
     }
 
