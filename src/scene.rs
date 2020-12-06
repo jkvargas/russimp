@@ -46,6 +46,7 @@ use crate::mesh::Mesh;
 use crate::metadata::MetaData;
 use crate::animation::Animation;
 use crate::camera::Camera;
+use crate::light::Light;
 
 pub struct Scene<'a> {
     scene: &'a aiScene,
@@ -54,6 +55,7 @@ pub struct Scene<'a> {
     pub metadata: Option<MetaData<'a>>,
     pub animations: Vec<Animation<'a>>,
     pub cameras: Vec<Camera<'a>>,
+    pub lights: Vec<Light<'a>>,
 }
 
 #[repr(u32)]
@@ -113,6 +115,7 @@ impl<'a> Scene<'a> {
             metadata: Scene::get_raw(scene.mMetaData),
             animations: Scene::get_vec_from_raw(scene.mAnimations, scene.mNumAnimations),
             cameras: Scene::get_vec_from_raw(scene.mCameras, scene.mNumCameras),
+            lights: Scene::get_vec_from_raw(scene.mLights, scene.mNumLights),
         }))
     }
 
