@@ -6,8 +6,8 @@ use russimp_sys::{aiMetadata,
                   aiMetadataType_AI_DOUBLE,
                   aiMetadataType_AI_INT32,
                   aiMetadataType_AI_UINT64,
-                  aiMetadataType_AI_META_MAX,
-                  aiMetadataType_FORCE_32BIT,
+                  //aiMetadataType_AI_META_MAX,
+                  //aiMetadataType_FORCE_32BIT,
                   aiMetadataEntry,
                   aiVector3D,
 };
@@ -18,11 +18,8 @@ use crate::{FromRaw,
             RussimpError};
 
 use std::{
-    any::Any,
     ffi::CStr,
-    os::raw::{c_char, c_int},
-    borrow::Borrow,
-    ptr::slice_from_raw_parts,
+    os::raw::c_char,
 };
 
 trait MetaDataEntryCast<'a> {
@@ -60,7 +57,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryULong<'a> {
     }
 
     fn cast(&self) -> Russult<MetadataType<'a>> {
-        let raw = (self.data.mData as *mut u64);
+        let raw = self.data.mData as *mut u64;
 
         if let Some(result) = unsafe { raw.as_ref() } {
             return Ok(MetadataType::ULong(result.clone()));
@@ -76,7 +73,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryInteger<'a> {
     }
 
     fn cast(&self) -> Russult<MetadataType<'a>> {
-        let raw = (self.data.mData as *mut i32);
+        let raw = self.data.mData as *mut i32;
 
         if let Some(result) = unsafe { raw.as_ref() } {
             return Ok(MetadataType::Int(result.clone()));
@@ -92,7 +89,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryBool<'a> {
     }
 
     fn cast(&self) -> Russult<MetadataType<'a>> {
-        let raw = (self.data.mData as *mut bool);
+        let raw = self.data.mData as *mut bool;
 
         if let Some(result) = unsafe { raw.as_ref() } {
             return Ok(MetadataType::Bool(result.clone()));
@@ -108,7 +105,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryDouble<'a> {
     }
 
     fn cast(&self) -> Russult<MetadataType<'a>> {
-        let raw = (self.data.mData as *mut f64);
+        let raw = self.data.mData as *mut f64;
 
         if let Some(result) = unsafe { raw.as_ref() } {
             return Ok(MetadataType::Double(result.clone()));
@@ -124,7 +121,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryFloat<'a> {
     }
 
     fn cast(&self) -> Russult<MetadataType<'a>> {
-        let raw = (self.data.mData as *mut f32);
+        let raw = self.data.mData as *mut f32;
 
         if let Some(result) = unsafe { raw.as_ref() } {
             return Ok(MetadataType::Float(result.clone()));

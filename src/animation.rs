@@ -1,37 +1,56 @@
-use russimp_sys::{aiAnimation, aiNodeAnim, aiVectorKey, aiVector3D, aiQuatKey, aiMeshMorphAnim};
-use crate::{
-    FromRaw,
-    scene::{Scene, PostProcessSteps}
+use russimp_sys::{
+    aiAnimation,
+    aiNodeAnim,
+    aiVectorKey,
+    aiQuatKey,
+    aiMeshMorphAnim,
+    aiMeshMorphKey,
+    aiMeshAnim,
+    aiMeshKey,
 };
 
-pub struct Animation<'a> {
-    animation: &'a aiAnimation,
-    pub name: String,
-    pub channels: Vec<NodeAnim<'a>>,
-    pub duration: f64,
-    pub morph_mesh_channels: Vec<MeshMorphAnim<'a>>,
+use crate::{
+    FromRaw,
+    scene::{
+        Scene,
+        PostProcessSteps,
+    },
+};
+
+pub struct MeshMorphKey<'a> {
+    mesh_morph_key: &'a aiMeshMorphKey,
+    pub time: f64,
+    pub values: Vec<&'a u32>,
+    pub weights: Vec<&'a f64>,
 }
 
-pub struct MeshMorphAnim<'a> {
-    mesh_morph_anim: &'a aiMeshMorphAnim
-}
+impl<'a> FromRaw for MeshMorphKey<'a> {}
 
-impl<'a> Into<MeshMorphAnim<'a>> for &'a aiMeshMorphAnim {
-    fn into(self) -> MeshMorphAnim<'a> {
-        MeshMorphAnim {
-            mesh_morph_anim: self
+impl<'a> Into<MeshMorphKey<'a>> for &'a aiMeshMorphKey {
+    fn into(self) -> MeshMorphKey<'a> {
+        MeshMorphKey {
+            mesh_morph_key: self,
+            time: self.mTime,
+            values: MeshMorphKey::get_rawvec(self.mValues, self.mNumValuesAndWeights),
+            weights: MeshMorphKey::get_rawvec(self.mWeights, self.mNumValuesAndWeights),
         }
     }
 }
 
-impl<'a> Into<Animation<'a>> for &'a aiAnimation {
-    fn into(self) -> Animation<'a> {
-        Animation {
-            animation: self,
+pub struct MeshMorphAnim<'a> {
+    mesh_morph_anim: &'a aiMeshMorphAnim,
+    pub keys: Vec<MeshMorphKey<'a>>,
+    pub name: String,
+}
+
+impl<'a> FromRaw for MeshMorphAnim<'a> {}
+
+impl<'a> Into<MeshMorphAnim<'a>> for &'a aiMeshMorphAnim {
+    fn into(self) -> MeshMorphAnim<'a> {
+        MeshMorphAnim {
+            mesh_morph_anim: self,
+            keys: MeshMorphAnim::get_vec(self.mKeys, self.mNumKeys),
             name: self.mName.into(),
-            channels: Animation::get_vec_from_raw(self.mChannels, self.mNumChannels),
-            duration: self.mDuration,
-            morph_mesh_channels: Animation::get_vec_from_raw(self.mMorphMeshChannels, self.mNumMorphMeshChannels),
         }
     }
 }
@@ -45,6 +64,8 @@ pub struct NodeAnim<'a> {
     pub post_state: u32,
     pub pre_state: u32,
 }
+
+impl<'a> FromRaw for NodeAnim<'a> {}
 
 impl<'a> Into<NodeAnim<'a>> for &'a aiNodeAnim {
     fn into(self) -> NodeAnim<'a> {
@@ -60,9 +81,49 @@ impl<'a> Into<NodeAnim<'a>> for &'a aiNodeAnim {
     }
 }
 
+pub struct MeshAnim<'a> {
+    mesh_anim: &'a aiMeshAnim,
+    name: String,
+    keys: Vec<&'a aiMeshKey>,
+}
+
+impl<'a> FromRaw for MeshAnim<'a> {}
+
+impl<'a> Into<MeshAnim<'a>> for &'a aiMeshAnim {
+    fn into(self) -> MeshAnim<'a> {
+        MeshAnim {
+            mesh_anim: self,
+            name: self.mName.into(),
+            keys: MeshAnim::get_vec(self.mKeys, self.mNumKeys),
+        }
+    }
+}
+
+pub struct Animation<'a> {
+    animation: &'a aiAnimation,
+    pub name: String,
+    pub channels: Vec<NodeAnim<'a>>,
+    pub duration: f64,
+    pub morph_mesh_channels: Vec<MeshMorphAnim<'a>>,
+    pub mesh_channels: Vec<MeshAnim<'a>>,
+    pub ticks_per_second: f64,
+}
+
 impl<'a> FromRaw for Animation<'a> {}
 
-impl<'a> FromRaw for NodeAnim<'a> {}
+impl<'a> Into<Animation<'a>> for &'a aiAnimation {
+    fn into(self) -> Animation<'a> {
+        Animation {
+            animation: self,
+            name: self.mName.into(),
+            channels: Animation::get_vec_from_raw(self.mChannels, self.mNumChannels),
+            duration: self.mDuration,
+            morph_mesh_channels: Animation::get_vec_from_raw(self.mMorphMeshChannels, self.mNumMorphMeshChannels),
+            mesh_channels: Animation::get_vec_from_raw(self.mMeshChannels, self.mNumMeshChannels),
+            ticks_per_second: self.mTicksPerSecond,
+        }
+    }
+}
 
 #[test]
 fn camera_roll_animation_read() {
