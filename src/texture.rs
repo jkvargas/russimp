@@ -1,7 +1,14 @@
-use russimp_sys::{aiTexture, aiTexel};
+use russimp_sys::{
+    aiTexture,
+    aiTexel
+};
+
 use std::ffi::CStr;
-use crate::FromRaw;
-use crate::scene::{Scene, PostProcessSteps};
+
+use crate::{
+    FromRaw,
+    scene::{Scene, PostProcessSteps}
+};
 
 pub struct Texture<'a> {
     texture: &'a aiTexture,
