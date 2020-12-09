@@ -1,8 +1,14 @@
 [package]
 name = "russimp"
 version = "0.1.0"
-authors = ["Jhonny Knaak de Vargas <jhonny.knaak@protonmail.com>"]
+authors = ["Jhonny Knaak de Vargas"]
 edition = "2018"
+license = "assimp"
+readme = "README.md"
+homepage = "https://github.com/jkvargas/russimp"
+keywords = ["assimp", "3d", "blend", "3ds", "obj", "glTF"]
+repository = "https://github.com/jkvargas/russimp"
+description = "Assimp bindings for rust"
 
 [lib]
 crate-type = ["dylib"]
@@ -11,4 +17,3 @@ crate-type = ["dylib"]
 russimp-sys = { version = "0.1.0", path = "russimp-sys" }
 num-derive = "0.3.3"
 num-traits = "0.2.14"
-derivative = "2.1.1"

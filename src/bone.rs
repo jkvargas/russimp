@@ -1,9 +1,7 @@
 use russimp_sys::{aiBone, aiVertexWeight, aiMatrix4x4};
 use crate::FromRaw;
 
-// #[derive(Debug, Derivative)]
 pub struct Bone<'a> {
-    // #[derivative(Debug="ignore")]
     bone: &'a aiBone,
     pub weights: Vec<VertexWeight<'a>>,
     pub name: String,
