@@ -4,11 +4,11 @@ use std::{
     fmt::{Display, Formatter},
     ffi::IntoStringError,
     str::Utf8Error,
+    os::raw::c_uint,
+    ptr::slice_from_raw_parts,
+    rc::Rc,
+    cell::RefCell,
 };
-use std::os::raw::c_uint;
-use std::ptr::slice_from_raw_parts;
-use std::rc::Rc;
-use std::cell::RefCell;
 
 #[macro_use]
 extern crate num_derive;
@@ -23,7 +23,6 @@ mod scene;
 mod node;
 mod metadata;
 mod mesh;
-
 
 #[derive(Debug)]
 pub enum RussimpError {
