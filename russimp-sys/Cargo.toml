@@ -1,9 +1,15 @@
 [package]
 name = "russimp-sys"
 version = "0.1.0"
-authors = ["Jhonny Vargas <jhonny.knaak@protonmail.com>"]
+authors = ["Jhonny Knaak de Vargas"]
 edition = "2018"
-
+license = "assimp"
+readme = "README.md"
+homepage = "https://github.com/jkvargas/russimp"
+categories = ["rendering","external-ffi-bindings","game-engines","multimedia"]
+keywords = ["assimp", "3d", "blend", "3ds", "obj", "glTF"]
+repository = "https://github.com/jkvargas/russimp"
+description = "Raw Assimp bindings for rust"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]

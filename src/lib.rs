@@ -1,3 +1,6 @@
+#![crate_name = "russimp"]
+#![crate_type = "lib"]
+
 use std::{
     error::Error,
     fmt,

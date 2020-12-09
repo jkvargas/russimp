@@ -6,6 +6,7 @@ edition = "2018"
 license = "assimp"
 readme = "README.md"
 homepage = "https://github.com/jkvargas/russimp"
+categories = ["rendering","external-ffi-bindings","game-engines","multimedia"]
 keywords = ["assimp", "3d", "blend", "3ds", "obj", "glTF"]
 repository = "https://github.com/jkvargas/russimp"
 description = "Assimp bindings for rust"
