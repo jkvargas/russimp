@@ -41,6 +41,7 @@ use std::{
         CStr,
     },
     rc::Rc,
+    cell::RefCell,
 };
 
 use crate::{
@@ -55,7 +56,7 @@ use crate::{
     light::Light,
     node::Node,
 };
-use std::cell::RefCell;
+use crate::texture::Texture;
 
 pub struct Scene<'a> {
     scene: &'a aiScene,
@@ -66,6 +67,7 @@ pub struct Scene<'a> {
     pub cameras: Vec<Camera<'a>>,
     pub lights: Vec<Light<'a>>,
     pub root: Option<Rc<RefCell<Node<'a>>>>,
+    pub textures: Vec<Texture<'a>>,
 }
 
 #[repr(u32)]
@@ -127,6 +129,7 @@ impl<'a> Scene<'a> {
             cameras: Scene::get_vec_from_raw(scene.mCameras, scene.mNumCameras),
             lights: Scene::get_vec_from_raw(scene.mLights, scene.mNumLights),
             root: Scene::get_rc_raw(scene.mRootNode),
+            textures: Scene::get_vec_from_raw(scene.mTextures, scene.mNumTextures),
         }))
     }
 
@@ -157,7 +160,7 @@ fn importing_invalid_file_returns_error() {
 
 #[test]
 fn importing_valid_file_returns_scene() {
-    let current_directory_buf = std::env::current_dir().unwrap().join("russimp-sys/assimp/test/models/BLEND/box.blend");
+    let current_directory_buf = std::env::current_dir().unwrap().join("russimp-sys/assimp/test/models/BLENDER/BlenderMaterial_269.blend");
 
     Scene::from(current_directory_buf.to_str().unwrap(),
                 vec![PostProcessSteps::CalcTangentSpace,

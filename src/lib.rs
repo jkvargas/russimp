@@ -23,6 +23,7 @@ mod scene;
 mod node;
 mod metadata;
 mod mesh;
+mod texture;
 
 #[derive(Debug)]
 pub enum RussimpError {

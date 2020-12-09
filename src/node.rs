@@ -3,13 +3,13 @@ use russimp_sys::{aiNode, aiMatrix4x4};
 use crate::{
     FromRaw,
     scene::{PostProcessSteps, Scene},
+    metadata::MetaData
 };
 
 use std::{
     rc::Rc,
     cell::RefCell
 };
-use crate::metadata::MetaData;
 
 pub struct Node<'a> {
     node: &'a aiNode,
