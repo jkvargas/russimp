@@ -22,6 +22,8 @@ jobs:
         override: true
     - name: Build
       run: cargo build --verbose
+    - name: List files
+      run: find $GITHUB_WORKSPACE
     - name: Run tests
       run: cargo test --lib --verbose
 
