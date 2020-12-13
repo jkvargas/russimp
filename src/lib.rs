@@ -13,22 +13,22 @@ use std::{
     cell::RefCell,
 };
 
+pub extern crate russimp_sys as sys;
+
 #[macro_use]
 extern crate num_derive;
 
-extern crate russimp_sys;
-
-mod bone;
-mod animation;
-mod camera;
-mod face;
-mod material;
-mod light;
-mod scene;
-mod node;
-mod metadata;
-mod mesh;
-mod texture;
+pub mod bone;
+pub mod animation;
+pub mod camera;
+pub mod face;
+pub mod material;
+pub mod light;
+pub mod scene;
+pub mod node;
+pub mod metadata;
+pub mod mesh;
+pub mod texture;
 
 #[derive(Debug)]
 pub enum RussimpError {

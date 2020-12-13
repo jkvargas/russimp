@@ -1,16 +1,6 @@
-use russimp_sys::{
-    aiAnimation,
-    aiNodeAnim,
-    aiVectorKey,
-    aiQuatKey,
-    aiMeshMorphAnim,
-    aiMeshMorphKey,
-    aiMeshAnim,
-    aiMeshKey,
-};
-
 use crate::{
     FromRaw,
+    sys,
     scene::{
         Scene,
         PostProcessSteps,

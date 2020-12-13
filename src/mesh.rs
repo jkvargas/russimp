@@ -1,20 +1,13 @@
-use russimp_sys::{aiMesh,
-                  aiAnimMesh,
-                  aiPrimitiveType__aiPrimitiveType_Force32Bit,
-                  aiPrimitiveType_aiPrimitiveType_LINE,
-                  aiPrimitiveType_aiPrimitiveType_POINT,
-                  aiPrimitiveType_aiPrimitiveType_POLYGON,
-                  aiPrimitiveType_aiPrimitiveType_TRIANGLE,
-                  aiVector3D,
-                  aiColor4D,
-                  aiAABB};
 use std::ops::BitAnd;
+
 use crate::{
+    sys,
     FromRaw,
     bone::Bone,
     face::Face,
     scene::{PostProcessSteps, Scene},
 };
+
 use num_traits::ToPrimitive;
 
 pub struct Mesh<'a> {

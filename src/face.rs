@@ -1,5 +1,7 @@
-use russimp_sys::aiFace;
-use crate::FromRaw;
+use crate::{
+    FromRaw,
+    sys
+};
 
 pub struct Face<'a> {
     face: &'a aiFace,

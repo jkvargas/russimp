@@ -1,4 +1,4 @@
-use russimp_sys::{aiBone, aiVertexWeight, aiMatrix4x4};
+use sys::{aiBone, aiVertexWeight, aiMatrix4x4};
 use crate::FromRaw;
 
 pub struct Bone<'a> {

@@ -1,12 +1,8 @@
-use russimp_sys::{
-    aiTexture,
-    aiTexel
-};
-
 use std::ffi::CStr;
 
 use crate::{
     FromRaw,
+    sys,
     scene::{Scene, PostProcessSteps}
 };
 

@@ -1,6 +1,5 @@
-use russimp_sys::{aiNode, aiMatrix4x4};
-
 use crate::{
+    sys,
     FromRaw,
     scene::{PostProcessSteps, Scene},
     metadata::MetaData

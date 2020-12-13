@@ -1,10 +1,6 @@
-use russimp_sys::{
-    aiCamera,
-    aiVector3D,
-};
-
 use crate::{
     FromRaw,
+    sys,
     scene::{
         PostProcessSteps,
         Scene,
