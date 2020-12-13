@@ -58,6 +58,8 @@ fn get_model(relative_path_from_root: &str) -> String {
     github_root.push('/');
     github_root.push_str(relative_path_from_root);
 
+    dbg!(&github_root);
+
     github_root
 }
 
