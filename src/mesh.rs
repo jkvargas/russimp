@@ -113,7 +113,7 @@ impl BitAnd<u32> for PrimitiveType {
 
 #[test]
 fn mesh_available() {
-    let current_directory_buf = std::env::current_dir().unwrap().join("russimp-sys/assimp/test/models/BLEND/box.blend");
+    let current_directory_buf = std::env::current_dir().unwrap().join("models/BLEND/box.blend");
 
     let scene = Scene::from(current_directory_buf.to_str().unwrap(),
                             vec![PostProcessSteps::CalcTangentSpace,
@@ -147,7 +147,7 @@ fn mesh_available() {
 
 #[test]
 fn bitwise_primitive_types() {
-    let current_directory_buf = std::env::current_dir().unwrap().join("russimp-sys/assimp/test/models/BLEND/box.blend");
+    let current_directory_buf = std::env::current_dir().unwrap().join("models/BLEND/box.blend");
 
     let scene = Scene::from(current_directory_buf.to_str().unwrap(),
                             vec![PostProcessSteps::CalcTangentSpace,

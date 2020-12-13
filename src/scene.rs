@@ -149,7 +149,7 @@ impl<'a> Scene<'a> {
 
 #[test]
 fn importing_invalid_file_returns_error() {
-    let current_directory_buf = std::env::current_dir().unwrap().join("russimp-sys/assimp/test/models/box.blend");
+    let current_directory_buf = std::env::current_dir().unwrap().join("models/box.blend");
 
     let scene = Scene::from(current_directory_buf.to_str().unwrap(),
                             vec![PostProcessSteps::CalcTangentSpace,
@@ -162,7 +162,7 @@ fn importing_invalid_file_returns_error() {
 
 #[test]
 fn importing_valid_file_returns_scene() {
-    let current_directory_buf = std::env::current_dir().unwrap().join("russimp-sys/assimp/test/models/BLEND/box.blend");
+    let current_directory_buf = std::env::current_dir().unwrap().join("models/BLEND/box.blend");
 
     let scene = Scene::from(current_directory_buf.to_str().unwrap(),
                 vec![PostProcessSteps::CalcTangentSpace,
