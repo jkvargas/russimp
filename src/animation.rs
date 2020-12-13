@@ -1,6 +1,14 @@
 use crate::{
     FromRaw,
-    sys,
+    sys::{aiMeshMorphKey,
+          aiMeshMorphAnim,
+          aiNodeAnim,
+          aiQuatKey,
+          aiVectorKey,
+          aiMeshAnim,
+          aiMeshKey,
+          aiAnimation
+    },
     scene::{
         Scene,
         PostProcessSteps,

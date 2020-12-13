@@ -1,5 +1,8 @@
 #![crate_name = "russimp"]
 #![crate_type = "lib"]
+#![allow(unused_imports, dead_code, unused_variables)]
+
+pub extern crate russimp_sys as sys;
 
 use std::{
     error::Error,
@@ -12,8 +15,6 @@ use std::{
     rc::Rc,
     cell::RefCell,
 };
-
-pub extern crate russimp_sys as sys;
 
 #[macro_use]
 extern crate num_derive;

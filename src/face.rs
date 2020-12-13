@@ -1,6 +1,6 @@
 use crate::{
     FromRaw,
-    sys
+    sys::aiFace
 };
 
 pub struct Face<'a> {

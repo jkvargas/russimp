@@ -1,6 +1,18 @@
 use crate::{FromRaw,
-            scene::{PostProcessSteps, Scene},
-            sys,
+            scene::{PostProcessSteps,
+                    Scene
+            },
+            sys::{aiMetadataEntry,
+                  aiMetadataType_AI_UINT64,
+                  aiMetadataType_AI_INT32,
+                  aiMetadataType_AI_BOOL,
+                  aiMetadataType_AI_DOUBLE,
+                  aiMetadataType_AI_FLOAT,
+                  aiMetadataType_AI_AISTRING,
+                  aiMetadataType_AI_AIVECTOR3D,
+                  aiVector3D,
+                  aiMetadata
+            },
             Russult,
             RussimpError};
 

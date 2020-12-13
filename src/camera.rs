@@ -1,6 +1,6 @@
 use crate::{
     FromRaw,
-    sys,
+    sys::{aiCamera, aiVector3D},
     scene::{
         PostProcessSteps,
         Scene,

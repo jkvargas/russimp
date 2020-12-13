@@ -9,6 +9,7 @@ use crate::{
 };
 
 use num_traits::ToPrimitive;
+use sys::{aiVector3D, aiMesh, aiColor4D, aiAABB, aiPrimitiveType__aiPrimitiveType_Force32Bit, aiPrimitiveType_aiPrimitiveType_LINE, aiPrimitiveType_aiPrimitiveType_POINT, aiPrimitiveType_aiPrimitiveType_POLYGON, aiPrimitiveType_aiPrimitiveType_TRIANGLE, aiAnimMesh};
 
 pub struct Mesh<'a> {
     mesh: &'a aiMesh,

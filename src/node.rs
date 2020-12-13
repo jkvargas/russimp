@@ -9,6 +9,7 @@ use std::{
     rc::Rc,
     cell::RefCell
 };
+use sys::{aiNode, aiMatrix4x4};
 
 pub struct Node<'a> {
     node: &'a aiNode,

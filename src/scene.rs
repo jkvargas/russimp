@@ -8,7 +8,42 @@ use std::{
 };
 
 use crate::{
-    sys,
+    sys::{aiScene,
+          aiPostProcessSteps_aiProcess_JoinIdenticalVertices,
+          aiPostProcessSteps_aiProcess_CalcTangentSpace,
+          aiPostProcessSteps_aiProcess_MakeLeftHanded,
+          aiPostProcessSteps_aiProcess_Triangulate,
+          aiPostProcessSteps_aiProcess_RemoveComponent,
+          aiPostProcessSteps_aiProcess_GenNormals,
+          aiPostProcessSteps_aiProcess_GenSmoothNormals,
+          aiPostProcessSteps_aiProcess_SplitLargeMeshes,
+          aiPostProcessSteps_aiProcess_PreTransformVertices,
+          aiPostProcessSteps_aiProcess_LimitBoneWeights,
+          aiPostProcessSteps_aiProcess_ValidateDataStructure,
+          aiPostProcessSteps_aiProcess_ImproveCacheLocality,
+          aiPostProcessSteps_aiProcess_RemoveRedundantMaterials,
+          aiPostProcessSteps_aiProcess_FixInfacingNormals,
+          aiPostProcessSteps_aiProcess_SortByPType,
+          aiPostProcessSteps_aiProcess_FindDegenerates,
+          aiPostProcessSteps_aiProcess_FindInvalidData,
+          aiPostProcessSteps_aiProcess_GenUVCoords,
+          aiPostProcessSteps_aiProcess_TransformUVCoords,
+          aiPostProcessSteps_aiProcess_FindInstances,
+          aiPostProcessSteps_aiProcess_OptimizeMeshes,
+          aiPostProcessSteps_aiProcess_OptimizeGraph,
+          aiPostProcessSteps_aiProcess_FlipWindingOrder,
+          aiPostProcessSteps_aiProcess_FlipUVs,
+          aiPostProcessSteps_aiProcess_SplitByBoneCount,
+          aiPostProcessSteps_aiProcess_Debone,
+          aiPostProcessSteps_aiProcess_GlobalScale,
+          aiPostProcessSteps_aiProcess_EmbedTextures,
+          aiPostProcessSteps_aiProcess_ForceGenNormals,
+          aiPostProcessSteps_aiProcess_DropNormals,
+          aiPostProcessSteps_aiProcess_GenBoundingBoxes,
+          aiReleaseImport,
+          aiImportFile,
+          aiGetErrorString
+    },
     Russult,
     RussimpError,
     FromRaw,
@@ -19,9 +54,8 @@ use crate::{
     camera::Camera,
     light::Light,
     node::Node,
+    texture::Texture
 };
-
-use crate::texture::Texture;
 
 pub struct Scene<'a> {
     scene: &'a aiScene,

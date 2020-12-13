@@ -2,7 +2,7 @@ use std::ffi::CStr;
 
 use crate::{
     FromRaw,
-    sys,
+    sys::{aiTexture, aiTexel},
     scene::{Scene, PostProcessSteps}
 };
 

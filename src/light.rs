@@ -1,18 +1,20 @@
-use russimp_sys::{
-    aiLight,
-    aiVector3D,
-    aiColor3D,
-    aiVector2D,
-    aiLightSourceType_aiLightSource_UNDEFINED,
-    aiLightSourceType_aiLightSource_AMBIENT,
-    aiLightSourceType_aiLightSource_AREA,
-    aiLightSourceType_aiLightSource_POINT,
-    aiLightSourceType_aiLightSource_SPOT,
-    aiLightSourceType_aiLightSource_DIRECTIONAL,
-    aiLightSourceType,
-};
 use num_traits::ToPrimitive;
-use crate::scene::{Scene, PostProcessSteps};
+use crate::{
+    scene::{Scene, PostProcessSteps},
+    sys::{
+        aiLight,
+        aiVector3D,
+        aiColor3D,
+        aiVector2D,
+        aiLightSourceType_aiLightSource_UNDEFINED,
+        aiLightSourceType_aiLightSource_AMBIENT,
+        aiLightSourceType_aiLightSource_AREA,
+        aiLightSourceType_aiLightSource_POINT,
+        aiLightSourceType_aiLightSource_SPOT,
+        aiLightSourceType_aiLightSource_DIRECTIONAL,
+        aiLightSourceType,
+    }
+};
 
 pub struct Light<'a> {
     light: &'a aiLight,

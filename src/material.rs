@@ -3,7 +3,35 @@ use std::{
 };
 
 use crate::{
-    sys,
+    sys::{aiMaterial,
+          aiMaterialProperty,
+          aiPropertyTypeInfo_aiPTI_Float,
+          aiPropertyTypeInfo_aiPTI_Double,
+          aiPropertyTypeInfo_aiPTI_Buffer,
+          aiPropertyTypeInfo__aiPTI_Force32Bit,
+          aiPropertyTypeInfo_aiPTI_Integer,
+          aiPropertyTypeInfo_aiPTI_String,
+          aiTextureType_aiTextureType_NONE,
+          aiTextureType_aiTextureType_DIFFUSE,
+          aiTextureType_aiTextureType_SPECULAR,
+          aiTextureType_aiTextureType_AMBIENT,
+          aiTextureType_aiTextureType_EMISSIVE,
+          aiTextureType_aiTextureType_HEIGHT,
+          aiTextureType_aiTextureType_NORMALS,
+          aiTextureType_aiTextureType_SHININESS,
+          aiTextureType_aiTextureType_OPACITY,
+          aiTextureType_aiTextureType_DISPLACEMENT,
+          aiTextureType_aiTextureType_LIGHTMAP,
+          aiTextureType_aiTextureType_REFLECTION,
+          aiTextureType_aiTextureType_BASE_COLOR,
+          aiTextureType_aiTextureType_NORMAL_CAMERA,
+          aiTextureType_aiTextureType_EMISSION_COLOR,
+          aiTextureType_aiTextureType_METALNESS,
+          aiTextureType_aiTextureType_DIFFUSE_ROUGHNESS,
+          aiTextureType_aiTextureType_AMBIENT_OCCLUSION,
+          aiTextureType_aiTextureType_UNKNOWN,
+          aiTextureType__aiTextureType_Force32Bit
+    },
     scene::{PostProcessSteps, Scene},
     FromRaw
 };
