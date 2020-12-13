@@ -12,7 +12,8 @@ repository = "https://github.com/jkvargas/russimp"
 description = "Assimp bindings for rust"
 
 [lib]
-crate-type = ["dylib"]
+name = "russimp"
+path = "src/lib.rs"
 
 [dependencies]
 russimp-sys = "0.1.0"
