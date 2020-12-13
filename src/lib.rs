@@ -16,6 +16,8 @@ use std::{
 #[macro_use]
 extern crate num_derive;
 
+extern crate russimp_sys;
+
 mod bone;
 mod animation;
 mod camera;
