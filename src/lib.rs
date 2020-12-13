@@ -1,3 +1,5 @@
+#![allow(unused_imports, dead_code, unused_variables)]
+
 #![crate_name = "russimp"]
 #![crate_type = "lib"]
 

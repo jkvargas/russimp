@@ -3,11 +3,11 @@ name = "russimp"
 version = "0.1.0"
 authors = ["Jhonny Knaak de Vargas"]
 edition = "2018"
-license = "assimp"
+license-file = "LICENSE"
 readme = "README.md"
 homepage = "https://github.com/jkvargas/russimp"
 categories = ["rendering","external-ffi-bindings","game-engines","multimedia"]
-keywords = ["assimp", "3d", "blend", "3ds", "obj", "glTF"]
+keywords = ["assimp", "3d", "blend", "3ds", "glTF"]
 repository = "https://github.com/jkvargas/russimp"
 description = "Assimp bindings for rust"
 
@@ -15,6 +15,6 @@ description = "Assimp bindings for rust"
 crate-type = ["dylib"]
 
 [dependencies]
-russimp-sys = { version = "0.1.0", path = "russimp-sys" }
+russimp-sys = "0.1.0"
 num-derive = "0.3.3"
 num-traits = "0.2.14"
