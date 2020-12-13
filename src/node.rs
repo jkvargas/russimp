@@ -43,7 +43,7 @@ impl<'a> Node<'a> {
 
 #[test]
 fn checking_nodes() {
-    let current_directory_buf = std::env::current_dir().unwrap().join("russimp-sys/assimp/test/models/BLEND/box.blend");
+    let current_directory_buf = std::env::current_dir().unwrap().join("models/BLEND/box.blend");
 
     let scene = Scene::from(current_directory_buf.to_str().unwrap(),
                             vec![PostProcessSteps::CalcTangentSpace,

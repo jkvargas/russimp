@@ -97,7 +97,7 @@ impl<'a> Into<Light<'a>> for &'a aiLight {
 
 #[test]
 fn light_available() {
-    let current_directory_buf = std::env::current_dir().unwrap().join("russimp-sys/assimp/test/models/BLEND/AreaLight_269.blend");
+    let current_directory_buf = std::env::current_dir().unwrap().join("models/BLEND/AreaLight_269.blend");
 
     let scene = Scene::from(current_directory_buf.to_str().unwrap(),
                             vec![PostProcessSteps::CalcTangentSpace,

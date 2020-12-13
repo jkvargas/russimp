@@ -43,7 +43,7 @@ impl<'a> Into<Camera<'a>> for &'a aiCamera {
 
 #[test]
 fn camera_available() {
-    let current_directory_buf = std::env::current_dir().unwrap().join("russimp-sys/assimp/test/models/3DS/CameraRollAnim.3ds");
+    let current_directory_buf = std::env::current_dir().unwrap().join("models/3DS/CameraRollAnim.3ds");
 
     let scene = Scene::from(current_directory_buf.to_str().unwrap(),
                             vec![PostProcessSteps::CalcTangentSpace,
