@@ -55,6 +55,7 @@ impl Display for RussimpError {
 fn get_model(relative_path_from_root: &str) -> String {
     let mut github_root = std::env::var("GITHUB_WORKSPACE").unwrap();
 
+    github_root.push('/');
     github_root.push_str(relative_path_from_root);
 
     github_root
