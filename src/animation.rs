@@ -1,19 +1,19 @@
 use crate::{
     FromRaw,
-    sys::{aiMeshMorphKey,
-          aiMeshMorphAnim,
-          aiNodeAnim,
-          aiQuatKey,
-          aiVectorKey,
-          aiMeshAnim,
-          aiMeshKey,
-          aiAnimation
-    },
-    scene::{
+    sys::{
+        aiMeshMorphKey,
+        aiMeshMorphAnim,
+        aiNodeAnim,
+        aiQuatKey,
+        aiVectorKey,
+        aiMeshAnim,
+        aiMeshKey,
+        aiAnimation,
+    }, scene::{
         Scene,
         PostProcessSteps,
     },
-};
+    get_model};
 
 pub struct MeshMorphKey<'a> {
     mesh_morph_key: &'a aiMeshMorphKey,
@@ -125,9 +125,9 @@ impl<'a> Into<Animation<'a>> for &'a aiAnimation {
 
 #[test]
 fn camera_roll_animation_read() {
-    let current_directory_buf = std::env::var("GITHUB_WORKSPACE").unwrap().join("models/3DS/CameraRollAnim.3ds");
+    let current_directory_buf = get_model("models/3DS/CameraRollAnim.3ds");
 
-    let scene = Scene::from(current_directory_buf.to_str().unwrap(),
+    let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
                                  PostProcessSteps::Triangulate,
                                  PostProcessSteps::JoinIdenticalVertices,

@@ -8,41 +8,42 @@ use std::{
 };
 
 use crate::{
-    sys::{aiScene,
-          aiPostProcessSteps_aiProcess_JoinIdenticalVertices,
-          aiPostProcessSteps_aiProcess_CalcTangentSpace,
-          aiPostProcessSteps_aiProcess_MakeLeftHanded,
-          aiPostProcessSteps_aiProcess_Triangulate,
-          aiPostProcessSteps_aiProcess_RemoveComponent,
-          aiPostProcessSteps_aiProcess_GenNormals,
-          aiPostProcessSteps_aiProcess_GenSmoothNormals,
-          aiPostProcessSteps_aiProcess_SplitLargeMeshes,
-          aiPostProcessSteps_aiProcess_PreTransformVertices,
-          aiPostProcessSteps_aiProcess_LimitBoneWeights,
-          aiPostProcessSteps_aiProcess_ValidateDataStructure,
-          aiPostProcessSteps_aiProcess_ImproveCacheLocality,
-          aiPostProcessSteps_aiProcess_RemoveRedundantMaterials,
-          aiPostProcessSteps_aiProcess_FixInfacingNormals,
-          aiPostProcessSteps_aiProcess_SortByPType,
-          aiPostProcessSteps_aiProcess_FindDegenerates,
-          aiPostProcessSteps_aiProcess_FindInvalidData,
-          aiPostProcessSteps_aiProcess_GenUVCoords,
-          aiPostProcessSteps_aiProcess_TransformUVCoords,
-          aiPostProcessSteps_aiProcess_FindInstances,
-          aiPostProcessSteps_aiProcess_OptimizeMeshes,
-          aiPostProcessSteps_aiProcess_OptimizeGraph,
-          aiPostProcessSteps_aiProcess_FlipWindingOrder,
-          aiPostProcessSteps_aiProcess_FlipUVs,
-          aiPostProcessSteps_aiProcess_SplitByBoneCount,
-          aiPostProcessSteps_aiProcess_Debone,
-          aiPostProcessSteps_aiProcess_GlobalScale,
-          aiPostProcessSteps_aiProcess_EmbedTextures,
-          aiPostProcessSteps_aiProcess_ForceGenNormals,
-          aiPostProcessSteps_aiProcess_DropNormals,
-          aiPostProcessSteps_aiProcess_GenBoundingBoxes,
-          aiReleaseImport,
-          aiImportFile,
-          aiGetErrorString
+    sys::{
+        aiScene,
+        aiPostProcessSteps_aiProcess_JoinIdenticalVertices,
+        aiPostProcessSteps_aiProcess_CalcTangentSpace,
+        aiPostProcessSteps_aiProcess_MakeLeftHanded,
+        aiPostProcessSteps_aiProcess_Triangulate,
+        aiPostProcessSteps_aiProcess_RemoveComponent,
+        aiPostProcessSteps_aiProcess_GenNormals,
+        aiPostProcessSteps_aiProcess_GenSmoothNormals,
+        aiPostProcessSteps_aiProcess_SplitLargeMeshes,
+        aiPostProcessSteps_aiProcess_PreTransformVertices,
+        aiPostProcessSteps_aiProcess_LimitBoneWeights,
+        aiPostProcessSteps_aiProcess_ValidateDataStructure,
+        aiPostProcessSteps_aiProcess_ImproveCacheLocality,
+        aiPostProcessSteps_aiProcess_RemoveRedundantMaterials,
+        aiPostProcessSteps_aiProcess_FixInfacingNormals,
+        aiPostProcessSteps_aiProcess_SortByPType,
+        aiPostProcessSteps_aiProcess_FindDegenerates,
+        aiPostProcessSteps_aiProcess_FindInvalidData,
+        aiPostProcessSteps_aiProcess_GenUVCoords,
+        aiPostProcessSteps_aiProcess_TransformUVCoords,
+        aiPostProcessSteps_aiProcess_FindInstances,
+        aiPostProcessSteps_aiProcess_OptimizeMeshes,
+        aiPostProcessSteps_aiProcess_OptimizeGraph,
+        aiPostProcessSteps_aiProcess_FlipWindingOrder,
+        aiPostProcessSteps_aiProcess_FlipUVs,
+        aiPostProcessSteps_aiProcess_SplitByBoneCount,
+        aiPostProcessSteps_aiProcess_Debone,
+        aiPostProcessSteps_aiProcess_GlobalScale,
+        aiPostProcessSteps_aiProcess_EmbedTextures,
+        aiPostProcessSteps_aiProcess_ForceGenNormals,
+        aiPostProcessSteps_aiProcess_DropNormals,
+        aiPostProcessSteps_aiProcess_GenBoundingBoxes,
+        aiReleaseImport,
+        aiImportFile,
+        aiGetErrorString,
     },
     Russult,
     RussimpError,
@@ -54,7 +55,8 @@ use crate::{
     camera::Camera,
     light::Light,
     node::Node,
-    texture::Texture
+    texture::Texture,
+    get_model
 };
 
 pub struct Scene<'a> {
@@ -130,7 +132,7 @@ impl<'a> Scene<'a> {
             lights: Scene::get_vec_from_raw(scene.mLights, scene.mNumLights),
             root: Scene::get_rc_raw(scene.mRootNode),
             textures: Scene::get_vec_from_raw(scene.mTextures, scene.mNumTextures),
-            flags: scene.mFlags
+            flags: scene.mFlags,
         }))
     }
 
@@ -148,9 +150,9 @@ impl<'a> Scene<'a> {
 
 #[test]
 fn importing_invalid_file_returns_error() {
-    let current_directory_buf = std::env::var("GITHUB_WORKSPACE").unwrap().join("models/box.blend");
+    let current_directory_buf = get_model("models/box.blend");
 
-    let scene = Scene::from(current_directory_buf.to_str().unwrap(),
+    let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
                                  PostProcessSteps::Triangulate,
                                  PostProcessSteps::JoinIdenticalVertices,
@@ -161,13 +163,13 @@ fn importing_invalid_file_returns_error() {
 
 #[test]
 fn importing_valid_file_returns_scene() {
-    let current_directory_buf = std::env::var("GITHUB_WORKSPACE").unwrap().join("models/BLEND/box.blend");
+    let current_directory_buf = get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(current_directory_buf.to_str().unwrap(),
-                vec![PostProcessSteps::CalcTangentSpace,
-                     PostProcessSteps::Triangulate,
-                     PostProcessSteps::JoinIdenticalVertices,
-                     PostProcessSteps::SortByPType]).unwrap();
+    let scene = Scene::from(current_directory_buf.as_str(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
 
     assert_eq!(8, scene.flags);
 }

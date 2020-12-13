@@ -1,11 +1,11 @@
 use crate::{
     FromRaw,
-    sys::{aiCamera, aiVector3D},
+    sys::{aiCamera,
+          aiVector3D},
     scene::{
         PostProcessSteps,
         Scene,
-    },
-};
+    }, get_model};
 
 pub struct Camera<'a> {
     camera: &'a aiCamera,
@@ -39,9 +39,9 @@ impl<'a> Into<Camera<'a>> for &'a aiCamera {
 
 #[test]
 fn camera_available() {
-    let current_directory_buf = std::env::var("GITHUB_WORKSPACE").unwrap().join("models/3DS/CameraRollAnim.3ds");
+    let current_directory_buf = get_model("models/3DS/CameraRollAnim.3ds");
 
-    let scene = Scene::from(current_directory_buf.to_str().unwrap(),
+    let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
                                  PostProcessSteps::Triangulate,
                                  PostProcessSteps::JoinIdenticalVertices,

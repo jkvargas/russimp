@@ -1,9 +1,4 @@
-use crate::{
-    sys,
-    FromRaw,
-    scene::{PostProcessSteps, Scene},
-    metadata::MetaData
-};
+use crate::{sys, FromRaw, scene::{PostProcessSteps, Scene}, metadata::MetaData, get_model};
 
 use std::{
     rc::Rc,
@@ -43,9 +38,9 @@ impl<'a> Node<'a> {
 
 #[test]
 fn checking_nodes() {
-    let current_directory_buf = std::env::var("GITHUB_WORKSPACE").unwrap().join("models/BLEND/box.blend");
+    let current_directory_buf = get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(current_directory_buf.to_str().unwrap(),
+    let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
                                  PostProcessSteps::Triangulate,
                                  PostProcessSteps::JoinIdenticalVertices,
@@ -75,9 +70,9 @@ fn checking_nodes() {
 
 #[test]
 fn childs_parent_name_matches() {
-    let current_directory_buf = std::env::var("GITHUB_WORKSPACE").unwrap().join("models/BLEND/box.blend");
+    let current_directory_buf = get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(current_directory_buf.to_str().unwrap(),
+    let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
                                  PostProcessSteps::Triangulate,
                                  PostProcessSteps::JoinIdenticalVertices,

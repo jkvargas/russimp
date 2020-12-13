@@ -1,20 +1,16 @@
-use crate::{FromRaw,
-            scene::{PostProcessSteps,
-                    Scene
-            },
-            sys::{aiMetadataEntry,
-                  aiMetadataType_AI_UINT64,
-                  aiMetadataType_AI_INT32,
-                  aiMetadataType_AI_BOOL,
-                  aiMetadataType_AI_DOUBLE,
-                  aiMetadataType_AI_FLOAT,
-                  aiMetadataType_AI_AISTRING,
-                  aiMetadataType_AI_AIVECTOR3D,
-                  aiVector3D,
-                  aiMetadata
-            },
-            Russult,
-            RussimpError};
+use crate::{FromRaw, scene::{PostProcessSteps,
+                             Scene
+}, sys::{aiMetadataEntry,
+         aiMetadataType_AI_UINT64,
+         aiMetadataType_AI_INT32,
+         aiMetadataType_AI_BOOL,
+         aiMetadataType_AI_DOUBLE,
+         aiMetadataType_AI_FLOAT,
+         aiMetadataType_AI_AISTRING,
+         aiMetadataType_AI_AIVECTOR3D,
+         aiVector3D,
+         aiMetadata
+}, Russult, RussimpError, get_model};
 
 use std::{
     ffi::CStr,
@@ -236,9 +232,9 @@ impl<'a> Into<MetaData<'a>> for &'a aiMetadata {
 
 #[test]
 fn metadata_for_box() {
-    let current_directory_buf = std::env::var("GITHUB_WORKSPACE").unwrap().join("models/BLEND/box.blend");
+    let current_directory_buf = get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(current_directory_buf.to_str().unwrap(),
+    let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
                                  PostProcessSteps::Triangulate,
                                  PostProcessSteps::JoinIdenticalVertices,

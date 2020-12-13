@@ -1,15 +1,24 @@
 use std::ops::BitAnd;
 
-use crate::{
-    sys,
-    FromRaw,
-    bone::Bone,
-    face::Face,
-    scene::{PostProcessSteps, Scene},
-};
+use crate::{sys,
+            FromRaw,
+            bone::Bone,
+            face::Face,
+            scene::{PostProcessSteps, Scene},
+            get_model};
 
 use num_traits::ToPrimitive;
-use sys::{aiVector3D, aiMesh, aiColor4D, aiAABB, aiPrimitiveType__aiPrimitiveType_Force32Bit, aiPrimitiveType_aiPrimitiveType_LINE, aiPrimitiveType_aiPrimitiveType_POINT, aiPrimitiveType_aiPrimitiveType_POLYGON, aiPrimitiveType_aiPrimitiveType_TRIANGLE, aiAnimMesh};
+
+use sys::{aiVector3D,
+          aiMesh,
+          aiColor4D,
+          aiAABB,
+          aiPrimitiveType__aiPrimitiveType_Force32Bit,
+          aiPrimitiveType_aiPrimitiveType_LINE,
+          aiPrimitiveType_aiPrimitiveType_POINT,
+          aiPrimitiveType_aiPrimitiveType_POLYGON,
+          aiPrimitiveType_aiPrimitiveType_TRIANGLE,
+          aiAnimMesh};
 
 pub struct Mesh<'a> {
     mesh: &'a aiMesh,
@@ -107,9 +116,9 @@ impl BitAnd<u32> for PrimitiveType {
 
 #[test]
 fn mesh_available() {
-    let current_directory_buf = std::env::var("GITHUB_WORKSPACE").unwrap().join("models/BLEND/box.blend");
+    let current_directory_buf = get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(current_directory_buf.to_str().unwrap(),
+    let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
                                  PostProcessSteps::Triangulate,
                                  PostProcessSteps::JoinIdenticalVertices,
@@ -141,9 +150,9 @@ fn mesh_available() {
 
 #[test]
 fn bitwise_primitive_types() {
-    let current_directory_buf = std::env::var("GITHUB_WORKSPACE").unwrap().join("models/BLEND/box.blend");
+    let current_directory_buf = get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(current_directory_buf.to_str().unwrap(),
+    let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
                                  PostProcessSteps::Triangulate,
                                  PostProcessSteps::JoinIdenticalVertices,

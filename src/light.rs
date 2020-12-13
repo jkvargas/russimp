@@ -1,6 +1,7 @@
 use num_traits::ToPrimitive;
 use crate::{
-    scene::{Scene, PostProcessSteps},
+    scene::{Scene,
+            PostProcessSteps},
     sys::{
         aiLight,
         aiVector3D,
@@ -13,7 +14,8 @@ use crate::{
         aiLightSourceType_aiLightSource_SPOT,
         aiLightSourceType_aiLightSource_DIRECTIONAL,
         aiLightSourceType,
-    }
+    },
+    get_model,
 };
 
 pub struct Light<'a> {
@@ -99,9 +101,9 @@ impl<'a> Into<Light<'a>> for &'a aiLight {
 
 #[test]
 fn light_available() {
-    let current_directory_buf = std::env::var("GITHUB_WORKSPACE").unwrap().join("models/BLEND/AreaLight_269.blend");
+    let current_directory_buf = get_model("models/BLEND/AreaLight_269.blend");
 
-    let scene = Scene::from(current_directory_buf.to_str().unwrap(),
+    let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
                                  PostProcessSteps::Triangulate,
                                  PostProcessSteps::JoinIdenticalVertices,
@@ -140,5 +142,4 @@ fn light_available() {
     assert_eq!(LightSourceType::Spot, scene.lights[0].light_source_type);
     assert_eq!(LightSourceType::Area, scene.lights[1].light_source_type);
     assert_eq!(LightSourceType::Area, scene.lights[2].light_source_type);
-
 }
