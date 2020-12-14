@@ -169,9 +169,9 @@ fn read_file_contents() {
 
     let mut file = File::open(current_directory_buf.as_str()).unwrap();
 
-    let mut contents = String::new();
+    let mut contents = Vec::new();
 
-    file.read_to_string(&mut contents);
+    file.read_to_end(&mut contents).expect("Error");
 
     dbg!(&contents);
 }
