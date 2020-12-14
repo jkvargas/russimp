@@ -58,6 +58,8 @@ use crate::{
     texture::Texture,
     get_model
 };
+use std::fs::File;
+use std::io::Read;
 
 pub struct Scene<'a> {
     scene: &'a aiScene,
@@ -159,6 +161,19 @@ fn importing_invalid_file_returns_error() {
                                  PostProcessSteps::SortByPType]);
 
     assert!(scene.is_err())
+}
+
+#[test]
+fn read_file_contents() {
+    let current_directory_buf = get_model("models/BLEND/box.blend");
+
+    let mut file = File::open(current_directory_buf.as_str())?;
+
+    let mut contents = String::new();
+
+    file.read_to_string(&mut contents)?;
+
+    dbg!(&contents);
 }
 
 #[test]
