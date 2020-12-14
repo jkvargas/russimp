@@ -165,6 +165,8 @@ fn importing_invalid_file_returns_error() {
 fn importing_valid_file_returns_scene() {
     let current_directory_buf = get_model("models/BLEND/box.blend");
 
+    dbg!(&current_directory_buf);
+
     let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
                                  PostProcessSteps::Triangulate,
