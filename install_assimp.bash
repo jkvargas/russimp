@@ -18,7 +18,7 @@ if [ ! -d ${path_assimp_build} ]; then
         mkdir ${path_assimp_build}
 	# shellcheck disable=SC2164
 	cd ${path_assimp_build}
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=/usr/bin/clang++-11 -DCMAKE_C_COMPILER=/usr/bin/clang-11 -DCMAKE_INSTALL_PREFIX=/usr/local -G Ninja ..
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=/usr/bin/clang++-11 -DCMAKE_C_COMPILER=/usr/bin/clang-11 -DCMAKE_INSTALL_PREFIX=/usr -G Ninja ..
 	ninja
 	ninja install
 fi
