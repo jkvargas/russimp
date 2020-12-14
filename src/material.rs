@@ -121,9 +121,9 @@ impl<'a> Into<MaterialProperty<'a>> for &'a aiMaterialProperty {
 
 #[test]
 fn material_for_box() {
-    let current_directory_buf = get_model("models/BLEND/box.blend");
+    let box_file_path = get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(current_directory_buf.as_str(),
+    let scene = Scene::from(box_file_path.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
                                  PostProcessSteps::Triangulate,
                                  PostProcessSteps::JoinIdenticalVertices,

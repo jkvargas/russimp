@@ -22,10 +22,8 @@ jobs:
         override: true
     - name: Build
       run: cargo build --verbose
-    - name: List files
-      run: find $GITHUB_WORKSPACE
     - name: Run tests
-      run: cargo test --lib --verbose
+      run: PROJECT_ROOT=./ cargo test --lib --verbose
 
   cargo-publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
