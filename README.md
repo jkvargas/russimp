@@ -1,6 +1,6 @@
-# russimp
+# russimp ![russimp](https://github.com/jkvargas/russimp/workflows/russimp/badge.svg?branch=master) [![Crates.io](https://img.shields.io/crates/v/russimp.svg)](https://crates.io/crates/russimp)
 
-Bindings for Assimp in Rust
+Rust bindings for Assimp (https://github.com/assimp/assimp)
 
 # Overview
 
@@ -9,9 +9,10 @@ These bindings are based on assimp v5.0.1.
 
 ## Helping
 
-You are very welcome to help with development, being compiling it on windows or a mac.
-Adding a feature, fixing a problem or just refactoring.
+You are very welcome to help with development, adding a feature, fixing a problem or just refactoring.
 Try to do it with tests =)
+
+We need help to compile it on windows and on mac.
 
 # Requirements
 
