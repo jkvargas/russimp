@@ -164,23 +164,8 @@ fn importing_invalid_file_returns_error() {
 }
 
 #[test]
-fn read_file_contents() {
-    let current_directory_buf = get_model("models/BLEND/box.blend");
-
-    let mut file = File::open(current_directory_buf.as_str()).unwrap();
-
-    let mut contents = Vec::new();
-
-    file.read_to_end(&mut contents).expect("Error");
-
-    dbg!(&contents);
-}
-
-#[test]
 fn importing_valid_file_returns_scene() {
     let current_directory_buf = get_model("models/BLEND/box.blend");
-
-    dbg!(&current_directory_buf);
 
     let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,

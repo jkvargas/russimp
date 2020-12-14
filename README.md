@@ -5,6 +5,7 @@ Bindings for Assimp in Rust
 # Overview
 
 Russimp is a library for talking to the assimp library which enables you to read 3d models in different formats to a common structure.
+These bindings are based on assimp v5.0.1.
 
 ## Helping
 
@@ -23,9 +24,7 @@ You will need rust stable, cmake, C and C++ compiler as well.
 Just call Scene::from with the filename and the flags you want. From the scene you will have access to the underlying structs.
 
 ```rust
-let current_directory_buf = std::env::current_dir().unwrap().join("russimp-sys/assimp/test/models/BLEND/box.blend");
-
-let scene = Scene::from(current_directory_buf.to_str().unwrap(),
+let scene = Scene::from("myfile.blend",
 vec![PostProcessSteps::CalcTangentSpace,
      PostProcessSteps::Triangulate,
      PostProcessSteps::JoinIdenticalVertices,

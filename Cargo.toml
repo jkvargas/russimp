@@ -10,12 +10,13 @@ categories = ["rendering", "external-ffi-bindings", "game-engines", "multimedia"
 keywords = ["assimp", "3d", "blend", "3ds", "glTF"]
 repository = "https://github.com/jkvargas/russimp"
 description = "Assimp bindings for rust"
+exclude = [ "*.bash" ]
 
 [lib]
 name = "russimp"
 path = "src/lib.rs"
 
 [dependencies]
-russimp-sys = "0.1.2"
+russimp-sys = "0.1.3"
 num-derive = "0.3.3"
 num-traits = "0.2.14"
