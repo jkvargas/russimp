@@ -1,26 +1,35 @@
 use std::ops::BitAnd;
 
-use crate::{sys,
-            FromRaw,
-            bone::Bone,
-            face::Face,
-            scene::{PostProcessSteps, Scene},
-            get_model};
+use crate::{
+    sys::{
+        aiVector3D,
+        aiMesh,
+        aiColor4D,
+        aiAABB,
+        aiPrimitiveType__aiPrimitiveType_Force32Bit,
+        aiPrimitiveType_aiPrimitiveType_LINE,
+        aiPrimitiveType_aiPrimitiveType_POINT,
+        aiPrimitiveType_aiPrimitiveType_POLYGON,
+        aiPrimitiveType_aiPrimitiveType_TRIANGLE,
+        aiAnimMesh,
+    },
+    FromRaw,
+    bone::Bone,
+    face::Face,
+    scene::{
+        PostProcessSteps,
+        Scene,
+    },
+    get_model};
 
 use num_traits::ToPrimitive;
 
-use sys::{aiVector3D,
-          aiMesh,
-          aiColor4D,
-          aiAABB,
-          aiPrimitiveType__aiPrimitiveType_Force32Bit,
-          aiPrimitiveType_aiPrimitiveType_LINE,
-          aiPrimitiveType_aiPrimitiveType_POINT,
-          aiPrimitiveType_aiPrimitiveType_POLYGON,
-          aiPrimitiveType_aiPrimitiveType_TRIANGLE,
-          aiAnimMesh};
+use derivative::Derivative;
 
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct Mesh<'a> {
+    #[derivative(Debug = "ignore")]
     mesh: &'a aiMesh,
     pub normals: Vec<&'a aiVector3D>,
     pub name: String,
@@ -39,7 +48,8 @@ pub struct Mesh<'a> {
     pub aabb: aiAABB,
 }
 
-#[derive(FromPrimitive, Debug, PartialEq, ToPrimitive)]
+#[derive(Derivative, FromPrimitive, PartialEq, ToPrimitive)]
+#[derivative(Debug)]
 #[repr(u32)]
 pub enum PrimitiveType {
     Force32Bit = aiPrimitiveType__aiPrimitiveType_Force32Bit,
@@ -69,12 +79,15 @@ impl<'a> Into<Mesh<'a>> for &'a aiMesh {
             anim_meshes: Mesh::get_vec_from_raw(self.mAnimMeshes, self.mNumAnimMeshes),
             faces: Mesh::get_vec(self.mFaces, self.mNumFaces),
             colors: Mesh::get_rawvec_from_slice(&self.mColors),
-            aabb: self.mAABB
+            aabb: self.mAABB,
         }
     }
 }
 
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct AnimMesh<'a> {
+    #[derivative(Debug = "ignore")]
     anim_mesh: &'a aiAnimMesh,
     bitangents: Vec<&'a aiVector3D>,
 }

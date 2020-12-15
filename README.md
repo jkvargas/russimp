@@ -14,6 +14,14 @@ Try to do it with tests =)
 
 We need help to compile it on windows and on mac.
 
+## Testing
+
+To test the api on your local machine you will need to have the environment variable GITHUB_WORKSPACE set up with the project root path.
+
+```shell
+GITHUB_WORKSPACE=./ cargo test --verbose
+```
+
 # Requirements
 
 ## Rust

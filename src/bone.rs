@@ -1,11 +1,18 @@
-use crate::{FromRaw,
-            sys::{aiBone,
-                  aiVertexWeight,
-                  aiMatrix4x4
-            }
+use crate::{
+    FromRaw,
+    sys::{
+        aiBone,
+        aiVertexWeight,
+        aiMatrix4x4,
+    },
 };
 
+use derivative::Derivative;
+
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct Bone<'a> {
+    #[derivative(Debug = "ignore")]
     bone: &'a aiBone,
     pub weights: Vec<VertexWeight<'a>>,
     pub name: String,
@@ -25,9 +32,10 @@ impl<'a> Into<Bone<'a>> for &'a aiBone {
     }
 }
 
-#[derive(Debug)]
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct VertexWeight<'a> {
-    // #[derivative(Debug="ignore")]
+    #[derivative(Debug = "ignore")]
     vertex_weight: &'a aiVertexWeight,
     pub weight: f32,
     pub vertex_id: u32,

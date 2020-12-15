@@ -1,12 +1,28 @@
-use crate::{sys, FromRaw, scene::{PostProcessSteps, Scene}, metadata::MetaData, get_model};
+use crate::{
+    sys::{
+        aiNode,
+        aiMatrix4x4,
+    },
+    FromRaw,
+    scene::{
+        PostProcessSteps,
+        Scene,
+    },
+    metadata::MetaData,
+    get_model,
+};
 
 use std::{
     rc::Rc,
-    cell::RefCell
+    cell::RefCell,
 };
-use sys::{aiNode, aiMatrix4x4};
 
+use derivative::Derivative;
+
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct Node<'a> {
+    #[derivative(Debug = "ignore")]
     node: &'a aiNode,
     pub name: String,
     pub children: Vec<Rc<RefCell<Node<'a>>>>,

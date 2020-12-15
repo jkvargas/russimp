@@ -3,7 +3,12 @@ use crate::{
     sys::aiFace
 };
 
+use derivative::Derivative;
+
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct Face<'a> {
+    #[derivative(Debug = "ignore")]
     face: &'a aiFace,
     pub indices: Vec<&'a u32>,
 }

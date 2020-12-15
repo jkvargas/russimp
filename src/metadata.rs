@@ -1,21 +1,32 @@
-use crate::{FromRaw, scene::{PostProcessSteps,
-                             Scene
-}, sys::{aiMetadataEntry,
-         aiMetadataType_AI_UINT64,
-         aiMetadataType_AI_INT32,
-         aiMetadataType_AI_BOOL,
-         aiMetadataType_AI_DOUBLE,
-         aiMetadataType_AI_FLOAT,
-         aiMetadataType_AI_AISTRING,
-         aiMetadataType_AI_AIVECTOR3D,
-         aiVector3D,
-         aiMetadata
-}, Russult, RussimpError, get_model};
+use crate::{
+    FromRaw,
+    scene::{
+        PostProcessSteps,
+        Scene,
+    },
+    sys::{
+        aiMetadataEntry,
+        aiMetadataType_AI_UINT64,
+        aiMetadataType_AI_INT32,
+        aiMetadataType_AI_BOOL,
+        aiMetadataType_AI_DOUBLE,
+        aiMetadataType_AI_FLOAT,
+        aiMetadataType_AI_AISTRING,
+        aiMetadataType_AI_AIVECTOR3D,
+        aiVector3D,
+        aiMetadata,
+    },
+    Russult,
+    RussimpError,
+    get_model,
+};
 
 use std::{
     ffi::CStr,
     os::raw::c_char,
 };
+
+use derivative::Derivative;
 
 trait MetaDataEntryCast<'a> {
     fn can_cast(&self) -> bool;
@@ -156,12 +167,17 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataVector3d<'a> {
     }
 }
 
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct MetaData<'a> {
+    #[derivative(Debug = "ignore")]
     meta_data: &'a aiMetadata,
     pub keys: Vec<String>,
     pub values: Vec<MetaDataEntry<'a>>,
 }
 
+#[derive(Derivative)]
+#[derivative(Debug)]
 #[repr(u32)]
 pub enum MetadataType<'a> {
     String(String),
@@ -175,7 +191,10 @@ pub enum MetadataType<'a> {
     // Force32 = aiMetadataType_FORCE_32BIT, -- Not sure what it does
 }
 
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct MetaDataEntry<'a> {
+    #[derivative(Debug = "ignore")]
     raw: &'a aiMetadataEntry,
     pub data: Russult<MetadataType<'a>>,
 }
