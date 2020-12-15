@@ -1,13 +1,21 @@
 use crate::{
     FromRaw,
-    sys::{aiCamera,
-          aiVector3D},
+    sys::{
+        aiCamera,
+        aiVector3D},
     scene::{
         PostProcessSteps,
         Scene,
-    }, get_model};
+    },
+    get_model,
+};
 
+use derivative::Derivative;
+
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct Camera<'a> {
+    #[derivative(Debug = "ignore")]
     camera: &'a aiCamera,
     pub name: String,
     pub aspect: f32,

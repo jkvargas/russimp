@@ -7,6 +7,8 @@ use std::{
     cell::RefCell,
 };
 
+use derivative::Derivative;
+
 use crate::{
     sys::{
         aiScene,
@@ -58,10 +60,11 @@ use crate::{
     texture::Texture,
     get_model
 };
-use std::fs::File;
-use std::io::Read;
 
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct Scene<'a> {
+    #[derivative(Debug = "ignore")]
     scene: &'a aiScene,
     pub materials: Vec<Material<'a>>,
     pub meshes: Vec<Mesh<'a>>,
@@ -74,6 +77,8 @@ pub struct Scene<'a> {
     pub flags: u32,
 }
 
+#[derive(Derivative)]
+#[derivative(Debug)]
 #[repr(u32)]
 pub enum PostProcessSteps {
     CalcTangentSpace = aiPostProcessSteps_aiProcess_CalcTangentSpace,
@@ -174,4 +179,17 @@ fn importing_valid_file_returns_scene() {
                                  PostProcessSteps::SortByPType]).unwrap();
 
     assert_eq!(8, scene.flags);
+}
+
+#[test]
+fn debug_scene() {
+    let box_file_path = get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from(box_file_path.as_str(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
+
+    dbg!(&scene);
 }

@@ -18,7 +18,12 @@ use crate::{
     get_model,
 };
 
+use derivative::Derivative;
+
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct Light<'a> {
+    #[derivative(Debug = "ignore")]
     light: &'a aiLight,
     up: aiVector3D,
     pos: aiVector3D,
@@ -66,7 +71,8 @@ impl<'a> Light<'a> {
     }
 }
 
-#[derive(ToPrimitive, Debug, PartialEq)]
+#[derive(Derivative, ToPrimitive, PartialEq)]
+#[derivative(Debug)]
 #[repr(u32)]
 pub enum LightSourceType {
     Undefined = aiLightSourceType_aiLightSource_UNDEFINED,

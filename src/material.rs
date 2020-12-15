@@ -40,9 +40,13 @@ use crate::{
     get_model
 };
 
+use derivative::Derivative;
 use num_traits::FromPrimitive;
 
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct Material<'a> {
+    #[derivative(Debug = "ignore")]
     material: &'a aiMaterial,
     properties: Vec<MaterialProperty<'a>>,
 }
@@ -58,7 +62,10 @@ impl<'a> Into<Material<'a>> for &'a aiMaterial {
     }
 }
 
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct MaterialProperty<'a> {
+    #[derivative(Debug = "ignore")]
     property: &'a aiMaterialProperty,
     key: String,
     data: &'a [u8],
@@ -67,7 +74,8 @@ pub struct MaterialProperty<'a> {
     semantic: TextureType,
 }
 
-#[derive(FromPrimitive, Debug, PartialEq)]
+#[derive(Derivative, FromPrimitive, PartialEq)]
+#[derivative(Debug)]
 #[repr(u32)]
 pub enum PropertyTypeInfo {
     Force32Bit = aiPropertyTypeInfo__aiPTI_Force32Bit,
@@ -78,7 +86,8 @@ pub enum PropertyTypeInfo {
     String = aiPropertyTypeInfo_aiPTI_String,
 }
 
-#[derive(FromPrimitive, Debug, PartialEq)]
+#[derive(Derivative, FromPrimitive, PartialEq)]
+#[derivative(Debug)]
 #[repr(u32)]
 pub enum TextureType {
     None = aiTextureType_aiTextureType_NONE,

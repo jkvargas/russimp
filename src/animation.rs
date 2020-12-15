@@ -15,7 +15,12 @@ use crate::{
     },
     get_model};
 
+use derivative::Derivative;
+
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct MeshMorphKey<'a> {
+    #[derivative(Debug="ignore")]
     mesh_morph_key: &'a aiMeshMorphKey,
     pub time: f64,
     pub values: Vec<&'a u32>,
@@ -35,7 +40,10 @@ impl<'a> Into<MeshMorphKey<'a>> for &'a aiMeshMorphKey {
     }
 }
 
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct MeshMorphAnim<'a> {
+    #[derivative(Debug="ignore")]
     mesh_morph_anim: &'a aiMeshMorphAnim,
     pub keys: Vec<MeshMorphKey<'a>>,
     pub name: String,
@@ -53,7 +61,10 @@ impl<'a> Into<MeshMorphAnim<'a>> for &'a aiMeshMorphAnim {
     }
 }
 
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct NodeAnim<'a> {
+    #[derivative(Debug="ignore")]
     anim_node: &'a aiNodeAnim,
     pub name: String,
     pub position_keys: Vec<&'a aiVectorKey>,
@@ -79,7 +90,10 @@ impl<'a> Into<NodeAnim<'a>> for &'a aiNodeAnim {
     }
 }
 
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct MeshAnim<'a> {
+    #[derivative(Debug="ignore")]
     mesh_anim: &'a aiMeshAnim,
     name: String,
     keys: Vec<&'a aiMeshKey>,
@@ -97,7 +111,10 @@ impl<'a> Into<MeshAnim<'a>> for &'a aiMeshAnim {
     }
 }
 
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct Animation<'a> {
+    #[derivative(Debug="ignore")]
     animation: &'a aiAnimation,
     pub name: String,
     pub channels: Vec<NodeAnim<'a>>,

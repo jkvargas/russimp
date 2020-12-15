@@ -2,11 +2,22 @@ use std::ffi::CStr;
 
 use crate::{
     FromRaw,
-    sys::{aiTexture, aiTexel},
-    scene::{Scene, PostProcessSteps}
+    sys::{
+        aiTexture,
+        aiTexel,
+    },
+    scene::{
+        Scene,
+        PostProcessSteps,
+    },
 };
 
+use derivative::Derivative;
+
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub struct Texture<'a> {
+    #[derivative(Debug = "ignore")]
     texture: &'a aiTexture,
     filename: String,
     height: u32,
