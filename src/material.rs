@@ -45,18 +45,15 @@ use num_traits::FromPrimitive;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Material<'a> {
-    #[derivative(Debug = "ignore")]
-    material: &'a aiMaterial,
-    properties: Vec<MaterialProperty<'a>>,
+pub struct Material {
+    properties: Vec<MaterialProperty>,
 }
 
-impl<'a> FromRaw for Material<'a> {}
+impl FromRaw for Material {}
 
-impl<'a> Into<Material<'a>> for &'a aiMaterial {
-    fn into(self) -> Material<'a> {
+impl Into<Material> for &aiMaterial {
+    fn into(self) -> Material {
         Material {
-            material: self,
             properties: Material::get_vec_from_raw(self.mProperties, self.mNumProperties),
         }
     }
@@ -64,11 +61,9 @@ impl<'a> Into<Material<'a>> for &'a aiMaterial {
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct MaterialProperty<'a> {
-    #[derivative(Debug = "ignore")]
-    property: &'a aiMaterialProperty,
+pub struct MaterialProperty {
     key: String,
-    data: &'a [u8],
+    data: [u8],
     index: usize,
     material_type: PropertyTypeInfo,
     semantic: TextureType,
@@ -112,13 +107,12 @@ pub enum TextureType {
     Force32bit = aiTextureType__aiTextureType_Force32Bit,
 }
 
-impl<'a> Into<MaterialProperty<'a>> for &'a aiMaterialProperty {
-    fn into(self) -> MaterialProperty<'a> {
+impl Into<MaterialProperty> for &aiMaterialProperty {
+    fn into(self) -> MaterialProperty {
         let slice = slice_from_raw_parts(self.mData as *const u8, self.mDataLength as usize);
         let data = unsafe { slice.as_ref() }.unwrap();
 
         MaterialProperty {
-            property: self,
             key: self.mKey.into(),
             data,
             index: self.mIndex as usize,

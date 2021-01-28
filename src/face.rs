@@ -7,18 +7,15 @@ use derivative::Derivative;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Face<'a> {
-    #[derivative(Debug = "ignore")]
-    face: &'a aiFace,
-    pub indices: Vec<&'a u32>,
+pub struct Face {
+    pub indices: Vec<u32>,
 }
 
-impl<'a> FromRaw for Face<'a> {}
+impl FromRaw for Face {}
 
-impl<'a> Into<Face<'a>> for &'a aiFace {
-    fn into(self) -> Face<'a> {
+impl Into<Face> for &aiFace {
+    fn into(self) -> Face {
         Face {
-            face: self,
             indices: Face::get_rawvec(self.mIndices, self.mNumIndices)
         }
     }

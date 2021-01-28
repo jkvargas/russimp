@@ -28,23 +28,21 @@ use derivative::Derivative;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Mesh<'a> {
-    #[derivative(Debug = "ignore")]
-    mesh: &'a aiMesh,
-    pub normals: Vec<&'a aiVector3D>,
+pub struct Mesh {
+    pub normals: Vec<aiVector3D>,
     pub name: String,
-    pub vertices: Vec<&'a aiVector3D>,
-    pub texture_coords: Vec<Option<&'a aiVector3D>>,
-    pub tangents: Vec<&'a aiVector3D>,
-    pub bitangents: Vec<&'a aiVector3D>,
+    pub vertices: Vec<aiVector3D>,
+    pub texture_coords: Vec<Option<aiVector3D>>,
+    pub tangents: Vec<aiVector3D>,
+    pub bitangents: Vec<aiVector3D>,
     pub uv_components: Vec<u32>,
     pub primitive_types: u32,
-    pub bones: Vec<Bone<'a>>,
+    pub bones: Vec<Bone>,
     pub material_index: u32,
     pub method: u32,
-    pub anim_meshes: Vec<AnimMesh<'a>>,
-    pub faces: Vec<Face<'a>>,
-    pub colors: Vec<Option<&'a aiColor4D>>,
+    pub anim_meshes: Vec<AnimMesh>,
+    pub faces: Vec<Face>,
+    pub colors: Vec<Option<aiColor4D>>,
     pub aabb: aiAABB,
 }
 
@@ -59,12 +57,11 @@ pub enum PrimitiveType {
     Triangle = aiPrimitiveType_aiPrimitiveType_TRIANGLE,
 }
 
-impl<'a> FromRaw for Mesh<'a> {}
+impl FromRaw for Mesh {}
 
-impl<'a> Into<Mesh<'a>> for &'a aiMesh {
-    fn into(self) -> Mesh<'a> {
+impl Into<Mesh> for &aiMesh {
+    fn into(self) -> Mesh {
         Mesh {
-            mesh: self,
             normals: Mesh::get_vec(self.mNormals, self.mNumVertices),
             name: self.mName.into(),
             vertices: Mesh::get_vec(self.mVertices, self.mNumVertices),
@@ -86,19 +83,16 @@ impl<'a> Into<Mesh<'a>> for &'a aiMesh {
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct AnimMesh<'a> {
-    #[derivative(Debug = "ignore")]
-    anim_mesh: &'a aiAnimMesh,
-    bitangents: Vec<&'a aiVector3D>,
+pub struct AnimMesh {
+    bitangents: Vec<aiVector3D>,
 }
 
-impl<'a> FromRaw for AnimMesh<'a> {}
+impl FromRaw for AnimMesh {}
 
-impl<'a> Into<AnimMesh<'a>> for &'a aiAnimMesh {
-    fn into(self) -> AnimMesh<'a> {
+impl Into<AnimMesh> for &aiAnimMesh {
+    fn into(self) -> AnimMesh {
         AnimMesh {
             bitangents: Mesh::get_vec(self.mBitangents, self.mNumVertices),
-            anim_mesh: self,
         }
     }
 }

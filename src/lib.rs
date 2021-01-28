@@ -96,7 +96,7 @@ trait FromRaw {
         raw.iter().map(|x| x.into()).collect()
     }
 
-    fn get_rawvec<'a, TRaw>(raw: *mut TRaw, len: c_uint) -> Vec<&'a TRaw> {
+    fn get_rawvec<'a, TRaw>(raw: *mut TRaw, len: c_uint) -> Vec<TRaw> {
         let slice = slice_from_raw_parts(raw as *const TRaw, len as usize);
         if slice.is_null() {
             return vec![];
@@ -126,7 +126,7 @@ trait FromRaw {
         raw.iter().map(|x| Rc::new(RefCell::new(unsafe { x.as_ref() }.unwrap().into()))).collect()
     }
 
-    fn get_rawvec_from_slice<'a, TRaw>(raw: &[*mut TRaw]) -> Vec<Option<&'a TRaw>> {
+    fn get_rawvec_from_slice<'a, TRaw>(raw: &[*mut TRaw]) -> Vec<Option<TRaw>> {
         raw.iter().map(|x| {
             if let Some(raw) = unsafe { x.as_ref() } {
                 Some(raw)

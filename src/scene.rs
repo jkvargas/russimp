@@ -63,17 +63,15 @@ use crate::{
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Scene<'a> {
-    #[derivative(Debug = "ignore")]
-    scene: &'a aiScene,
-    pub materials: Vec<Material<'a>>,
-    pub meshes: Vec<Mesh<'a>>,
-    pub metadata: Option<MetaData<'a>>,
-    pub animations: Vec<Animation<'a>>,
-    pub cameras: Vec<Camera<'a>>,
-    pub lights: Vec<Light<'a>>,
-    pub root: Option<Rc<RefCell<Node<'a>>>>,
-    pub textures: Vec<Texture<'a>>,
+pub struct Scene {
+    pub materials: Vec<Material>,
+    pub meshes: Vec<Mesh>,
+    pub metadata: Option<MetaData>,
+    pub animations: Vec<Animation>,
+    pub cameras: Vec<Camera>,
+    pub lights: Vec<Light>,
+    pub root: Option<Rc<RefCell<Node>>>,
+    pub textures: Vec<Texture>,
     pub flags: u32,
 }
 
@@ -114,7 +112,7 @@ pub enum PostProcessSteps {
     GenBoundingBoxes = aiPostProcessSteps_aiProcess_GenBoundingBoxes,
 }
 
-impl<'a> Drop for Scene<'a> {
+impl Drop for Scene {
     fn drop(&mut self) {
         unsafe {
             aiReleaseImport(self.scene);
@@ -122,10 +120,10 @@ impl<'a> Drop for Scene<'a> {
     }
 }
 
-impl<'a> FromRaw for Scene<'a> {}
+impl FromRaw for Scene {}
 
-impl<'a> Scene<'a> {
-    pub fn from(file_path: &str, flags: Vec<PostProcessSteps>) -> Russult<Scene<'a>> {
+impl Scene {
+    pub fn from(file_path: &str, flags: Vec<PostProcessSteps>) -> Russult<Scene> {
         let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
         let file_path = CString::new(file_path).unwrap();
 
@@ -144,7 +142,7 @@ impl<'a> Scene<'a> {
     }
 
     #[inline]
-    fn get_scene_from_file(string: CString, flags: u32) -> Option<&'a aiScene> {
+    fn get_scene_from_file(string: CString, flags: u32) -> Option<&aiScene> {
         unsafe { aiImportFile(string.as_ptr(), flags).as_ref() }
     }
 

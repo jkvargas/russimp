@@ -19,20 +19,17 @@ use derivative::Derivative;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct MeshMorphKey<'a> {
-    #[derivative(Debug="ignore")]
-    mesh_morph_key: &'a aiMeshMorphKey,
+pub struct MeshMorphKey {
     pub time: f64,
-    pub values: Vec<&'a u32>,
-    pub weights: Vec<&'a f64>,
+    pub values: Vec<u32>,
+    pub weights: Vec<f64>,
 }
 
-impl<'a> FromRaw for MeshMorphKey<'a> {}
+impl FromRaw for MeshMorphKey {}
 
-impl<'a> Into<MeshMorphKey<'a>> for &'a aiMeshMorphKey {
-    fn into(self) -> MeshMorphKey<'a> {
+impl Into<MeshMorphKey> for &aiMeshMorphKey {
+    fn into(self) -> MeshMorphKey {
         MeshMorphKey {
-            mesh_morph_key: self,
             time: self.mTime,
             values: MeshMorphKey::get_rawvec(self.mValues, self.mNumValuesAndWeights),
             weights: MeshMorphKey::get_rawvec(self.mWeights, self.mNumValuesAndWeights),
@@ -42,19 +39,16 @@ impl<'a> Into<MeshMorphKey<'a>> for &'a aiMeshMorphKey {
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct MeshMorphAnim<'a> {
-    #[derivative(Debug="ignore")]
-    mesh_morph_anim: &'a aiMeshMorphAnim,
-    pub keys: Vec<MeshMorphKey<'a>>,
+pub struct MeshMorphAnim {
+    pub keys: Vec<MeshMorphKey>,
     pub name: String,
 }
 
-impl<'a> FromRaw for MeshMorphAnim<'a> {}
+impl FromRaw for MeshMorphAnim {}
 
-impl<'a> Into<MeshMorphAnim<'a>> for &'a aiMeshMorphAnim {
-    fn into(self) -> MeshMorphAnim<'a> {
+impl Into<MeshMorphAnim> for &aiMeshMorphAnim {
+    fn into(self) -> MeshMorphAnim {
         MeshMorphAnim {
-            mesh_morph_anim: self,
             keys: MeshMorphAnim::get_vec(self.mKeys, self.mNumKeys),
             name: self.mName.into(),
         }
@@ -63,23 +57,20 @@ impl<'a> Into<MeshMorphAnim<'a>> for &'a aiMeshMorphAnim {
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct NodeAnim<'a> {
-    #[derivative(Debug="ignore")]
-    anim_node: &'a aiNodeAnim,
+pub struct NodeAnim {
     pub name: String,
-    pub position_keys: Vec<&'a aiVectorKey>,
-    pub rotation_keys: Vec<&'a aiQuatKey>,
-    pub scaling_keys: Vec<&'a aiVectorKey>,
+    pub position_keys: Vec<aiVectorKey>,
+    pub rotation_keys: Vec<aiQuatKey>,
+    pub scaling_keys: Vec<aiVectorKey>,
     pub post_state: u32,
     pub pre_state: u32,
 }
 
-impl<'a> FromRaw for NodeAnim<'a> {}
+impl FromRaw for NodeAnim {}
 
-impl<'a> Into<NodeAnim<'a>> for &'a aiNodeAnim {
-    fn into(self) -> NodeAnim<'a> {
+impl Into<NodeAnim> for &aiNodeAnim {
+    fn into(self) -> NodeAnim {
         NodeAnim {
-            anim_node: self,
             name: self.mNodeName.into(),
             position_keys: NodeAnim::get_vec(self.mPositionKeys, self.mNumPositionKeys),
             rotation_keys: NodeAnim::get_vec(self.mRotationKeys, self.mNumRotationKeys),
@@ -92,19 +83,16 @@ impl<'a> Into<NodeAnim<'a>> for &'a aiNodeAnim {
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct MeshAnim<'a> {
-    #[derivative(Debug="ignore")]
-    mesh_anim: &'a aiMeshAnim,
+pub struct MeshAnim {
     name: String,
-    keys: Vec<&'a aiMeshKey>,
+    keys: Vec<aiMeshKey>,
 }
 
-impl<'a> FromRaw for MeshAnim<'a> {}
+impl FromRaw for MeshAnim {}
 
-impl<'a> Into<MeshAnim<'a>> for &'a aiMeshAnim {
-    fn into(self) -> MeshAnim<'a> {
+impl Into<MeshAnim> for &aiMeshAnim {
+    fn into(self) -> MeshAnim {
         MeshAnim {
-            mesh_anim: self,
             name: self.mName.into(),
             keys: MeshAnim::get_vec(self.mKeys, self.mNumKeys),
         }
@@ -113,23 +101,20 @@ impl<'a> Into<MeshAnim<'a>> for &'a aiMeshAnim {
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Animation<'a> {
-    #[derivative(Debug="ignore")]
-    animation: &'a aiAnimation,
+pub struct Animation {
     pub name: String,
-    pub channels: Vec<NodeAnim<'a>>,
+    pub channels: Vec<NodeAnim>,
     pub duration: f64,
-    pub morph_mesh_channels: Vec<MeshMorphAnim<'a>>,
-    pub mesh_channels: Vec<MeshAnim<'a>>,
+    pub morph_mesh_channels: Vec<MeshMorphAnim>,
+    pub mesh_channels: Vec<MeshAnim>,
     pub ticks_per_second: f64,
 }
 
-impl<'a> FromRaw for Animation<'a> {}
+impl FromRaw for Animation {}
 
-impl<'a> Into<Animation<'a>> for &'a aiAnimation {
-    fn into(self) -> Animation<'a> {
+impl Into<Animation> for &aiAnimation {
+    fn into(self) -> Animation {
         Animation {
-            animation: self,
             name: self.mName.into(),
             channels: Animation::get_vec_from_raw(self.mChannels, self.mNumChannels),
             duration: self.mDuration,

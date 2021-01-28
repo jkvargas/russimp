@@ -16,25 +16,22 @@ use derivative::Derivative;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Texture<'a> {
-    #[derivative(Debug = "ignore")]
-    texture: &'a aiTexture,
+pub struct Texture {
     filename: String,
     height: u32,
     width: u32,
     ach_format_hint: String,
-    data: Vec<&'a aiTexel>,
+    data: Vec<aiTexel>,
 }
 
-impl<'a> FromRaw for Texture<'a> {}
+impl FromRaw for Texture {}
 
-impl<'a> Into<Texture<'a>> for &'a aiTexture {
-    fn into(self) -> Texture<'a> {
+impl Into<Texture> for &aiTexture {
+    fn into(self) -> Texture {
         let content = unsafe { CStr::from_ptr(self.achFormatHint.as_ptr()) };
         let ach_format_hint = content.to_str().unwrap().to_string();
 
         Texture {
-            texture: self,
             filename: self.mFilename.into(),
             height: self.mHeight,
             width: self.mWidth,

@@ -1,4 +1,5 @@
 use num_traits::ToPrimitive;
+
 use crate::{
     scene::{Scene,
             PostProcessSteps},
@@ -22,9 +23,7 @@ use derivative::Derivative;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Light<'a> {
-    #[derivative(Debug = "ignore")]
-    light: &'a aiLight,
+pub struct Light {
     up: aiVector3D,
     pos: aiVector3D,
     name: String,
@@ -41,7 +40,7 @@ pub struct Light<'a> {
     light_source_type: LightSourceType,
 }
 
-impl<'a> Light<'a> {
+impl Light {
     fn get_light_source_type_from(m_type: &aiLightSourceType) -> LightSourceType {
         if (ToPrimitive::to_u32(&LightSourceType::Area).unwrap() & *m_type) != 0 {
             return LightSourceType::Area;
@@ -83,10 +82,9 @@ pub enum LightSourceType {
     Directional = aiLightSourceType_aiLightSource_DIRECTIONAL,
 }
 
-impl<'a> Into<Light<'a>> for &'a aiLight {
-    fn into(self) -> Light<'a> {
+impl Into<Light> for &aiLight {
+    fn into(self) -> Light {
         Light {
-            light: self,
             up: self.mUp,
             pos: self.mPosition,
             name: self.mName.into(),

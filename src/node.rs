@@ -21,22 +21,19 @@ use derivative::Derivative;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Node<'a> {
-    #[derivative(Debug = "ignore")]
-    node: &'a aiNode,
+pub struct Node {
     pub name: String,
-    pub children: Vec<Rc<RefCell<Node<'a>>>>,
-    pub meshes: Vec<&'a u32>,
-    pub metadata: Option<MetaData<'a>>,
+    pub children: Vec<Rc<RefCell<Node>>>,
+    pub meshes: Vec<u32>,
+    pub metadata: Option<MetaData>,
     pub transformation: aiMatrix4x4,
 }
 
-impl<'a> FromRaw for Node<'a> {}
+impl FromRaw for Node {}
 
-impl<'a> Into<Node<'a>> for &'a aiNode {
-    fn into(self) -> Node<'a> {
+impl Into<Node> for &aiNode {
+    fn into(self) -> Node {
         Node {
-            node: self,
             name: self.mName.into(),
             children: Node::get_vec_rc_from_raw(self.mChildren, self.mNumChildren),
             meshes: Node::get_rawvec(self.mMeshes, self.mNumMeshes),
@@ -46,8 +43,8 @@ impl<'a> Into<Node<'a>> for &'a aiNode {
     }
 }
 
-impl<'a> Node<'a> {
-    fn get_parent(&self) -> Option<Node<'a>> {
+impl Node {
+    fn get_parent(&self) -> Option<Node> {
         Node::get_raw(self.node.mParent)
     }
 }

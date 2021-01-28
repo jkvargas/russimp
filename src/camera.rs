@@ -14,9 +14,7 @@ use derivative::Derivative;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Camera<'a> {
-    #[derivative(Debug = "ignore")]
-    camera: &'a aiCamera,
+pub struct Camera {
     pub name: String,
     pub aspect: f32,
     pub clip_plane_far: f32,
@@ -27,12 +25,11 @@ pub struct Camera<'a> {
     pub up: aiVector3D,
 }
 
-impl<'a> FromRaw for Camera<'a> {}
+impl FromRaw for Camera {}
 
-impl<'a> Into<Camera<'a>> for &'a aiCamera {
-    fn into(self) -> Camera<'a> {
+impl Into<Camera> for &aiCamera {
+    fn into(self) -> Camera {
         Camera {
-            camera: self,
             name: self.mName.into(),
             aspect: self.mAspect,
             clip_plane_far: self.mClipPlaneFar,
