@@ -128,7 +128,6 @@ impl Scene {
         let file_path = CString::new(file_path).unwrap();
 
         Scene::get_scene_from_file(file_path, bitwise_flag).map_or(Err(Scene::get_error()), |scene| Ok(Self {
-            scene,
             materials: Scene::get_vec_from_raw(scene.mMaterials, scene.mNumMaterials),
             meshes: Scene::get_vec_from_raw(scene.mMeshes, scene.mNumMeshes),
             metadata: Scene::get_raw(scene.mMetaData),
@@ -142,7 +141,7 @@ impl Scene {
     }
 
     #[inline]
-    fn get_scene_from_file(string: CString, flags: u32) -> Option<&aiScene> {
+    fn get_scene_from_file<'a>(string: CString, flags: u32) -> Option<&'a aiScene> {
         unsafe { aiImportFile(string.as_ptr(), flags).as_ref() }
     }
 

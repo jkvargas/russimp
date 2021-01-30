@@ -96,14 +96,14 @@ trait FromRaw {
         raw.iter().map(|x| x.into()).collect()
     }
 
-    fn get_rawvec<'a, TRaw>(raw: *mut TRaw, len: c_uint) -> Vec<TRaw> {
+    fn get_rawvec<TRaw>(raw: *mut TRaw, len: c_uint) -> Vec<TRaw> where TRaw : Clone {
         let slice = slice_from_raw_parts(raw as *const TRaw, len as usize);
         if slice.is_null() {
             return vec![];
         }
 
         let raw = unsafe { slice.as_ref() }.unwrap();
-        raw.iter().collect()
+        raw.to_vec()
     }
 
     fn get_vec_from_raw<'a, TComponent, TRaw>(raw_source: *mut *mut TRaw, num_raw_items: c_uint) -> Vec<TComponent> where &'a TRaw: Into<TComponent> + 'a {
@@ -126,10 +126,10 @@ trait FromRaw {
         raw.iter().map(|x| Rc::new(RefCell::new(unsafe { x.as_ref() }.unwrap().into()))).collect()
     }
 
-    fn get_rawvec_from_slice<'a, TRaw>(raw: &[*mut TRaw]) -> Vec<Option<TRaw>> {
+    fn get_rawvec_from_slice<TRaw>(raw: &[*mut TRaw]) -> Vec<Option<TRaw>> where TRaw : Clone {
         raw.iter().map(|x| {
             if let Some(raw) = unsafe { x.as_ref() } {
-                Some(raw)
+                Some(raw.clone())
             } else {
                 None
             }

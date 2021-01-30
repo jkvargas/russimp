@@ -63,7 +63,7 @@ impl Into<Material> for &aiMaterial {
 #[derivative(Debug)]
 pub struct MaterialProperty {
     key: String,
-    data: [u8],
+    data: Vec<u8>,
     index: usize,
     material_type: PropertyTypeInfo,
     semantic: TextureType,
@@ -114,7 +114,7 @@ impl Into<MaterialProperty> for &aiMaterialProperty {
 
         MaterialProperty {
             key: self.mKey.into(),
-            data,
+            data: data.to_vec(),
             index: self.mIndex as usize,
             material_type: FromPrimitive::from_u32(self.mType as u32).unwrap(),
             semantic: FromPrimitive::from_u32(self.mSemantic as u32).unwrap(),

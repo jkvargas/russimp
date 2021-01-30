@@ -30,7 +30,7 @@ use derivative::Derivative;
 
 trait MetaDataEntryCast<'a> {
     fn can_cast(&self) -> bool;
-    fn cast(&self) -> Russult<MetadataType<'a>>;
+    fn cast(&self) -> Russult<MetadataType>;
 }
 
 struct MetaDataEntryString<'a> {
@@ -62,7 +62,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryULong<'a> {
         (self.data.mType & aiMetadataType_AI_UINT64) != 0
     }
 
-    fn cast(&self) -> Russult<MetadataType<'a>> {
+    fn cast(&self) -> Russult<MetadataType> {
         let raw = self.data.mData as *mut u64;
 
         if let Some(result) = unsafe { raw.as_ref() } {
@@ -78,7 +78,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryInteger<'a> {
         (self.data.mType & aiMetadataType_AI_INT32) != 0
     }
 
-    fn cast(&self) -> Russult<MetadataType<'a>> {
+    fn cast(&self) -> Russult<MetadataType> {
         let raw = self.data.mData as *mut i32;
 
         if let Some(result) = unsafe { raw.as_ref() } {
@@ -94,7 +94,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryBool<'a> {
         (self.data.mType & aiMetadataType_AI_BOOL) != 0
     }
 
-    fn cast(&self) -> Russult<MetadataType<'a>> {
+    fn cast(&self) -> Russult<MetadataType> {
         let raw = self.data.mData as *mut bool;
 
         if let Some(result) = unsafe { raw.as_ref() } {
@@ -110,7 +110,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryDouble<'a> {
         (self.data.mType & aiMetadataType_AI_DOUBLE) != 0
     }
 
-    fn cast(&self) -> Russult<MetadataType<'a>> {
+    fn cast(&self) -> Russult<MetadataType> {
         let raw = self.data.mData as *mut f64;
 
         if let Some(result) = unsafe { raw.as_ref() } {
@@ -126,7 +126,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryFloat<'a> {
         (self.data.mType & aiMetadataType_AI_FLOAT) != 0
     }
 
-    fn cast(&self) -> Russult<MetadataType<'a>> {
+    fn cast(&self) -> Russult<MetadataType> {
         let raw = self.data.mData as *mut f32;
 
         if let Some(result) = unsafe { raw.as_ref() } {
@@ -142,7 +142,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryString<'a> {
         (self.data.mType & aiMetadataType_AI_AISTRING) != 0
     }
 
-    fn cast(&self) -> Russult<MetadataType<'a>> {
+    fn cast(&self) -> Russult<MetadataType> {
         let cstr = unsafe { CStr::from_ptr(self.data.mData as *const c_char) };
         cstr.to_str().map_or_else(|e| Err(e.into()), |r| Ok(MetadataType::String(r.to_string())))
     }
@@ -157,10 +157,10 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataVector3d<'a> {
         (self.data.mType & aiMetadataType_AI_AIVECTOR3D) != 0
     }
 
-    fn cast(&self) -> Russult<MetadataType<'a>> {
+    fn cast(&self) -> Russult<MetadataType> {
         let vec = self.data.mData as *mut aiVector3D;
         if let Some(content) = unsafe { vec.as_ref() } {
-            return Ok(MetadataType::Vector3d(content));
+            return Ok(MetadataType::Vector3d(content.clone()));
         }
 
         Err(RussimpError::MetadataError("data is null".to_string()))
@@ -169,19 +169,18 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataVector3d<'a> {
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct MetaData<'a> {
+pub struct MetaData {
     #[derivative(Debug = "ignore")]
-    meta_data: &'a aiMetadata,
     pub keys: Vec<String>,
-    pub values: Vec<MetaDataEntry<'a>>,
+    pub values: Vec<MetaDataEntry>,
 }
 
 #[derive(Derivative)]
 #[derivative(Debug)]
 #[repr(u32)]
-pub enum MetadataType<'a> {
+pub enum MetadataType {
     String(String),
-    Vector3d(&'a aiVector3D),
+    Vector3d(aiVector3D),
     Bool(bool),
     Float(f32),
     Double(f64),
@@ -193,15 +192,13 @@ pub enum MetadataType<'a> {
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct MetaDataEntry<'a> {
-    #[derivative(Debug = "ignore")]
-    raw: &'a aiMetadataEntry,
-    pub data: Russult<MetadataType<'a>>,
+pub struct MetaDataEntry {
+    pub data: Russult<MetadataType>,
 }
 
-impl<'a> MetaDataEntry<'a> {
-    fn cast_data(data: &'a aiMetadataEntry) -> Russult<MetadataType<'a>> {
-        let casters: Vec<Box<dyn MetaDataEntryCast<'a>>> = vec![
+impl MetaDataEntry {
+    fn cast_data(data: &aiMetadataEntry) -> Russult<MetadataType> {
+        let casters: Vec<Box<dyn MetaDataEntryCast>> = vec![
             Box::new(MetaDataVector3d {
                 data
             }), Box::new(MetaDataEntryString {
@@ -228,21 +225,19 @@ impl<'a> MetaDataEntry<'a> {
     }
 }
 
-impl<'a> Into<MetaDataEntry<'a>> for &'a aiMetadataEntry {
-    fn into(self) -> MetaDataEntry<'a> {
+impl Into<MetaDataEntry> for &aiMetadataEntry {
+    fn into(self) -> MetaDataEntry {
         MetaDataEntry {
-            raw: self,
             data: MetaDataEntry::cast_data(self),
         }
     }
 }
 
-impl<'a> FromRaw for MetaData<'a> {}
+impl FromRaw for MetaData {}
 
-impl<'a> Into<MetaData<'a>> for &'a aiMetadata {
-    fn into(self) -> MetaData<'a> {
+impl Into<MetaData> for &aiMetadata {
+    fn into(self) -> MetaData {
         MetaData {
-            meta_data: self,
             keys: MetaData::get_vec(self.mKeys, self.mNumProperties),
             values: MetaData::get_vec(self.mValues, self.mNumProperties),
         }
