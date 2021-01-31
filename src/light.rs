@@ -16,7 +16,7 @@ use crate::{
         aiLightSourceType_aiLightSource_DIRECTIONAL,
         aiLightSourceType,
     },
-    get_model,
+    Utils
 };
 
 use derivative::Derivative;

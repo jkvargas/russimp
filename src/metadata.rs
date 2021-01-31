@@ -1,5 +1,4 @@
 use crate::{
-    FromRaw,
     scene::{
         PostProcessSteps,
         Scene,
@@ -18,7 +17,7 @@ use crate::{
     },
     Russult,
     RussimpError,
-    get_model,
+    Utils,
 };
 
 use std::{
@@ -27,6 +26,7 @@ use std::{
 };
 
 use derivative::Derivative;
+use crate::sys::aiString;
 
 trait MetaDataEntryCast<'a> {
     fn can_cast(&self) -> bool;
@@ -170,9 +170,24 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataVector3d<'a> {
 #[derive(Derivative)]
 #[derivative(Debug)]
 pub struct MetaData {
-    #[derivative(Debug = "ignore")]
     pub keys: Vec<String>,
     pub values: Vec<MetaDataEntry>,
+}
+
+impl MetaData {
+    pub fn new(keys: Vec<String>, values: Vec<MetaDataEntry>) -> MetaData {
+        Self {
+            keys,
+            values
+        }
+    }
+
+    pub fn convert(meta_data: &aiMetadata) -> MetaData {
+        let keys = Utils::get_vec(meta_data.mKeys, meta_data.mNumProperties, &|str: &aiString| { str.into() });
+        let values = Utils::get_vec(meta_data.mValues, meta_data.mNumProperties, &MetaDataEntry::new);
+
+        MetaData::new(keys, values)
+    }
 }
 
 #[derive(Derivative)]
@@ -223,23 +238,18 @@ impl MetaDataEntry {
 
         Err(RussimpError::MetadataError("could not find caster for metadata type".to_string()))
     }
+
+    pub fn new(data: &aiMetadataEntry) -> MetaDataEntry {
+        Self {
+            data: Self::cast_data(data)
+        }
+    }
 }
 
 impl Into<MetaDataEntry> for &aiMetadataEntry {
     fn into(self) -> MetaDataEntry {
         MetaDataEntry {
             data: MetaDataEntry::cast_data(self),
-        }
-    }
-}
-
-impl FromRaw for MetaData {}
-
-impl Into<MetaData> for &aiMetadata {
-    fn into(self) -> MetaData {
-        MetaData {
-            keys: MetaData::get_vec(self.mKeys, self.mNumProperties),
-            values: MetaData::get_vec(self.mValues, self.mNumProperties),
         }
     }
 }

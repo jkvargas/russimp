@@ -3,13 +3,12 @@ use crate::{
         aiNode,
         aiMatrix4x4,
     },
-    FromRaw,
     scene::{
         PostProcessSteps,
         Scene,
     },
     metadata::MetaData,
-    get_model,
+    Utils,
 };
 
 use std::{
@@ -29,23 +28,19 @@ pub struct Node {
     pub transformation: aiMatrix4x4,
 }
 
-impl FromRaw for Node {}
-
-impl Into<Node> for &aiNode {
-    fn into(self) -> Node {
+impl Node {
+    pub fn new(node: &aiNode) -> Node {
         Node {
-            name: self.mName.into(),
-            children: Node::get_vec_rc_from_raw(self.mChildren, self.mNumChildren),
-            meshes: Node::get_rawvec(self.mMeshes, self.mNumMeshes),
-            metadata: Node::get_raw(self.mMetaData),
-            transformation: self.mTransformation,
+            name: node.mName.into(),
+            children: Utils::get_vec_rc_from_raw(node.mChildren, node.mNumChildren, &Node::new),
+            meshes: Utils::get_rawvec(node.mMeshes, node.mNumMeshes),
+            metadata: Utils::get_raw(node.mMetaData, &MetaData::new),
+            transformation: node.mTransformation,
         }
     }
-}
 
-impl Node {
     fn get_parent(&self) -> Option<Node> {
-        Node::get_raw(self.node.mParent)
+        Utils::get_raw(self.node.mParent)
     }
 }
 

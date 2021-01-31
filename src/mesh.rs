@@ -13,14 +13,13 @@ use crate::{
         aiPrimitiveType_aiPrimitiveType_TRIANGLE,
         aiAnimMesh,
     },
-    FromRaw,
     bone::Bone,
     face::Face,
     scene::{
         PostProcessSteps,
         Scene,
     },
-    get_model};
+    Utils};
 
 use num_traits::ToPrimitive;
 
@@ -57,8 +56,6 @@ pub enum PrimitiveType {
     Triangle = aiPrimitiveType_aiPrimitiveType_TRIANGLE,
 }
 
-impl FromRaw for Mesh {}
-
 impl Into<Mesh> for &aiMesh {
     fn into(self) -> Mesh {
         Mesh {
@@ -86,8 +83,6 @@ impl Into<Mesh> for &aiMesh {
 pub struct AnimMesh {
     bitangents: Vec<aiVector3D>,
 }
-
-impl FromRaw for AnimMesh {}
 
 impl Into<AnimMesh> for &aiAnimMesh {
     fn into(self) -> AnimMesh {

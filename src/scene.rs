@@ -49,7 +49,6 @@ use crate::{
     },
     Russult,
     RussimpError,
-    FromRaw,
     material::Material,
     mesh::Mesh,
     metadata::MetaData,
@@ -58,7 +57,7 @@ use crate::{
     light::Light,
     node::Node,
     texture::Texture,
-    get_model
+    Utils
 };
 
 #[derive(Derivative)]
@@ -120,22 +119,20 @@ impl Drop for Scene {
     }
 }
 
-impl FromRaw for Scene {}
-
 impl Scene {
     pub fn from(file_path: &str, flags: Vec<PostProcessSteps>) -> Russult<Scene> {
         let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
         let file_path = CString::new(file_path).unwrap();
 
         Scene::get_scene_from_file(file_path, bitwise_flag).map_or(Err(Scene::get_error()), |scene| Ok(Self {
-            materials: Scene::get_vec_from_raw(scene.mMaterials, scene.mNumMaterials),
-            meshes: Scene::get_vec_from_raw(scene.mMeshes, scene.mNumMeshes),
-            metadata: Scene::get_raw(scene.mMetaData),
-            animations: Scene::get_vec_from_raw(scene.mAnimations, scene.mNumAnimations),
-            cameras: Scene::get_vec_from_raw(scene.mCameras, scene.mNumCameras),
-            lights: Scene::get_vec_from_raw(scene.mLights, scene.mNumLights),
-            root: Scene::get_rc_raw(scene.mRootNode),
-            textures: Scene::get_vec_from_raw(scene.mTextures, scene.mNumTextures),
+            materials: Utils::get_vec_from_raw(scene.mMaterials, scene.mNumMaterials),
+            meshes: Utils::get_vec_from_raw(scene.mMeshes, scene.mNumMeshes),
+            metadata: Utils::get_raw(scene.mMetaData),
+            animations: Utils::get_vec_from_raw(scene.mAnimations, scene.mNumAnimations),
+            cameras: Utils::get_vec_from_raw(scene.mCameras, scene.mNumCameras),
+            lights: Utils::get_vec_from_raw(scene.mLights, scene.mNumLights),
+            root: Utils::get_rc_raw(scene.mRootNode),
+            textures: Utils::get_vec_from_raw(scene.mTextures, scene.mNumTextures),
             flags: scene.mFlags,
         }))
     }

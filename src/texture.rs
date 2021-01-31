@@ -1,16 +1,12 @@
 use std::ffi::CStr;
 
-use crate::{
-    FromRaw,
-    sys::{
-        aiTexture,
-        aiTexel,
-    },
-    scene::{
-        Scene,
-        PostProcessSteps,
-    },
-};
+use crate::{sys::{
+    aiTexture,
+    aiTexel,
+}, scene::{
+    Scene,
+    PostProcessSteps,
+}, Utils};
 
 use derivative::Derivative;
 
@@ -24,8 +20,6 @@ pub struct Texture {
     data: Vec<aiTexel>,
 }
 
-impl FromRaw for Texture {}
-
 impl Into<Texture> for &aiTexture {
     fn into(self) -> Texture {
         let content = unsafe { CStr::from_ptr(self.achFormatHint.as_ptr()) };
@@ -36,7 +30,7 @@ impl Into<Texture> for &aiTexture {
             height: self.mHeight,
             width: self.mWidth,
             ach_format_hint,
-            data: Texture::get_rawvec(self.pcData, self.mHeight * self.mWidth),
+            data: Utils::get_rawvec(self.pcData, self.mHeight * self.mWidth),
         }
     }
 }

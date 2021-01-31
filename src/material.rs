@@ -36,8 +36,7 @@ use crate::{
     scene::{PostProcessSteps,
             Scene
     },
-    FromRaw,
-    get_model
+    Utils
 };
 
 use derivative::Derivative;
@@ -49,12 +48,10 @@ pub struct Material {
     properties: Vec<MaterialProperty>,
 }
 
-impl FromRaw for Material {}
-
-impl Into<Material> for &aiMaterial {
-    fn into(self) -> Material {
+impl Material {
+    pub fn new(material: &aiMaterial) -> Material {
         Material {
-            properties: Material::get_vec_from_raw(self.mProperties, self.mNumProperties),
+            properties: Utils::get_vec_from_raw(material.mProperties, material.mNumProperties, &MaterialProperty::new),
         }
     }
 }
@@ -107,17 +104,17 @@ pub enum TextureType {
     Force32bit = aiTextureType__aiTextureType_Force32Bit,
 }
 
-impl Into<MaterialProperty> for &aiMaterialProperty {
-    fn into(self) -> MaterialProperty {
-        let slice = slice_from_raw_parts(self.mData as *const u8, self.mDataLength as usize);
+impl MaterialProperty {
+    pub fn new(material: &aiMaterialProperty) -> MaterialProperty {
+        let slice = slice_from_raw_parts(material.mData as *const u8, material.mDataLength as usize);
         let data = unsafe { slice.as_ref() }.unwrap();
 
         MaterialProperty {
-            key: self.mKey.into(),
+            key: material.mKey.into(),
             data: data.to_vec(),
-            index: self.mIndex as usize,
-            material_type: FromPrimitive::from_u32(self.mType as u32).unwrap(),
-            semantic: FromPrimitive::from_u32(self.mSemantic as u32).unwrap(),
+            index: material.mIndex as usize,
+            material_type: FromPrimitive::from_u32(material.mType as u32).unwrap(),
+            semantic: FromPrimitive::from_u32(material.mSemantic as u32).unwrap(),
         }
     }
 }

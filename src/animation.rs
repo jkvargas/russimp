@@ -1,21 +1,22 @@
 use crate::{
-    FromRaw,
     sys::{
-        aiMeshMorphKey,
-        aiMeshMorphAnim,
-        aiNodeAnim,
-        aiQuatKey,
-        aiVectorKey,
-        aiMeshAnim,
-        aiMeshKey,
-        aiAnimation,
-    }, scene::{
-        Scene,
-        PostProcessSteps,
-    },
-    get_model};
+    aiMeshMorphKey,
+    aiMeshMorphAnim,
+    aiNodeAnim,
+    aiQuatKey,
+    aiVectorKey,
+    aiMeshAnim,
+    aiMeshKey,
+    aiAnimation,
+    aiVector3D,
+    aiQuaternion,
+}, scene::{
+    Scene,
+    PostProcessSteps,
+}, Vector3D, Utils};
 
 use derivative::Derivative;
+use crate::sys::{aiNode, aiMesh};
 
 #[derive(Derivative)]
 #[derivative(Debug)]
@@ -25,14 +26,12 @@ pub struct MeshMorphKey {
     pub weights: Vec<f64>,
 }
 
-impl FromRaw for MeshMorphKey {}
-
-impl Into<MeshMorphKey> for &aiMeshMorphKey {
-    fn into(self) -> MeshMorphKey {
-        MeshMorphKey {
-            time: self.mTime,
-            values: MeshMorphKey::get_rawvec(self.mValues, self.mNumValuesAndWeights),
-            weights: MeshMorphKey::get_rawvec(self.mWeights, self.mNumValuesAndWeights),
+impl MeshMorphKey {
+    pub fn new(mesh_morph_key: &aiMeshMorphKey) -> MeshMorphKey {
+        Self {
+            time: mesh_morph_key.mTime,
+            values: Utils::get_rawvec(mesh_morph_key.mValues, mesh_morph_key.mNumValuesAndWeights),
+            weights: Utils::get_rawvec(mesh_morph_key.mWeights, mesh_morph_key.mNumValuesAndWeights),
         }
     }
 }
@@ -44,13 +43,64 @@ pub struct MeshMorphAnim {
     pub name: String,
 }
 
-impl FromRaw for MeshMorphAnim {}
-
-impl Into<MeshMorphAnim> for &aiMeshMorphAnim {
-    fn into(self) -> MeshMorphAnim {
+impl MeshMorphAnim {
+    pub fn new(mesh: &aiMeshMorphAnim) -> MeshMorphAnim {
         MeshMorphAnim {
-            keys: MeshMorphAnim::get_vec(self.mKeys, self.mNumKeys),
-            name: self.mName.into(),
+            keys: Utils::get_vec(mesh.mKeys, mesh.mNumKeys, &MeshMorphKey::new),
+            name: mesh.mName.into(),
+        }
+    }
+}
+
+#[derive(Derivative)]
+#[derivative(Debug)]
+pub struct VectorKey {
+    pub time: f64,
+    pub value: Vector3D,
+}
+
+impl VectorKey {
+    pub fn new(vec: &aiVectorKey) -> VectorKey {
+        Self {
+            time: vec.mTime,
+            value: vec.mValue.into(),
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Copy, Clone, Derivative)]
+#[derivative(Debug)]
+pub struct QuatKey {
+    pub time: f64,
+    pub value: Quaternion,
+}
+
+impl QuatKey {
+    pub fn new(quat_key: &aiQuatKey) -> QuatKey {
+        Self {
+            time: quat_key.mTime,
+            value: quat_key.mValue.into(),
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct Quaternion {
+    pub w: f32,
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+}
+
+impl Into<Quaternion> for aiQuaternion {
+    fn into(self) -> Quaternion {
+        Quaternion {
+            w: self.w,
+            x: self.x,
+            y: self.y,
+            z: self.z,
         }
     }
 }
@@ -59,24 +109,22 @@ impl Into<MeshMorphAnim> for &aiMeshMorphAnim {
 #[derivative(Debug)]
 pub struct NodeAnim {
     pub name: String,
-    pub position_keys: Vec<aiVectorKey>,
-    pub rotation_keys: Vec<aiQuatKey>,
-    pub scaling_keys: Vec<aiVectorKey>,
+    pub position_keys: Vec<VectorKey>,
+    pub rotation_keys: Vec<QuatKey>,
+    pub scaling_keys: Vec<VectorKey>,
     pub post_state: u32,
     pub pre_state: u32,
 }
 
-impl FromRaw for NodeAnim {}
-
-impl Into<NodeAnim> for &aiNodeAnim {
-    fn into(self) -> NodeAnim {
+impl NodeAnim {
+    pub fn new(node_anim: &aiNodeAnim) -> NodeAnim {
         NodeAnim {
-            name: self.mNodeName.into(),
-            position_keys: NodeAnim::get_vec(self.mPositionKeys, self.mNumPositionKeys),
-            rotation_keys: NodeAnim::get_vec(self.mRotationKeys, self.mNumRotationKeys),
-            scaling_keys: NodeAnim::get_vec(self.mScalingKeys, self.mNumScalingKeys),
-            post_state: self.mPostState,
-            pre_state: self.mPreState,
+            name: node_anim.mNodeName.into(),
+            position_keys: Utils::get_vec(node_anim.mPositionKeys, node_anim.mNumPositionKeys, &VectorKey::new),
+            rotation_keys: Utils::get_vec(node_anim.mRotationKeys, node_anim.mNumRotationKeys, &QuatKey::new),
+            scaling_keys: Utils::get_vec(node_anim.mScalingKeys, node_anim.mNumScalingKeys, &VectorKey::new),
+            post_state: node_anim.mPostState,
+            pre_state: node_anim.mPreState,
         }
     }
 }
@@ -85,16 +133,30 @@ impl Into<NodeAnim> for &aiNodeAnim {
 #[derivative(Debug)]
 pub struct MeshAnim {
     name: String,
-    keys: Vec<aiMeshKey>,
+    keys: Vec<MeshKey>,
 }
 
-impl FromRaw for MeshAnim {}
-
-impl Into<MeshAnim> for &aiMeshAnim {
-    fn into(self) -> MeshAnim {
+impl MeshAnim {
+    pub fn new(mesh: &aiMeshAnim) -> MeshAnim {
         MeshAnim {
-            name: self.mName.into(),
-            keys: MeshAnim::get_vec(self.mKeys, self.mNumKeys),
+            name: mesh.mName.into(),
+            keys: Utils::get_vec(mesh.mKeys, mesh.mNumKeys, &MeshKey::new),
+        }
+    }
+}
+
+#[derive(Derivative)]
+#[derivative(Debug)]
+struct MeshKey {
+    time: f64,
+    value: u32,
+}
+
+impl MeshKey {
+    pub fn new(mesh_key: &aiMeshKey) -> MeshKey {
+        MeshKey {
+            time: mesh_key.mTime,
+            value: mesh_key.mValue,
         }
     }
 }
@@ -110,24 +172,22 @@ pub struct Animation {
     pub ticks_per_second: f64,
 }
 
-impl FromRaw for Animation {}
-
-impl Into<Animation> for &aiAnimation {
-    fn into(self) -> Animation {
-        Animation {
-            name: self.mName.into(),
-            channels: Animation::get_vec_from_raw(self.mChannels, self.mNumChannels),
-            duration: self.mDuration,
-            morph_mesh_channels: Animation::get_vec_from_raw(self.mMorphMeshChannels, self.mNumMorphMeshChannels),
-            mesh_channels: Animation::get_vec_from_raw(self.mMeshChannels, self.mNumMeshChannels),
-            ticks_per_second: self.mTicksPerSecond,
+impl Animation {
+    pub fn new(animation: &aiAnimation) -> Animation {
+        Self {
+            name: animation.mName.into(),
+            channels: Utils::get_vec_from_raw(animation.mChannels, animation.mNumChannels, &NodeAnim::new),
+            duration: animation.mDuration,
+            morph_mesh_channels: Utils::get_vec_from_raw(animation.mMorphMeshChannels, animation.mNumMorphMeshChannels, &MeshMorphAnim::new),
+            mesh_channels: Utils::get_vec_from_raw(animation.mMeshChannels, animation.mNumMeshChannels, &MeshAnim::new),
+            ticks_per_second: animation.mTicksPerSecond,
         }
     }
 }
 
 #[test]
 fn camera_roll_animation_read() {
-    let current_directory_buf = get_model("models/3DS/CameraRollAnim.3ds");
+    let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
 
     let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,

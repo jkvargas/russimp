@@ -1,5 +1,4 @@
 use crate::{
-    FromRaw,
     sys::{
         aiCamera,
         aiVector3D},
@@ -7,7 +6,7 @@ use crate::{
         PostProcessSteps,
         Scene,
     },
-    get_model,
+    Utils
 };
 
 use derivative::Derivative;
@@ -24,8 +23,6 @@ pub struct Camera {
     pub position: aiVector3D,
     pub up: aiVector3D,
 }
-
-impl FromRaw for Camera {}
 
 impl Into<Camera> for &aiCamera {
     fn into(self) -> Camera {
