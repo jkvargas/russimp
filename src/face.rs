@@ -11,10 +11,10 @@ pub struct Face {
     pub indices: Vec<u32>,
 }
 
-impl Into<Face> for &aiFace {
-    fn into(self) -> Face {
-        Face {
-            indices: Utils::get_rawvec(self.mIndices, self.mNumIndices)
+impl Face {
+    pub fn new(face: &aiFace) -> Face {
+        Self {
+            indices: Utils::get_rawvec(face.mIndices, face.mNumIndices),
         }
     }
 }

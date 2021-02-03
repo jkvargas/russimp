@@ -9,6 +9,7 @@ use crate::{
     },
     metadata::MetaData,
     Utils,
+    Matrix4x4,
 };
 
 use std::{
@@ -25,7 +26,8 @@ pub struct Node {
     pub children: Vec<Rc<RefCell<Node>>>,
     pub meshes: Vec<u32>,
     pub metadata: Option<MetaData>,
-    pub transformation: aiMatrix4x4,
+    pub transformation: Matrix4x4,
+    pub parent: Option<Rc<RefCell<Node>>>,
 }
 
 impl Node {
@@ -35,18 +37,15 @@ impl Node {
             children: Utils::get_vec_rc_from_raw(node.mChildren, node.mNumChildren, &Node::new),
             meshes: Utils::get_rawvec(node.mMeshes, node.mNumMeshes),
             metadata: Utils::get_raw(node.mMetaData, &MetaData::new),
-            transformation: node.mTransformation,
+            transformation: Matrix4x4::new(&node.mTransformation),
+            parent: Utils::get_rc_raw(node.mParent, &Node::new),
         }
-    }
-
-    fn get_parent(&self) -> Option<Node> {
-        Utils::get_raw(self.node.mParent)
     }
 }
 
 #[test]
 fn checking_nodes() {
-    let current_directory_buf = get_model("models/BLEND/box.blend");
+    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
 
     let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
@@ -78,7 +77,7 @@ fn checking_nodes() {
 
 #[test]
 fn childs_parent_name_matches() {
-    let current_directory_buf = get_model("models/BLEND/box.blend");
+    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
 
     let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
@@ -90,7 +89,9 @@ fn childs_parent_name_matches() {
     let borrow = root.borrow();
 
     let first_son = borrow.children[0].borrow();
-    let first_son_parent = first_son.get_parent().unwrap();
+    let first_son_parent = first_son.parent.as_ref().unwrap();
 
-    assert_eq!(borrow.name, first_son_parent.name);
+    let dad = first_son_parent.borrow();
+
+    assert_eq!(borrow.name, dad.name);
 }

@@ -1,11 +1,8 @@
-use crate::{
-    Utils,
-    sys::{
-        aiBone,
-        aiVertexWeight,
-        aiMatrix4x4,
-    }
-};
+use crate::{Utils, sys::{
+    aiBone,
+    aiVertexWeight,
+    aiMatrix4x4,
+}, Matrix4x4};
 
 use derivative::Derivative;
 
@@ -14,15 +11,15 @@ use derivative::Derivative;
 pub struct Bone {
     pub weights: Vec<VertexWeight>,
     pub name: String,
-    pub offset_matrix: aiMatrix4x4,
+    pub offset_matrix: Matrix4x4,
 }
 
-impl Into<Bone> for &aiBone {
-    fn into(self) -> Bone {
+impl Bone {
+    pub fn new(bone: &aiBone) -> Bone {
         Bone {
-            weights: Utils::get_vec(self.mWeights, self.mNumWeights, &VertexWeight::convert),
-            name: self.mName.into(),
-            offset_matrix: self.mOffsetMatrix,
+            weights: Utils::get_vec(bone.mWeights, bone.mNumWeights, &VertexWeight::convert),
+            name: bone.mName.into(),
+            offset_matrix: Matrix4x4::new(&bone.mOffsetMatrix),
         }
     }
 }
@@ -37,8 +34,8 @@ pub struct VertexWeight {
 impl VertexWeight {
     pub fn new(vertex_id: u32, weight: f32) -> VertexWeight {
         VertexWeight {
-            vertex_id,
             weight,
+            vertex_id
         }
     }
 
@@ -46,12 +43,3 @@ impl VertexWeight {
         VertexWeight::new(vertex.mVertexId, vertex.mWeight)
     }
 }
-
-// impl Into<VertexWeight> for &aiVertexWeight {
-//     fn into(self) -> VertexWeight {
-//         VertexWeight {
-//             vertex_id: self.mVertexId,
-//             weight: self.mWeight,
-//         }
-//     }
-// }

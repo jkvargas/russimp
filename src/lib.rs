@@ -7,7 +7,10 @@ pub extern crate russimp_sys as sys;
 use std::{
     error::Error,
     fmt,
-    fmt::{Display, Formatter},
+    fmt::{
+        Display,
+        Formatter,
+    },
     ffi::IntoStringError,
     str::Utf8Error,
     os::raw::c_uint,
@@ -15,7 +18,7 @@ use std::{
     rc::Rc,
     cell::RefCell,
 };
-use sys::aiVector3D;
+use sys::{aiVector3D, aiMatrix4x4, aiAABB, aiColor4D, aiColor3D, aiVector2D};
 
 #[macro_use]
 extern crate num_derive;
@@ -53,6 +56,120 @@ impl Display for RussimpError {
     }
 }
 
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct AABB{
+    pub min: Vector3D,
+    pub max: Vector3D,
+}
+
+impl AABB {
+    pub fn new(aabb: &aiAABB) -> AABB {
+        Self {
+            max: Vector3D::new(&aabb.mMax),
+            min: Vector3D::new(&aabb.mMin)
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct Color4D {
+    pub r: f32,
+    pub g: f32,
+    pub b: f32,
+    pub a: f32,
+}
+
+impl Color4D {
+    pub fn new(color: &aiColor4D) -> Color4D {
+        Self {
+            r: color.r,
+            g: color.g,
+            b: color.b,
+            a: color.a,
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct Color3D {
+    pub r: f32,
+    pub g: f32,
+    pub b: f32,
+}
+
+impl Color3D {
+    pub fn new(color: &aiColor3D) -> Color3D {
+        Self {
+            r: color.r,
+            g: color.g,
+            b: color.b,
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct Matrix4x4 {
+    pub a1: f32,
+    pub a2: f32,
+    pub a3: f32,
+    pub a4: f32,
+    pub b1: f32,
+    pub b2: f32,
+    pub b3: f32,
+    pub b4: f32,
+    pub c1: f32,
+    pub c2: f32,
+    pub c3: f32,
+    pub c4: f32,
+    pub d1: f32,
+    pub d2: f32,
+    pub d3: f32,
+    pub d4: f32,
+}
+
+impl Matrix4x4 {
+    pub fn new(matrix: &aiMatrix4x4) -> Matrix4x4 {
+        Self {
+            a1: matrix.a1,
+            a2: matrix.a2,
+            a3: matrix.a3,
+            a4: matrix.a4,
+            b1: matrix.b1,
+            b2: matrix.b2,
+            b3: matrix.b3,
+            b4: matrix.b4,
+            c1: matrix.c1,
+            c2: matrix.c2,
+            c3: matrix.c3,
+            c4: matrix.c4,
+            d1: matrix.d1,
+            d2: matrix.d2,
+            d3: matrix.d3,
+            d4: matrix.d4,
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct Vector2D {
+    pub x: f32,
+    pub y: f32,
+}
+
+impl Vector2D {
+    pub fn new(color: &aiVector2D) -> Vector2D {
+        Self {
+            x: color.x,
+            y: color.y
+        }
+    }
+}
+
 impl Error for RussimpError {}
 
 #[repr(C)]
@@ -63,12 +180,12 @@ pub struct Vector3D {
     pub z: f32,
 }
 
-impl Into<Vector3D> for aiVector3D {
-    fn into(self) -> Vector3D {
-        Vector3D {
-            z: self.z,
-            x: self.x,
-            y: self.y,
+impl Vector3D {
+    pub fn new(vec: &aiVector3D) -> Vector3D {
+        Self {
+            x: vec.x,
+            y: vec.y,
+            z: vec.z
         }
     }
 }

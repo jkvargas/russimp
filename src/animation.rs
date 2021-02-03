@@ -1,22 +1,27 @@
 use crate::{
     sys::{
-    aiMeshMorphKey,
-    aiMeshMorphAnim,
-    aiNodeAnim,
-    aiQuatKey,
-    aiVectorKey,
-    aiMeshAnim,
-    aiMeshKey,
-    aiAnimation,
-    aiVector3D,
-    aiQuaternion,
-}, scene::{
-    Scene,
-    PostProcessSteps,
-}, Vector3D, Utils};
+        aiMeshMorphKey,
+        aiMeshMorphAnim,
+        aiNodeAnim,
+        aiQuatKey,
+        aiVectorKey,
+        aiMeshAnim,
+        aiMeshKey,
+        aiAnimation,
+        aiVector3D,
+        aiQuaternion,
+        aiNode,
+        aiMesh,
+    },
+    scene::{
+        Scene,
+        PostProcessSteps,
+    },
+    Vector3D,
+    Utils,
+};
 
 use derivative::Derivative;
-use crate::sys::{aiNode, aiMesh};
 
 #[derive(Derivative)]
 #[derivative(Debug)]
@@ -63,7 +68,7 @@ impl VectorKey {
     pub fn new(vec: &aiVectorKey) -> VectorKey {
         Self {
             time: vec.mTime,
-            value: vec.mValue.into(),
+            value: Vector3D::new(&vec.mValue),
         }
     }
 }
@@ -80,7 +85,7 @@ impl QuatKey {
     pub fn new(quat_key: &aiQuatKey) -> QuatKey {
         Self {
             time: quat_key.mTime,
-            value: quat_key.mValue.into(),
+            value: Quaternion::new(&quat_key.mValue),
         }
     }
 }
@@ -94,13 +99,13 @@ pub struct Quaternion {
     pub z: f32,
 }
 
-impl Into<Quaternion> for aiQuaternion {
-    fn into(self) -> Quaternion {
-        Quaternion {
-            w: self.w,
-            x: self.x,
-            y: self.y,
-            z: self.z,
+impl Quaternion {
+    pub fn new(quaternion: &aiQuaternion) -> Quaternion {
+        Self {
+            w: quaternion.w,
+            x: quaternion.x,
+            y: quaternion.y,
+            z: quaternion.z,
         }
     }
 }
@@ -202,29 +207,29 @@ fn camera_roll_animation_read() {
 
     assert_eq!(0, scene.animations[0].channels[0].pre_state);
     assert_eq!(0, scene.animations[0].channels[0].post_state);
-    assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[0].mTime);
-    assert_eq!(0.9999999, scene.animations[0].channels[0].rotation_keys[0].mValue.w);
-    assert_eq!(-0.00046456736, scene.animations[0].channels[0].rotation_keys[0].mValue.x);
-    assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[0].mValue.y);
-    assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[0].mValue.z);
+    assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[0].time);
+    assert_eq!(0.9999999, scene.animations[0].channels[0].rotation_keys[0].value.w);
+    assert_eq!(-0.00046456736, scene.animations[0].channels[0].rotation_keys[0].value.x);
+    assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[0].value.y);
+    assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[0].value.z);
 
-    assert_eq!(120.0, scene.animations[0].channels[0].rotation_keys[1].mTime);
-    assert_eq!(0.7806558, scene.animations[0].channels[0].rotation_keys[1].mValue.w);
-    assert_eq!(-0.6249612, scene.animations[0].channels[0].rotation_keys[1].mValue.x);
-    assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[1].mValue.y);
-    assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[1].mValue.z);
+    assert_eq!(120.0, scene.animations[0].channels[0].rotation_keys[1].time);
+    assert_eq!(0.7806558, scene.animations[0].channels[0].rotation_keys[1].value.w);
+    assert_eq!(-0.6249612, scene.animations[0].channels[0].rotation_keys[1].value.x);
+    assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[1].value.y);
+    assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[1].value.z);
 
-    assert_eq!(0.0, scene.animations[0].channels[0].scaling_keys[0].mTime);
-    assert_eq!(1.0, scene.animations[0].channels[0].scaling_keys[0].mValue.x);
-    assert_eq!(1.0, scene.animations[0].channels[0].scaling_keys[0].mValue.y);
-    assert_eq!(1.0, scene.animations[0].channels[0].scaling_keys[0].mValue.z);
+    assert_eq!(0.0, scene.animations[0].channels[0].scaling_keys[0].time);
+    assert_eq!(1.0, scene.animations[0].channels[0].scaling_keys[0].value.x);
+    assert_eq!(1.0, scene.animations[0].channels[0].scaling_keys[0].value.y);
+    assert_eq!(1.0, scene.animations[0].channels[0].scaling_keys[0].value.z);
 
     // position keys
     assert_eq!(1, scene.animations[0].channels[0].position_keys.len());
-    assert_eq!(0.0, scene.animations[0].channels[0].position_keys[0].mTime);
-    assert_eq!(-153.0771, scene.animations[0].channels[0].position_keys[0].mValue.x);
-    assert_eq!(3.272005, scene.animations[0].channels[0].position_keys[0].mValue.y);
-    assert_eq!(22.777624, scene.animations[0].channels[0].position_keys[0].mValue.z);
+    assert_eq!(0.0, scene.animations[0].channels[0].position_keys[0].time);
+    assert_eq!(-153.0771, scene.animations[0].channels[0].position_keys[0].value.x);
+    assert_eq!(3.272005, scene.animations[0].channels[0].position_keys[0].value.y);
+    assert_eq!(22.777624, scene.animations[0].channels[0].position_keys[0].value.z);
 
     assert_eq!(120.0, scene.animations[0].duration);
     assert_eq!(0, scene.animations[0].morph_mesh_channels.len());

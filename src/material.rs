@@ -121,7 +121,7 @@ impl MaterialProperty {
 
 #[test]
 fn material_for_box() {
-    let box_file_path = get_model("models/BLEND/box.blend");
+    let box_file_path = Utils::get_model("models/BLEND/box.blend");
 
     let scene = Scene::from(box_file_path.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,

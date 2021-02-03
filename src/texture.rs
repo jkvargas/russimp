@@ -20,17 +20,17 @@ pub struct Texture {
     data: Vec<aiTexel>,
 }
 
-impl Into<Texture> for &aiTexture {
-    fn into(self) -> Texture {
-        let content = unsafe { CStr::from_ptr(self.achFormatHint.as_ptr()) };
+impl Texture {
+    pub fn new(texture: &aiTexture) -> Texture {
+        let content = unsafe { CStr::from_ptr(texture.achFormatHint.as_ptr()) };
         let ach_format_hint = content.to_str().unwrap().to_string();
 
         Texture {
-            filename: self.mFilename.into(),
-            height: self.mHeight,
-            width: self.mWidth,
+            filename: texture.mFilename.into(),
+            height: texture.mHeight,
+            width: texture.mWidth,
             ach_format_hint,
-            data: Utils::get_rawvec(self.pcData, self.mHeight * self.mWidth),
+            data: Utils::get_rawvec(texture.pcData, texture.mHeight * texture.mWidth),
         }
     }
 }

@@ -175,18 +175,14 @@ pub struct MetaData {
 }
 
 impl MetaData {
-    pub fn new(keys: Vec<String>, values: Vec<MetaDataEntry>) -> MetaData {
-        Self {
-            keys,
-            values
-        }
-    }
-
-    pub fn convert(meta_data: &aiMetadata) -> MetaData {
+    pub fn new(meta_data: &aiMetadata) -> MetaData {
         let keys = Utils::get_vec(meta_data.mKeys, meta_data.mNumProperties, &|str: &aiString| { str.into() });
         let values = Utils::get_vec(meta_data.mValues, meta_data.mNumProperties, &MetaDataEntry::new);
 
-        MetaData::new(keys, values)
+        Self {
+            keys,
+            values,
+        }
     }
 }
 
@@ -246,17 +242,9 @@ impl MetaDataEntry {
     }
 }
 
-impl Into<MetaDataEntry> for &aiMetadataEntry {
-    fn into(self) -> MetaDataEntry {
-        MetaDataEntry {
-            data: MetaDataEntry::cast_data(self),
-        }
-    }
-}
-
 #[test]
 fn metadata_for_box() {
-    let current_directory_buf = get_model("models/BLEND/box.blend");
+    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
 
     let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,

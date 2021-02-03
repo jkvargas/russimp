@@ -1,42 +1,40 @@
 use num_traits::ToPrimitive;
 
-use crate::{
-    scene::{Scene,
-            PostProcessSteps},
-    sys::{
-        aiLight,
-        aiVector3D,
-        aiColor3D,
-        aiVector2D,
-        aiLightSourceType_aiLightSource_UNDEFINED,
-        aiLightSourceType_aiLightSource_AMBIENT,
-        aiLightSourceType_aiLightSource_AREA,
-        aiLightSourceType_aiLightSource_POINT,
-        aiLightSourceType_aiLightSource_SPOT,
-        aiLightSourceType_aiLightSource_DIRECTIONAL,
-        aiLightSourceType,
-    },
-    Utils
-};
+use crate::{scene::{
+    Scene,
+    PostProcessSteps
+}, sys::{
+    aiLight,
+    aiVector3D,
+    aiColor3D,
+    aiVector2D,
+    aiLightSourceType_aiLightSource_UNDEFINED,
+    aiLightSourceType_aiLightSource_AMBIENT,
+    aiLightSourceType_aiLightSource_AREA,
+    aiLightSourceType_aiLightSource_POINT,
+    aiLightSourceType_aiLightSource_SPOT,
+    aiLightSourceType_aiLightSource_DIRECTIONAL,
+    aiLightSourceType,
+}, Utils, Vector3D, Color3D, Vector2D};
 
 use derivative::Derivative;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
 pub struct Light {
-    up: aiVector3D,
-    pos: aiVector3D,
+    up: Vector3D,
+    pos: Vector3D,
     name: String,
     angle_inner_cone: f32,
     angle_outer_cone: f32,
     attenuation_linear: f32,
     attenuation_quadratic: f32,
     attenuation_constant: f32,
-    color_ambient: aiColor3D,
-    color_specular: aiColor3D,
-    color_diffuse: aiColor3D,
-    direction: aiVector3D,
-    size: aiVector2D,
+    color_ambient: Color3D,
+    color_specular: Color3D,
+    color_diffuse: Color3D,
+    direction: Vector3D,
+    size: Vector2D,
     light_source_type: LightSourceType,
 }
 
@@ -68,6 +66,25 @@ impl Light {
 
         LightSourceType::Undefined
     }
+
+    pub fn new(light: &aiLight) -> Light {
+        Self {
+            up: Vector3D::new(&light.mUp),
+            pos: Vector3D::new(&light.mPosition),
+            name: light.mName.into(),
+            angle_inner_cone: light.mAngleInnerCone,
+            angle_outer_cone: light.mAngleOuterCone,
+            attenuation_linear: light.mAttenuationLinear,
+            attenuation_quadratic: light.mAttenuationQuadratic,
+            attenuation_constant: light.mAttenuationConstant,
+            color_ambient: Color3D::new(&light.mColorAmbient),
+            color_specular: Color3D::new(&light.mColorSpecular),
+            color_diffuse: Color3D::new(&light.mColorDiffuse),
+            direction: Vector3D::new(&light.mDirection),
+            size: Vector2D::new(&light.mSize),
+            light_source_type: Light::get_light_source_type_from(&light.mType),
+        }
+    }
 }
 
 #[derive(Derivative, ToPrimitive, PartialEq)]
@@ -82,30 +99,9 @@ pub enum LightSourceType {
     Directional = aiLightSourceType_aiLightSource_DIRECTIONAL,
 }
 
-impl Into<Light> for &aiLight {
-    fn into(self) -> Light {
-        Light {
-            up: self.mUp,
-            pos: self.mPosition,
-            name: self.mName.into(),
-            angle_inner_cone: self.mAngleInnerCone,
-            angle_outer_cone: self.mAngleOuterCone,
-            attenuation_linear: self.mAttenuationLinear,
-            attenuation_quadratic: self.mAttenuationQuadratic,
-            attenuation_constant: self.mAttenuationConstant,
-            color_ambient: self.mColorAmbient,
-            color_specular: self.mColorSpecular,
-            color_diffuse: self.mColorDiffuse,
-            direction: self.mDirection,
-            size: self.mSize,
-            light_source_type: Light::get_light_source_type_from(&self.mType),
-        }
-    }
-}
-
 #[test]
 fn light_available() {
-    let current_directory_buf = get_model("models/BLEND/AreaLight_269.blend");
+    let current_directory_buf = Utils::get_model("models/BLEND/AreaLight_269.blend");
 
     let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
