@@ -217,14 +217,14 @@ impl Utils {
         raw: *mut TRaw,
         map: &dyn Fn(&TRaw) -> TComponent,
     ) -> Option<TComponent> {
-        unsafe { raw.as_ref() }.map_or(None, |x| Some(map(x)))
+        unsafe { raw.as_ref() }.map(|x| map(x))
     }
 
     fn get_rc_raw<TRaw, TComponent>(
         raw: *mut TRaw,
         map: &dyn Fn(&TRaw) -> TComponent,
     ) -> Option<Rc<RefCell<TComponent>>> {
-        unsafe { raw.as_ref() }.map_or(None, |x| Some(Rc::new(RefCell::new(map(x)))))
+        unsafe { raw.as_ref() }.map(|x| Rc::new(RefCell::new(map(x))))
     }
 
     fn get_vec<TRaw, TComponent>(

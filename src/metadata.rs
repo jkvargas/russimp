@@ -51,7 +51,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryULong<'a> {
         let raw = self.data.mData as *mut u64;
 
         if let Some(result) = unsafe { raw.as_ref() } {
-            return Ok(MetadataType::ULong(result.clone()));
+            return Ok(MetadataType::ULong(*result));
         }
 
         Err(RussimpError::MetadataError(
@@ -69,7 +69,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryInteger<'a> {
         let raw = self.data.mData as *mut i32;
 
         if let Some(result) = unsafe { raw.as_ref() } {
-            return Ok(MetadataType::Int(result.clone()));
+            return Ok(MetadataType::Int(*result));
         }
 
         Err(RussimpError::MetadataError(
@@ -87,7 +87,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryBool<'a> {
         let raw = self.data.mData as *mut bool;
 
         if let Some(result) = unsafe { raw.as_ref() } {
-            return Ok(MetadataType::Bool(result.clone()));
+            return Ok(MetadataType::Bool(*result));
         }
 
         Err(RussimpError::MetadataError(
@@ -105,7 +105,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryDouble<'a> {
         let raw = self.data.mData as *mut f64;
 
         if let Some(result) = unsafe { raw.as_ref() } {
-            return Ok(MetadataType::Double(result.clone()));
+            return Ok(MetadataType::Double(*result));
         }
 
         Err(RussimpError::MetadataError(
@@ -123,7 +123,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryFloat<'a> {
         let raw = self.data.mData as *mut f32;
 
         if let Some(result) = unsafe { raw.as_ref() } {
-            return Ok(MetadataType::Float(result.clone()));
+            return Ok(MetadataType::Float(*result));
         }
 
         Err(RussimpError::MetadataError(
@@ -158,7 +158,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataVector3d<'a> {
     fn cast(&self) -> Russult<MetadataType> {
         let vec = self.data.mData as *mut aiVector3D;
         if let Some(content) = unsafe { vec.as_ref() } {
-            return Ok(MetadataType::Vector3d(content.clone()));
+            return Ok(MetadataType::Vector3d(*content));
         }
 
         Err(RussimpError::MetadataError("data is null".to_string()))

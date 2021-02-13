@@ -462,7 +462,7 @@ impl Scene {
             ),
             cameras: Utils::get_vec_from_raw(scene.mCameras, scene.mNumCameras, &Camera::new),
             lights: Utils::get_vec_from_raw(scene.mLights, scene.mNumLights, &Light::new),
-            root: root.map_or(None, |f| Some(Node::new(f))),
+            root: root.map(|f| Node::new(f)),
             textures: Utils::get_vec_from_raw(scene.mTextures, scene.mNumTextures, &Texture::new),
             flags: scene.mFlags,
         }
@@ -485,7 +485,7 @@ impl Scene {
     fn get_error() -> RussimpError {
         let error_buf = unsafe { aiGetErrorString() };
         let error = unsafe { CStr::from_ptr(error_buf).to_string_lossy().into_owned() };
-        return RussimpError::Import(error);
+        RussimpError::Import(error)
     }
 }
 
