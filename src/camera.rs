@@ -1,53 +1,49 @@
 use crate::{
-    FromRaw,
     sys::{
         aiCamera,
-        aiVector3D},
+        aiVector3D
+    },
     scene::{
         PostProcessSteps,
         Scene,
     },
-    get_model,
+    Utils,
+    Vector3D
 };
 
 use derivative::Derivative;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Camera<'a> {
-    #[derivative(Debug = "ignore")]
-    camera: &'a aiCamera,
+pub struct Camera {
     pub name: String,
     pub aspect: f32,
     pub clip_plane_far: f32,
     pub clip_plane_near: f32,
     pub horizontal_fov: f32,
-    pub look_at: aiVector3D,
-    pub position: aiVector3D,
-    pub up: aiVector3D,
+    pub look_at: Vector3D,
+    pub position: Vector3D,
+    pub up: Vector3D,
 }
 
-impl<'a> FromRaw for Camera<'a> {}
-
-impl<'a> Into<Camera<'a>> for &'a aiCamera {
-    fn into(self) -> Camera<'a> {
-        Camera {
-            camera: self,
-            name: self.mName.into(),
-            aspect: self.mAspect,
-            clip_plane_far: self.mClipPlaneFar,
-            clip_plane_near: self.mClipPlaneNear,
-            horizontal_fov: self.mHorizontalFOV,
-            look_at: self.mLookAt,
-            position: self.mPosition,
-            up: self.mUp,
+impl Camera {
+    pub fn new(camera: &aiCamera) -> Camera {
+        Self {
+            name: camera.mName.into(),
+            aspect: camera.mAspect,
+            clip_plane_far: camera.mClipPlaneFar,
+            clip_plane_near: camera.mClipPlaneNear,
+            horizontal_fov: camera.mHorizontalFOV,
+            look_at: Vector3D::new(&camera.mLookAt),
+            position: Vector3D::new(&camera.mPosition),
+            up: Vector3D::new(&camera.mUp),
         }
     }
 }
 
 #[test]
 fn camera_available() {
-    let current_directory_buf = get_model("models/3DS/CameraRollAnim.3ds");
+    let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
 
     let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
@@ -73,4 +69,17 @@ fn camera_available() {
     assert_eq!(0.0, scene.cameras[0].clip_plane_near);
     assert_eq!(1000.0, scene.cameras[0].clip_plane_far);
     assert_eq!("Camera01".to_string(), scene.cameras[0].name);
+}
+
+#[test]
+fn debug_camera() {
+    let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
+
+    let scene = Scene::from(current_directory_buf.as_str(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
+
+    dbg!(&scene.cameras);
 }

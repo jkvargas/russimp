@@ -36,8 +36,7 @@ use crate::{
     scene::{PostProcessSteps,
             Scene
     },
-    FromRaw,
-    get_model
+    Utils
 };
 
 use derivative::Derivative;
@@ -45,30 +44,23 @@ use num_traits::FromPrimitive;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Material<'a> {
-    #[derivative(Debug = "ignore")]
-    material: &'a aiMaterial,
-    properties: Vec<MaterialProperty<'a>>,
+pub struct Material {
+    properties: Vec<MaterialProperty>,
 }
 
-impl<'a> FromRaw for Material<'a> {}
-
-impl<'a> Into<Material<'a>> for &'a aiMaterial {
-    fn into(self) -> Material<'a> {
+impl Material {
+    pub fn new(material: &aiMaterial) -> Material {
         Material {
-            material: self,
-            properties: Material::get_vec_from_raw(self.mProperties, self.mNumProperties),
+            properties: Utils::get_vec_from_raw(material.mProperties, material.mNumProperties, &MaterialProperty::new),
         }
     }
 }
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct MaterialProperty<'a> {
-    #[derivative(Debug = "ignore")]
-    property: &'a aiMaterialProperty,
+pub struct MaterialProperty {
     key: String,
-    data: &'a [u8],
+    data: Vec<u8>,
     index: usize,
     material_type: PropertyTypeInfo,
     semantic: TextureType,
@@ -112,25 +104,24 @@ pub enum TextureType {
     Force32bit = aiTextureType__aiTextureType_Force32Bit,
 }
 
-impl<'a> Into<MaterialProperty<'a>> for &'a aiMaterialProperty {
-    fn into(self) -> MaterialProperty<'a> {
-        let slice = slice_from_raw_parts(self.mData as *const u8, self.mDataLength as usize);
+impl MaterialProperty {
+    pub fn new(material: &aiMaterialProperty) -> MaterialProperty {
+        let slice = slice_from_raw_parts(material.mData as *const u8, material.mDataLength as usize);
         let data = unsafe { slice.as_ref() }.unwrap();
 
         MaterialProperty {
-            property: self,
-            key: self.mKey.into(),
-            data,
-            index: self.mIndex as usize,
-            material_type: FromPrimitive::from_u32(self.mType as u32).unwrap(),
-            semantic: FromPrimitive::from_u32(self.mSemantic as u32).unwrap(),
+            key: material.mKey.into(),
+            data: data.to_vec(),
+            index: material.mIndex as usize,
+            material_type: FromPrimitive::from_u32(material.mType as u32).unwrap(),
+            semantic: FromPrimitive::from_u32(material.mSemantic as u32).unwrap(),
         }
     }
 }
 
 #[test]
 fn material_for_box() {
-    let box_file_path = get_model("models/BLEND/box.blend");
+    let box_file_path = Utils::get_model("models/BLEND/box.blend");
 
     let scene = Scene::from(box_file_path.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
@@ -146,4 +137,17 @@ fn material_for_box() {
     assert_eq!(0, scene.materials[0].properties[40].index);
     assert_eq!(PropertyTypeInfo::Float, scene.materials[0].properties[40].material_type);
     assert_eq!(TextureType::None, scene.materials[0].properties[40].semantic);
+}
+
+#[test]
+fn debug_light() {
+    let box_file_path = Utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from(box_file_path.as_str(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
+
+    dbg!(&scene.lights);
 }

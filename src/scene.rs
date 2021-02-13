@@ -49,7 +49,6 @@ use crate::{
     },
     Russult,
     RussimpError,
-    FromRaw,
     material::Material,
     mesh::Mesh,
     metadata::MetaData,
@@ -58,22 +57,20 @@ use crate::{
     light::Light,
     node::Node,
     texture::Texture,
-    get_model
+    Utils,
 };
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Scene<'a> {
-    #[derivative(Debug = "ignore")]
-    scene: &'a aiScene,
-    pub materials: Vec<Material<'a>>,
-    pub meshes: Vec<Mesh<'a>>,
-    pub metadata: Option<MetaData<'a>>,
-    pub animations: Vec<Animation<'a>>,
-    pub cameras: Vec<Camera<'a>>,
-    pub lights: Vec<Light<'a>>,
-    pub root: Option<Rc<RefCell<Node<'a>>>>,
-    pub textures: Vec<Texture<'a>>,
+pub struct Scene {
+    pub materials: Vec<Material>,
+    pub meshes: Vec<Mesh>,
+    pub metadata: Option<MetaData>,
+    pub animations: Vec<Animation>,
+    pub cameras: Vec<Camera>,
+    pub lights: Vec<Light>,
+    pub root: Option<Rc<RefCell<Node>>>,
+    pub textures: Vec<Texture>,
     pub flags: u32,
 }
 
@@ -114,37 +111,45 @@ pub enum PostProcessSteps {
     GenBoundingBoxes = aiPostProcessSteps_aiProcess_GenBoundingBoxes,
 }
 
-impl<'a> Drop for Scene<'a> {
-    fn drop(&mut self) {
-        unsafe {
-            aiReleaseImport(self.scene);
-        }
-    }
-}
-
-impl<'a> FromRaw for Scene<'a> {}
-
-impl<'a> Scene<'a> {
-    pub fn from(file_path: &str, flags: Vec<PostProcessSteps>) -> Russult<Scene<'a>> {
+impl Scene {
+    pub fn from(file_path: &str, flags: Vec<PostProcessSteps>) -> Russult<Scene> {
         let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
         let file_path = CString::new(file_path).unwrap();
 
-        Scene::get_scene_from_file(file_path, bitwise_flag).map_or(Err(Scene::get_error()), |scene| Ok(Self {
-            scene,
-            materials: Scene::get_vec_from_raw(scene.mMaterials, scene.mNumMaterials),
-            meshes: Scene::get_vec_from_raw(scene.mMeshes, scene.mNumMeshes),
-            metadata: Scene::get_raw(scene.mMetaData),
-            animations: Scene::get_vec_from_raw(scene.mAnimations, scene.mNumAnimations),
-            cameras: Scene::get_vec_from_raw(scene.mCameras, scene.mNumCameras),
-            lights: Scene::get_vec_from_raw(scene.mLights, scene.mNumLights),
-            root: Scene::get_rc_raw(scene.mRootNode),
-            textures: Scene::get_vec_from_raw(scene.mTextures, scene.mNumTextures),
+        let raw_scene = Scene::get_scene_from_file(file_path, bitwise_flag);
+        let result = raw_scene.map_or(Err(Scene::get_error()), |scene| Ok(Scene::new(scene)));
+        Scene::drop_scene(raw_scene);
+
+        result
+    }
+
+    pub fn new(scene: &aiScene) -> Scene {
+        let root = unsafe { scene.mRootNode.as_ref() };
+
+        Self {
+            materials: Utils::get_vec_from_raw(scene.mMaterials, scene.mNumMaterials, &Material::new),
+            meshes: Utils::get_vec_from_raw(scene.mMeshes, scene.mNumMeshes, &Mesh::new),
+            metadata: Utils::get_raw(scene.mMetaData, &MetaData::new),
+            animations: Utils::get_vec_from_raw(scene.mAnimations, scene.mNumAnimations, &Animation::new),
+            cameras: Utils::get_vec_from_raw(scene.mCameras, scene.mNumCameras, &Camera::new),
+            lights: Utils::get_vec_from_raw(scene.mLights, scene.mNumLights, &Light::new),
+            root: root.map_or(None, |f| Some(Node::new(f))),
+            textures: Utils::get_vec_from_raw(scene.mTextures, scene.mNumTextures, &Texture::new),
             flags: scene.mFlags,
-        }))
+        }
     }
 
     #[inline]
-    fn get_scene_from_file(string: CString, flags: u32) -> Option<&'a aiScene> {
+    fn drop_scene(scene: Option<&aiScene>) {
+        if let Some(content) = scene {
+            unsafe {
+                aiReleaseImport(content);
+            }
+        }
+    }
+
+    #[inline]
+    fn get_scene_from_file<'a>(string: CString, flags: u32) -> Option<&'a aiScene> {
         unsafe { aiImportFile(string.as_ptr(), flags).as_ref() }
     }
 
@@ -157,7 +162,7 @@ impl<'a> Scene<'a> {
 
 #[test]
 fn importing_invalid_file_returns_error() {
-    let current_directory_buf = get_model("models/box.blend");
+    let current_directory_buf = Utils::get_model("models/box.blend");
 
     let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
@@ -170,7 +175,7 @@ fn importing_invalid_file_returns_error() {
 
 #[test]
 fn importing_valid_file_returns_scene() {
-    let current_directory_buf = get_model("models/BLEND/box.blend");
+    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
 
     let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
@@ -183,7 +188,7 @@ fn importing_valid_file_returns_scene() {
 
 #[test]
 fn debug_scene() {
-    let box_file_path = get_model("models/BLEND/box.blend");
+    let box_file_path = Utils::get_model("models/BLEND/box.blend");
 
     let scene = Scene::from(box_file_path.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,

@@ -1,52 +1,59 @@
-use crate::{
-    FromRaw,
-    sys::{
-        aiBone,
-        aiVertexWeight,
-        aiMatrix4x4,
-    },
-};
+use crate::{Utils, sys::{
+    aiBone,
+    aiVertexWeight,
+    aiMatrix4x4,
+}, Matrix4x4};
 
 use derivative::Derivative;
+use crate::scene::{Scene, PostProcessSteps};
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Bone<'a> {
-    #[derivative(Debug = "ignore")]
-    bone: &'a aiBone,
-    pub weights: Vec<VertexWeight<'a>>,
+pub struct Bone {
+    pub weights: Vec<VertexWeight>,
     pub name: String,
-    pub offset_matrix: aiMatrix4x4,
+    pub offset_matrix: Matrix4x4,
 }
 
-impl<'a> FromRaw for Bone<'a> {}
-
-impl<'a> Into<Bone<'a>> for &'a aiBone {
-    fn into(self) -> Bone<'a> {
+impl Bone {
+    pub fn new(bone: &aiBone) -> Bone {
         Bone {
-            bone: self,
-            weights: Bone::get_vec(self.mWeights, self.mNumWeights),
-            name: self.mName.into(),
-            offset_matrix: self.mOffsetMatrix,
+            weights: Utils::get_vec(bone.mWeights, bone.mNumWeights, &VertexWeight::convert),
+            name: bone.mName.into(),
+            offset_matrix: Matrix4x4::new(&bone.mOffsetMatrix),
         }
     }
 }
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct VertexWeight<'a> {
-    #[derivative(Debug = "ignore")]
-    vertex_weight: &'a aiVertexWeight,
+pub struct VertexWeight {
     pub weight: f32,
     pub vertex_id: u32,
 }
 
-impl<'a> Into<VertexWeight<'a>> for &'a aiVertexWeight {
-    fn into(self) -> VertexWeight<'a> {
+impl VertexWeight {
+    pub fn new(vertex_id: u32, weight: f32) -> VertexWeight {
         VertexWeight {
-            vertex_weight: self,
-            vertex_id: self.mVertexId,
-            weight: self.mWeight,
+            weight,
+            vertex_id
         }
     }
+
+    pub fn convert(vertex: &aiVertexWeight) -> VertexWeight {
+        VertexWeight::new(vertex.mVertexId, vertex.mWeight)
+    }
+}
+
+#[test]
+fn debug_bones() {
+    let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
+
+    let scene = Scene::from(current_directory_buf.as_str(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
+
+    dbg!(&scene.meshes[0].bones);
 }

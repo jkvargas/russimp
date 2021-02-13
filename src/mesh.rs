@@ -1,51 +1,44 @@
 use std::ops::BitAnd;
 
-use crate::{
-    sys::{
-        aiVector3D,
-        aiMesh,
-        aiColor4D,
-        aiAABB,
-        aiPrimitiveType__aiPrimitiveType_Force32Bit,
-        aiPrimitiveType_aiPrimitiveType_LINE,
-        aiPrimitiveType_aiPrimitiveType_POINT,
-        aiPrimitiveType_aiPrimitiveType_POLYGON,
-        aiPrimitiveType_aiPrimitiveType_TRIANGLE,
-        aiAnimMesh,
-    },
-    FromRaw,
-    bone::Bone,
-    face::Face,
-    scene::{
-        PostProcessSteps,
-        Scene,
-    },
-    get_model};
+use crate::{sys::{
+    aiVector3D,
+    aiMesh,
+    aiColor4D,
+    aiAABB,
+    aiPrimitiveType__aiPrimitiveType_Force32Bit,
+    aiPrimitiveType_aiPrimitiveType_LINE,
+    aiPrimitiveType_aiPrimitiveType_POINT,
+    aiPrimitiveType_aiPrimitiveType_POLYGON,
+    aiPrimitiveType_aiPrimitiveType_TRIANGLE,
+    aiAnimMesh,
+}, bone::Bone, face::Face, scene::{
+    PostProcessSteps,
+    Scene,
+}, Utils, Vector3D, AABB, Color4D};
 
 use num_traits::ToPrimitive;
 
 use derivative::Derivative;
+use crate::metadata::MetadataType::Vector3d;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Mesh<'a> {
-    #[derivative(Debug = "ignore")]
-    mesh: &'a aiMesh,
-    pub normals: Vec<&'a aiVector3D>,
+pub struct Mesh {
+    pub normals: Vec<Vector3D>,
     pub name: String,
-    pub vertices: Vec<&'a aiVector3D>,
-    pub texture_coords: Vec<Option<&'a aiVector3D>>,
-    pub tangents: Vec<&'a aiVector3D>,
-    pub bitangents: Vec<&'a aiVector3D>,
+    pub vertices: Vec<Vector3D>,
+    pub texture_coords: Vec<Option<Vector3D>>,
+    pub tangents: Vec<Vector3D>,
+    pub bitangents: Vec<Vector3D>,
     pub uv_components: Vec<u32>,
     pub primitive_types: u32,
-    pub bones: Vec<Bone<'a>>,
+    pub bones: Vec<Bone>,
     pub material_index: u32,
     pub method: u32,
-    pub anim_meshes: Vec<AnimMesh<'a>>,
-    pub faces: Vec<Face<'a>>,
-    pub colors: Vec<Option<&'a aiColor4D>>,
-    pub aabb: aiAABB,
+    pub anim_meshes: Vec<AnimMesh>,
+    pub faces: Vec<Face>,
+    pub colors: Vec<Option<Color4D>>,
+    pub aabb: AABB,
 }
 
 #[derive(Derivative, FromPrimitive, PartialEq, ToPrimitive)]
@@ -59,46 +52,38 @@ pub enum PrimitiveType {
     Triangle = aiPrimitiveType_aiPrimitiveType_TRIANGLE,
 }
 
-impl<'a> FromRaw for Mesh<'a> {}
-
-impl<'a> Into<Mesh<'a>> for &'a aiMesh {
-    fn into(self) -> Mesh<'a> {
-        Mesh {
-            mesh: self,
-            normals: Mesh::get_vec(self.mNormals, self.mNumVertices),
-            name: self.mName.into(),
-            vertices: Mesh::get_vec(self.mVertices, self.mNumVertices),
-            texture_coords: Mesh::get_rawvec_from_slice(&self.mTextureCoords),
-            tangents: Mesh::get_vec(self.mTangents, self.mNumVertices),
-            bitangents: Mesh::get_vec(self.mBitangents, self.mNumVertices),
-            uv_components: self.mNumUVComponents.to_vec(),
-            primitive_types: self.mPrimitiveTypes as u32,
-            bones: Mesh::get_vec_from_raw(self.mBones, self.mNumBones),
-            material_index: self.mMaterialIndex,
-            method: self.mMethod,
-            anim_meshes: Mesh::get_vec_from_raw(self.mAnimMeshes, self.mNumAnimMeshes),
-            faces: Mesh::get_vec(self.mFaces, self.mNumFaces),
-            colors: Mesh::get_rawvec_from_slice(&self.mColors),
-            aabb: self.mAABB,
+impl Mesh {
+    pub fn new(mesh: &aiMesh) -> Mesh {
+        Self {
+            normals: Utils::get_vec(mesh.mNormals, mesh.mNumVertices, &Vector3D::new),
+            name: mesh.mName.into(),
+            vertices: Utils::get_vec(mesh.mVertices, mesh.mNumVertices,&Vector3D::new),
+            texture_coords: Utils::get_vec_from_slice(&mesh.mTextureCoords, &Vector3D::new),
+            tangents: Utils::get_vec(mesh.mTangents, mesh.mNumVertices, &Vector3D::new),
+            bitangents: Utils::get_vec(mesh.mBitangents, mesh.mNumVertices, &Vector3D::new),
+            uv_components: mesh.mNumUVComponents.to_vec(),
+            primitive_types: mesh.mPrimitiveTypes as u32,
+            bones: Utils::get_vec_from_raw(mesh.mBones, mesh.mNumBones, &Bone::new),
+            material_index: mesh.mMaterialIndex,
+            method: mesh.mMethod,
+            anim_meshes: Utils::get_vec_from_raw(mesh.mAnimMeshes, mesh.mNumAnimMeshes, &AnimMesh::new),
+            faces: Utils::get_vec(mesh.mFaces, mesh.mNumFaces, &Face::new),
+            colors: Utils::get_vec_from_slice(&mesh.mColors, &Color4D::new),
+            aabb: AABB::new(&mesh.mAABB),
         }
     }
 }
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct AnimMesh<'a> {
-    #[derivative(Debug = "ignore")]
-    anim_mesh: &'a aiAnimMesh,
-    bitangents: Vec<&'a aiVector3D>,
+pub struct AnimMesh {
+    bitangents: Vec<Vector3D>,
 }
 
-impl<'a> FromRaw for AnimMesh<'a> {}
-
-impl<'a> Into<AnimMesh<'a>> for &'a aiAnimMesh {
-    fn into(self) -> AnimMesh<'a> {
-        AnimMesh {
-            bitangents: Mesh::get_vec(self.mBitangents, self.mNumVertices),
-            anim_mesh: self,
+impl AnimMesh {
+    pub fn new(mesh: &aiAnimMesh) -> AnimMesh {
+        Self {
+            bitangents: Utils::get_vec(mesh.mBitangents, mesh.mNumVertices, &Vector3D::new),
         }
     }
 }
@@ -129,7 +114,7 @@ impl BitAnd<u32> for PrimitiveType {
 
 #[test]
 fn mesh_available() {
-    let current_directory_buf = get_model("models/BLEND/box.blend");
+    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
 
     let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
@@ -152,18 +137,18 @@ fn mesh_available() {
     assert!(&scene.meshes[0].anim_meshes.is_empty());
     assert_eq!(0, scene.meshes[0].method);
     assert_eq!(0, scene.meshes[0].material_index);
-    assert_eq!(0.0, scene.meshes[0].aabb.mMin.x);
-    assert_eq!(0.0, scene.meshes[0].aabb.mMin.y);
-    assert_eq!(0.0, scene.meshes[0].aabb.mMin.z);
-    assert_eq!(0.0, scene.meshes[0].aabb.mMax.x);
-    assert_eq!(0.0, scene.meshes[0].aabb.mMax.y);
-    assert_eq!(0.0, scene.meshes[0].aabb.mMax.z);
+    assert_eq!(0.0, scene.meshes[0].aabb.min.x);
+    assert_eq!(0.0, scene.meshes[0].aabb.min.y);
+    assert_eq!(0.0, scene.meshes[0].aabb.min.z);
+    assert_eq!(0.0, scene.meshes[0].aabb.max.x);
+    assert_eq!(0.0, scene.meshes[0].aabb.max.y);
+    assert_eq!(0.0, scene.meshes[0].aabb.max.z);
     assert!(scene.meshes[0].colors.iter().all(|x| x.is_none()));
 }
 
 #[test]
 fn bitwise_primitive_types() {
-    let current_directory_buf = get_model("models/BLEND/box.blend");
+    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
 
     let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
@@ -176,4 +161,17 @@ fn bitwise_primitive_types() {
     assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Point);
     assert_eq!(4, scene.meshes[0].primitive_types & PrimitiveType::Triangle);
     assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Polygon);
+}
+
+#[test]
+fn debug_mesh() {
+    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from(current_directory_buf.as_str(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
+
+    dbg!(&scene.meshes);
 }

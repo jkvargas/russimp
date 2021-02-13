@@ -3,58 +3,80 @@ use crate::{
         aiNode,
         aiMatrix4x4,
     },
-    FromRaw,
     scene::{
         PostProcessSteps,
         Scene,
     },
     metadata::MetaData,
-    get_model,
+    Utils,
+    Matrix4x4,
 };
 
 use std::{
     rc::Rc,
     cell::RefCell,
+    ptr::slice_from_raw_parts
 };
 
 use derivative::Derivative;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Node<'a> {
-    #[derivative(Debug = "ignore")]
-    node: &'a aiNode,
+pub struct Node {
     pub name: String,
-    pub children: Vec<Rc<RefCell<Node<'a>>>>,
-    pub meshes: Vec<&'a u32>,
-    pub metadata: Option<MetaData<'a>>,
-    pub transformation: aiMatrix4x4,
+    pub children: Vec<Rc<RefCell<Node>>>,
+    pub meshes: Vec<u32>,
+    pub metadata: Option<MetaData>,
+    pub transformation: Matrix4x4,
+    #[derivative(Debug = "ignore")]
+    pub parent: Option<Rc<RefCell<Node>>>,
 }
 
-impl<'a> FromRaw for Node<'a> {}
-
-impl<'a> Into<Node<'a>> for &'a aiNode {
-    fn into(self) -> Node<'a> {
-        Node {
-            node: self,
-            name: self.mName.into(),
-            children: Node::get_vec_rc_from_raw(self.mChildren, self.mNumChildren),
-            meshes: Node::get_rawvec(self.mMeshes, self.mNumMeshes),
-            metadata: Node::get_raw(self.mMetaData),
-            transformation: self.mTransformation,
-        }
+impl Node {
+    pub fn new(node: &aiNode) -> Rc<RefCell<Node>> {
+        Self::go_through(node, None)
     }
-}
 
-impl<'a> Node<'a> {
-    fn get_parent(&self) -> Option<Node<'a>> {
-        Node::get_raw(self.node.mParent)
+    fn go_through(node: &aiNode, parent: Option<Rc<RefCell<Node>>>) -> Rc<RefCell<Node>> {
+        // current simple node
+        let res_node = Rc::new(RefCell::new(Self::create_simple_node(node)));
+
+        let slice = slice_from_raw_parts(node.mChildren, node.mNumChildren as usize);
+        if !slice.is_null() {
+            let raw = unsafe { slice.as_ref() }.unwrap();
+
+            for children in raw {
+                let children_ref = unsafe { children.as_ref() }.unwrap();
+                let res_children_node = Self::go_through(children_ref, Some(res_node.clone()));
+
+                let mut result_borrow = res_node.borrow_mut();
+                result_borrow.children.push(res_children_node);
+            }
+        }
+
+        {
+            let mut borrow_mut = res_node.borrow_mut();
+            borrow_mut.parent = parent;
+        }
+
+        res_node
+    }
+
+    fn create_simple_node(node: &aiNode) -> Node {
+        Node {
+            name: node.mName.into(),
+            children: Vec::new(),
+            meshes: Utils::get_rawvec(node.mMeshes, node.mNumMeshes),
+            metadata: Utils::get_raw(node.mMetaData, &MetaData::new),
+            transformation: Matrix4x4::new(&node.mTransformation),
+            parent: None,
+        }
     }
 }
 
 #[test]
 fn checking_nodes() {
-    let current_directory_buf = get_model("models/BLEND/box.blend");
+    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
 
     let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
@@ -86,7 +108,7 @@ fn checking_nodes() {
 
 #[test]
 fn childs_parent_name_matches() {
-    let current_directory_buf = get_model("models/BLEND/box.blend");
+    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
 
     let scene = Scene::from(current_directory_buf.as_str(),
                             vec![PostProcessSteps::CalcTangentSpace,
@@ -98,7 +120,22 @@ fn childs_parent_name_matches() {
     let borrow = root.borrow();
 
     let first_son = borrow.children[0].borrow();
-    let first_son_parent = first_son.get_parent().unwrap();
+    let first_son_parent = first_son.parent.as_ref().unwrap();
 
-    assert_eq!(borrow.name, first_son_parent.name);
+    let dad = first_son_parent.borrow();
+
+    assert_eq!(borrow.name, dad.name);
+}
+
+#[test]
+fn debug_root() {
+    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from(current_directory_buf.as_str(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
+
+    dbg!(&scene.root);
 }
