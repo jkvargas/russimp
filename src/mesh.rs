@@ -162,3 +162,16 @@ fn bitwise_primitive_types() {
     assert_eq!(4, scene.meshes[0].primitive_types & PrimitiveType::Triangle);
     assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Polygon);
 }
+
+#[test]
+fn debug_mesh() {
+    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from(current_directory_buf.as_str(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
+
+    dbg!(&scene.meshes);
+}

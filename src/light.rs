@@ -143,3 +143,16 @@ fn light_available() {
     assert_eq!(LightSourceType::Area, scene.lights[1].light_source_type);
     assert_eq!(LightSourceType::Area, scene.lights[2].light_source_type);
 }
+
+#[test]
+fn debug_light() {
+    let current_directory_buf = Utils::get_model("models/BLEND/AreaLight_269.blend");
+
+    let scene = Scene::from(current_directory_buf.as_str(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
+
+    dbg!(&scene.lights);
+}

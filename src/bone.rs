@@ -5,6 +5,7 @@ use crate::{Utils, sys::{
 }, Matrix4x4};
 
 use derivative::Derivative;
+use crate::scene::{Scene, PostProcessSteps};
 
 #[derive(Derivative)]
 #[derivative(Debug)]
@@ -42,4 +43,17 @@ impl VertexWeight {
     pub fn convert(vertex: &aiVertexWeight) -> VertexWeight {
         VertexWeight::new(vertex.mVertexId, vertex.mWeight)
     }
+}
+
+#[test]
+fn debug_bones() {
+    let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
+
+    let scene = Scene::from(current_directory_buf.as_str(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
+
+    dbg!(&scene.meshes[0].bones);
 }

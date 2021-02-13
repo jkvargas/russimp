@@ -10,6 +10,27 @@ use crate::{sys::{
 
 use derivative::Derivative;
 
+#[repr(C, packed)]
+#[derive(Derivative, Copy, Clone)]
+#[derivative(Debug)]
+pub struct Texel {
+    pub b: u8,
+    pub g: u8,
+    pub r: u8,
+    pub a: u8,
+}
+
+impl Texel {
+    fn new(texel: &aiTexel) -> Texel {
+        Texel {
+            b: texel.b,
+            g: texel.g,
+            r: texel.r,
+            a: texel.a,
+        }
+    }
+}
+
 #[derive(Derivative)]
 #[derivative(Debug)]
 pub struct Texture {
@@ -17,7 +38,7 @@ pub struct Texture {
     height: u32,
     width: u32,
     ach_format_hint: String,
-    data: Vec<aiTexel>,
+    data: Vec<Texel>,
 }
 
 impl Texture {
@@ -30,7 +51,20 @@ impl Texture {
             height: texture.mHeight,
             width: texture.mWidth,
             ach_format_hint,
-            data: Utils::get_rawvec(texture.pcData, texture.mHeight * texture.mWidth),
+            data: Utils::get_vec(texture.pcData, texture.mHeight * texture.mWidth, &Texel::new),
         }
     }
+}
+
+#[test]
+fn debug_texture() {
+    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from(current_directory_buf.as_str(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
+
+    dbg!(&scene.textures);
 }

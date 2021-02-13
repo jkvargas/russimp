@@ -70,3 +70,16 @@ fn camera_available() {
     assert_eq!(1000.0, scene.cameras[0].clip_plane_far);
     assert_eq!("Camera01".to_string(), scene.cameras[0].name);
 }
+
+#[test]
+fn debug_camera() {
+    let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
+
+    let scene = Scene::from(current_directory_buf.as_str(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
+
+    dbg!(&scene.cameras);
+}

@@ -254,3 +254,16 @@ fn metadata_for_box() {
 
     assert!(scene.metadata.is_none());
 }
+
+#[test]
+fn debug_metadata() {
+    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from(current_directory_buf.as_str(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
+
+    dbg!(&scene.metadata);
+}

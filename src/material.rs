@@ -138,3 +138,16 @@ fn material_for_box() {
     assert_eq!(PropertyTypeInfo::Float, scene.materials[0].properties[40].material_type);
     assert_eq!(TextureType::None, scene.materials[0].properties[40].semantic);
 }
+
+#[test]
+fn debug_light() {
+    let box_file_path = Utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from(box_file_path.as_str(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
+
+    dbg!(&scene.lights);
+}

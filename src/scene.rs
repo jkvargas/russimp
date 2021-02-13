@@ -57,7 +57,7 @@ use crate::{
     light::Light,
     node::Node,
     texture::Texture,
-    Utils
+    Utils,
 };
 
 #[derive(Derivative)]
@@ -117,13 +117,15 @@ impl Scene {
         let file_path = CString::new(file_path).unwrap();
 
         let raw_scene = Scene::get_scene_from_file(file_path, bitwise_flag);
-        let result = raw_scene.map_or(Err(Scene::get_error()), |scene|Ok(Scene::new(scene)));
+        let result = raw_scene.map_or(Err(Scene::get_error()), |scene| Ok(Scene::new(scene)));
         Scene::drop_scene(raw_scene);
 
         result
     }
 
     pub fn new(scene: &aiScene) -> Scene {
+        let root = unsafe { scene.mRootNode.as_ref() };
+
         Self {
             materials: Utils::get_vec_from_raw(scene.mMaterials, scene.mNumMaterials, &Material::new),
             meshes: Utils::get_vec_from_raw(scene.mMeshes, scene.mNumMeshes, &Mesh::new),
@@ -131,7 +133,7 @@ impl Scene {
             animations: Utils::get_vec_from_raw(scene.mAnimations, scene.mNumAnimations, &Animation::new),
             cameras: Utils::get_vec_from_raw(scene.mCameras, scene.mNumCameras, &Camera::new),
             lights: Utils::get_vec_from_raw(scene.mLights, scene.mNumLights, &Light::new),
-            root: Utils::get_rc_raw(scene.mRootNode, &Node::new),
+            root: root.map_or(None, |f| Some(Node::new(f))),
             textures: Utils::get_vec_from_raw(scene.mTextures, scene.mNumTextures, &Texture::new),
             flags: scene.mFlags,
         }

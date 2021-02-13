@@ -234,3 +234,16 @@ fn camera_roll_animation_read() {
     assert_eq!(120.0, scene.animations[0].duration);
     assert_eq!(0, scene.animations[0].morph_mesh_channels.len());
 }
+
+#[test]
+fn debug_animations() {
+    let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
+
+    let scene = Scene::from(current_directory_buf.as_str(),
+                            vec![PostProcessSteps::CalcTangentSpace,
+                                 PostProcessSteps::Triangulate,
+                                 PostProcessSteps::JoinIdenticalVertices,
+                                 PostProcessSteps::SortByPType]).unwrap();
+
+    dbg!(&scene.animations);
+}
