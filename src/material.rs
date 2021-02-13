@@ -1,42 +1,24 @@
-use std::{
-    ptr::slice_from_raw_parts,
-};
+use std::ptr::slice_from_raw_parts;
 
 use crate::{
+    scene::{PostProcessSteps, Scene},
     sys::{
-        aiMaterial,
-        aiMaterialProperty,
-        aiPropertyTypeInfo_aiPTI_Float,
-        aiPropertyTypeInfo_aiPTI_Double,
-        aiPropertyTypeInfo_aiPTI_Buffer,
-        aiPropertyTypeInfo__aiPTI_Force32Bit,
-        aiPropertyTypeInfo_aiPTI_Integer,
-        aiPropertyTypeInfo_aiPTI_String,
-        aiTextureType_aiTextureType_NONE,
-        aiTextureType_aiTextureType_DIFFUSE,
-        aiTextureType_aiTextureType_SPECULAR,
-        aiTextureType_aiTextureType_AMBIENT,
-        aiTextureType_aiTextureType_EMISSIVE,
-        aiTextureType_aiTextureType_HEIGHT,
-        aiTextureType_aiTextureType_NORMALS,
-        aiTextureType_aiTextureType_SHININESS,
-        aiTextureType_aiTextureType_OPACITY,
-        aiTextureType_aiTextureType_DISPLACEMENT,
-        aiTextureType_aiTextureType_LIGHTMAP,
-        aiTextureType_aiTextureType_REFLECTION,
-        aiTextureType_aiTextureType_BASE_COLOR,
-        aiTextureType_aiTextureType_NORMAL_CAMERA,
-        aiTextureType_aiTextureType_EMISSION_COLOR,
-        aiTextureType_aiTextureType_METALNESS,
-        aiTextureType_aiTextureType_DIFFUSE_ROUGHNESS,
-        aiTextureType_aiTextureType_AMBIENT_OCCLUSION,
+        aiMaterial, aiMaterialProperty, aiPropertyTypeInfo__aiPTI_Force32Bit,
+        aiPropertyTypeInfo_aiPTI_Buffer, aiPropertyTypeInfo_aiPTI_Double,
+        aiPropertyTypeInfo_aiPTI_Float, aiPropertyTypeInfo_aiPTI_Integer,
+        aiPropertyTypeInfo_aiPTI_String, aiTextureType__aiTextureType_Force32Bit,
+        aiTextureType_aiTextureType_AMBIENT, aiTextureType_aiTextureType_AMBIENT_OCCLUSION,
+        aiTextureType_aiTextureType_BASE_COLOR, aiTextureType_aiTextureType_DIFFUSE,
+        aiTextureType_aiTextureType_DIFFUSE_ROUGHNESS, aiTextureType_aiTextureType_DISPLACEMENT,
+        aiTextureType_aiTextureType_EMISSION_COLOR, aiTextureType_aiTextureType_EMISSIVE,
+        aiTextureType_aiTextureType_HEIGHT, aiTextureType_aiTextureType_LIGHTMAP,
+        aiTextureType_aiTextureType_METALNESS, aiTextureType_aiTextureType_NONE,
+        aiTextureType_aiTextureType_NORMALS, aiTextureType_aiTextureType_NORMAL_CAMERA,
+        aiTextureType_aiTextureType_OPACITY, aiTextureType_aiTextureType_REFLECTION,
+        aiTextureType_aiTextureType_SHININESS, aiTextureType_aiTextureType_SPECULAR,
         aiTextureType_aiTextureType_UNKNOWN,
-        aiTextureType__aiTextureType_Force32Bit,
     },
-    scene::{PostProcessSteps,
-            Scene
-    },
-    Utils
+    Utils,
 };
 
 use derivative::Derivative;
@@ -51,7 +33,11 @@ pub struct Material {
 impl Material {
     pub fn new(material: &aiMaterial) -> Material {
         Material {
-            properties: Utils::get_vec_from_raw(material.mProperties, material.mNumProperties, &MaterialProperty::new),
+            properties: Utils::get_vec_from_raw(
+                material.mProperties,
+                material.mNumProperties,
+                &MaterialProperty::new,
+            ),
         }
     }
 }
@@ -106,7 +92,8 @@ pub enum TextureType {
 
 impl MaterialProperty {
     pub fn new(material: &aiMaterialProperty) -> MaterialProperty {
-        let slice = slice_from_raw_parts(material.mData as *const u8, material.mDataLength as usize);
+        let slice =
+            slice_from_raw_parts(material.mData as *const u8, material.mDataLength as usize);
         let data = unsafe { slice.as_ref() }.unwrap();
 
         MaterialProperty {
@@ -123,31 +110,50 @@ impl MaterialProperty {
 fn material_for_box() {
     let box_file_path = Utils::get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(box_file_path.as_str(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
+    let scene = Scene::from(
+        box_file_path.as_str(),
+        vec![
+            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::Triangulate,
+            PostProcessSteps::JoinIdenticalVertices,
+            PostProcessSteps::SortByPType,
+        ],
+    )
+    .unwrap();
 
     assert_eq!(1, scene.materials.len());
     assert_eq!(41, scene.materials[0].properties.len());
 
     assert_eq!(false, scene.materials[0].properties[40].data.is_empty());
-    assert_eq!("$mat.blend.mirror.glossAnisotropic", scene.materials[0].properties[40].key.as_str());
+    assert_eq!(
+        "$mat.blend.mirror.glossAnisotropic",
+        scene.materials[0].properties[40].key.as_str()
+    );
     assert_eq!(0, scene.materials[0].properties[40].index);
-    assert_eq!(PropertyTypeInfo::Float, scene.materials[0].properties[40].material_type);
-    assert_eq!(TextureType::None, scene.materials[0].properties[40].semantic);
+    assert_eq!(
+        PropertyTypeInfo::Float,
+        scene.materials[0].properties[40].material_type
+    );
+    assert_eq!(
+        TextureType::None,
+        scene.materials[0].properties[40].semantic
+    );
 }
 
 #[test]
 fn debug_light() {
     let box_file_path = Utils::get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(box_file_path.as_str(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
+    let scene = Scene::from(
+        box_file_path.as_str(),
+        vec![
+            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::Triangulate,
+            PostProcessSteps::JoinIdenticalVertices,
+            PostProcessSteps::SortByPType,
+        ],
+    )
+    .unwrap();
 
     dbg!(&scene.lights);
 }

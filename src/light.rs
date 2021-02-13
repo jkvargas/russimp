@@ -1,21 +1,15 @@
 use num_traits::ToPrimitive;
 
-use crate::{scene::{
-    Scene,
-    PostProcessSteps
-}, sys::{
-    aiLight,
-    aiVector3D,
-    aiColor3D,
-    aiVector2D,
-    aiLightSourceType_aiLightSource_UNDEFINED,
-    aiLightSourceType_aiLightSource_AMBIENT,
-    aiLightSourceType_aiLightSource_AREA,
-    aiLightSourceType_aiLightSource_POINT,
-    aiLightSourceType_aiLightSource_SPOT,
-    aiLightSourceType_aiLightSource_DIRECTIONAL,
-    aiLightSourceType,
-}, Utils, Vector3D, Color3D, Vector2D};
+use crate::{
+    scene::{PostProcessSteps, Scene},
+    sys::{
+        aiColor3D, aiLight, aiLightSourceType, aiLightSourceType_aiLightSource_AMBIENT,
+        aiLightSourceType_aiLightSource_AREA, aiLightSourceType_aiLightSource_DIRECTIONAL,
+        aiLightSourceType_aiLightSource_POINT, aiLightSourceType_aiLightSource_SPOT,
+        aiLightSourceType_aiLightSource_UNDEFINED, aiVector2D, aiVector3D,
+    },
+    Color3D, Utils, Vector2D, Vector3D,
+};
 
 use derivative::Derivative;
 
@@ -103,11 +97,16 @@ pub enum LightSourceType {
 fn light_available() {
     let current_directory_buf = Utils::get_model("models/BLEND/AreaLight_269.blend");
 
-    let scene = Scene::from(current_directory_buf.as_str(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
+    let scene = Scene::from(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::Triangulate,
+            PostProcessSteps::JoinIdenticalVertices,
+            PostProcessSteps::SortByPType,
+        ],
+    )
+    .unwrap();
 
     assert_eq!(3, scene.lights.len());
 
@@ -148,11 +147,16 @@ fn light_available() {
 fn debug_light() {
     let current_directory_buf = Utils::get_model("models/BLEND/AreaLight_269.blend");
 
-    let scene = Scene::from(current_directory_buf.as_str(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
+    let scene = Scene::from(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::Triangulate,
+            PostProcessSteps::JoinIdenticalVertices,
+            PostProcessSteps::SortByPType,
+        ],
+    )
+    .unwrap();
 
     dbg!(&scene.lights);
 }

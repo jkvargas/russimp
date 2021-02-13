@@ -1,22 +1,11 @@
 use crate::{
-    sys::{
-        aiNode,
-        aiMatrix4x4,
-    },
-    scene::{
-        PostProcessSteps,
-        Scene,
-    },
     metadata::MetaData,
-    Utils,
-    Matrix4x4,
+    scene::{PostProcessSteps, Scene},
+    sys::{aiMatrix4x4, aiNode},
+    Matrix4x4, Utils,
 };
 
-use std::{
-    rc::Rc,
-    cell::RefCell,
-    ptr::slice_from_raw_parts
-};
+use std::{cell::RefCell, ptr::slice_from_raw_parts, rc::Rc};
 
 use derivative::Derivative;
 
@@ -78,11 +67,16 @@ impl Node {
 fn checking_nodes() {
     let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(current_directory_buf.as_str(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
+    let scene = Scene::from(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::Triangulate,
+            PostProcessSteps::JoinIdenticalVertices,
+            PostProcessSteps::SortByPType,
+        ],
+    )
+    .unwrap();
 
     let root = scene.root.as_ref().unwrap();
     let borrow = root.borrow();
@@ -110,11 +104,16 @@ fn checking_nodes() {
 fn childs_parent_name_matches() {
     let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(current_directory_buf.as_str(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
+    let scene = Scene::from(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::Triangulate,
+            PostProcessSteps::JoinIdenticalVertices,
+            PostProcessSteps::SortByPType,
+        ],
+    )
+    .unwrap();
 
     let root = scene.root.as_ref().unwrap();
     let borrow = root.borrow();
@@ -131,11 +130,16 @@ fn childs_parent_name_matches() {
 fn debug_root() {
     let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(current_directory_buf.as_str(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
+    let scene = Scene::from(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::Triangulate,
+            PostProcessSteps::JoinIdenticalVertices,
+            PostProcessSteps::SortByPType,
+        ],
+    )
+    .unwrap();
 
     dbg!(&scene.root);
 }

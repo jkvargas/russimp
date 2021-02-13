@@ -1,24 +1,10 @@
 use crate::{
+    scene::{PostProcessSteps, Scene},
     sys::{
-        aiMeshMorphKey,
-        aiMeshMorphAnim,
-        aiNodeAnim,
-        aiQuatKey,
-        aiVectorKey,
-        aiMeshAnim,
-        aiMeshKey,
-        aiAnimation,
-        aiVector3D,
-        aiQuaternion,
-        aiNode,
-        aiMesh,
+        aiAnimation, aiMesh, aiMeshAnim, aiMeshKey, aiMeshMorphAnim, aiMeshMorphKey, aiNode,
+        aiNodeAnim, aiQuatKey, aiQuaternion, aiVector3D, aiVectorKey,
     },
-    scene::{
-        Scene,
-        PostProcessSteps,
-    },
-    Vector3D,
-    Utils,
+    Utils, Vector3D,
 };
 
 use derivative::Derivative;
@@ -36,7 +22,10 @@ impl MeshMorphKey {
         Self {
             time: mesh_morph_key.mTime,
             values: Utils::get_rawvec(mesh_morph_key.mValues, mesh_morph_key.mNumValuesAndWeights),
-            weights: Utils::get_rawvec(mesh_morph_key.mWeights, mesh_morph_key.mNumValuesAndWeights),
+            weights: Utils::get_rawvec(
+                mesh_morph_key.mWeights,
+                mesh_morph_key.mNumValuesAndWeights,
+            ),
         }
     }
 }
@@ -125,9 +114,21 @@ impl NodeAnim {
     pub fn new(node_anim: &aiNodeAnim) -> NodeAnim {
         NodeAnim {
             name: node_anim.mNodeName.into(),
-            position_keys: Utils::get_vec(node_anim.mPositionKeys, node_anim.mNumPositionKeys, &VectorKey::new),
-            rotation_keys: Utils::get_vec(node_anim.mRotationKeys, node_anim.mNumRotationKeys, &QuatKey::new),
-            scaling_keys: Utils::get_vec(node_anim.mScalingKeys, node_anim.mNumScalingKeys, &VectorKey::new),
+            position_keys: Utils::get_vec(
+                node_anim.mPositionKeys,
+                node_anim.mNumPositionKeys,
+                &VectorKey::new,
+            ),
+            rotation_keys: Utils::get_vec(
+                node_anim.mRotationKeys,
+                node_anim.mNumRotationKeys,
+                &QuatKey::new,
+            ),
+            scaling_keys: Utils::get_vec(
+                node_anim.mScalingKeys,
+                node_anim.mNumScalingKeys,
+                &VectorKey::new,
+            ),
             post_state: node_anim.mPostState,
             pre_state: node_anim.mPreState,
         }
@@ -181,10 +182,22 @@ impl Animation {
     pub fn new(animation: &aiAnimation) -> Animation {
         Self {
             name: animation.mName.into(),
-            channels: Utils::get_vec_from_raw(animation.mChannels, animation.mNumChannels, &NodeAnim::new),
+            channels: Utils::get_vec_from_raw(
+                animation.mChannels,
+                animation.mNumChannels,
+                &NodeAnim::new,
+            ),
             duration: animation.mDuration,
-            morph_mesh_channels: Utils::get_vec_from_raw(animation.mMorphMeshChannels, animation.mNumMorphMeshChannels, &MeshMorphAnim::new),
-            mesh_channels: Utils::get_vec_from_raw(animation.mMeshChannels, animation.mNumMeshChannels, &MeshAnim::new),
+            morph_mesh_channels: Utils::get_vec_from_raw(
+                animation.mMorphMeshChannels,
+                animation.mNumMorphMeshChannels,
+                &MeshMorphAnim::new,
+            ),
+            mesh_channels: Utils::get_vec_from_raw(
+                animation.mMeshChannels,
+                animation.mNumMeshChannels,
+                &MeshAnim::new,
+            ),
             ticks_per_second: animation.mTicksPerSecond,
         }
     }
@@ -194,11 +207,16 @@ impl Animation {
 fn camera_roll_animation_read() {
     let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
 
-    let scene = Scene::from(current_directory_buf.as_str(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
+    let scene = Scene::from(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::Triangulate,
+            PostProcessSteps::JoinIdenticalVertices,
+            PostProcessSteps::SortByPType,
+        ],
+    )
+    .unwrap();
 
     assert_eq!(1, scene.animations.len());
     assert_eq!("3DSMasterAnim".to_string(), scene.animations[0].name);
@@ -208,16 +226,40 @@ fn camera_roll_animation_read() {
     assert_eq!(0, scene.animations[0].channels[0].pre_state);
     assert_eq!(0, scene.animations[0].channels[0].post_state);
     assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[0].time);
-    assert_eq!(0.9999999, scene.animations[0].channels[0].rotation_keys[0].value.w);
-    assert_eq!(-0.00046456736, scene.animations[0].channels[0].rotation_keys[0].value.x);
-    assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[0].value.y);
-    assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[0].value.z);
+    assert_eq!(
+        0.9999999,
+        scene.animations[0].channels[0].rotation_keys[0].value.w
+    );
+    assert_eq!(
+        -0.00046456736,
+        scene.animations[0].channels[0].rotation_keys[0].value.x
+    );
+    assert_eq!(
+        0.0,
+        scene.animations[0].channels[0].rotation_keys[0].value.y
+    );
+    assert_eq!(
+        0.0,
+        scene.animations[0].channels[0].rotation_keys[0].value.z
+    );
 
     assert_eq!(120.0, scene.animations[0].channels[0].rotation_keys[1].time);
-    assert_eq!(0.7806558, scene.animations[0].channels[0].rotation_keys[1].value.w);
-    assert_eq!(-0.6249612, scene.animations[0].channels[0].rotation_keys[1].value.x);
-    assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[1].value.y);
-    assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[1].value.z);
+    assert_eq!(
+        0.7806558,
+        scene.animations[0].channels[0].rotation_keys[1].value.w
+    );
+    assert_eq!(
+        -0.6249612,
+        scene.animations[0].channels[0].rotation_keys[1].value.x
+    );
+    assert_eq!(
+        0.0,
+        scene.animations[0].channels[0].rotation_keys[1].value.y
+    );
+    assert_eq!(
+        0.0,
+        scene.animations[0].channels[0].rotation_keys[1].value.z
+    );
 
     assert_eq!(0.0, scene.animations[0].channels[0].scaling_keys[0].time);
     assert_eq!(1.0, scene.animations[0].channels[0].scaling_keys[0].value.x);
@@ -227,9 +269,18 @@ fn camera_roll_animation_read() {
     // position keys
     assert_eq!(1, scene.animations[0].channels[0].position_keys.len());
     assert_eq!(0.0, scene.animations[0].channels[0].position_keys[0].time);
-    assert_eq!(-153.0771, scene.animations[0].channels[0].position_keys[0].value.x);
-    assert_eq!(3.272005, scene.animations[0].channels[0].position_keys[0].value.y);
-    assert_eq!(22.777624, scene.animations[0].channels[0].position_keys[0].value.z);
+    assert_eq!(
+        -153.0771,
+        scene.animations[0].channels[0].position_keys[0].value.x
+    );
+    assert_eq!(
+        3.272005,
+        scene.animations[0].channels[0].position_keys[0].value.y
+    );
+    assert_eq!(
+        22.777624,
+        scene.animations[0].channels[0].position_keys[0].value.z
+    );
 
     assert_eq!(120.0, scene.animations[0].duration);
     assert_eq!(0, scene.animations[0].morph_mesh_channels.len());
@@ -239,11 +290,16 @@ fn camera_roll_animation_read() {
 fn debug_animations() {
     let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
 
-    let scene = Scene::from(current_directory_buf.as_str(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
+    let scene = Scene::from(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::Triangulate,
+            PostProcessSteps::JoinIdenticalVertices,
+            PostProcessSteps::SortByPType,
+        ],
+    )
+    .unwrap();
 
     dbg!(&scene.animations);
 }

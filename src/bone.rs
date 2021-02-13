@@ -1,11 +1,10 @@
-use crate::{Utils, sys::{
-    aiBone,
-    aiVertexWeight,
-    aiMatrix4x4,
-}, Matrix4x4};
+use crate::{
+    sys::{aiBone, aiMatrix4x4, aiVertexWeight},
+    Matrix4x4, Utils,
+};
 
+use crate::scene::{PostProcessSteps, Scene};
 use derivative::Derivative;
-use crate::scene::{Scene, PostProcessSteps};
 
 #[derive(Derivative)]
 #[derivative(Debug)]
@@ -34,10 +33,7 @@ pub struct VertexWeight {
 
 impl VertexWeight {
     pub fn new(vertex_id: u32, weight: f32) -> VertexWeight {
-        VertexWeight {
-            weight,
-            vertex_id
-        }
+        VertexWeight { weight, vertex_id }
     }
 
     pub fn convert(vertex: &aiVertexWeight) -> VertexWeight {
@@ -49,11 +45,16 @@ impl VertexWeight {
 fn debug_bones() {
     let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
 
-    let scene = Scene::from(current_directory_buf.as_str(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
+    let scene = Scene::from(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::Triangulate,
+            PostProcessSteps::JoinIdenticalVertices,
+            PostProcessSteps::SortByPType,
+        ],
+    )
+    .unwrap();
 
     dbg!(&scene.meshes[0].bones);
 }

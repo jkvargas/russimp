@@ -1,12 +1,10 @@
 use std::ffi::CStr;
 
-use crate::{sys::{
-    aiTexture,
-    aiTexel,
-}, scene::{
-    Scene,
-    PostProcessSteps,
-}, Utils};
+use crate::{
+    scene::{PostProcessSteps, Scene},
+    sys::{aiTexel, aiTexture},
+    Utils,
+};
 
 use derivative::Derivative;
 
@@ -51,7 +49,11 @@ impl Texture {
             height: texture.mHeight,
             width: texture.mWidth,
             ach_format_hint,
-            data: Utils::get_vec(texture.pcData, texture.mHeight * texture.mWidth, &Texel::new),
+            data: Utils::get_vec(
+                texture.pcData,
+                texture.mHeight * texture.mWidth,
+                &Texel::new,
+            ),
         }
     }
 }
@@ -60,11 +62,16 @@ impl Texture {
 fn debug_texture() {
     let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(current_directory_buf.as_str(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
+    let scene = Scene::from(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::Triangulate,
+            PostProcessSteps::JoinIdenticalVertices,
+            PostProcessSteps::SortByPType,
+        ],
+    )
+    .unwrap();
 
     dbg!(&scene.textures);
 }
