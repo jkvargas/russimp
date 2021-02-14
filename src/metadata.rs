@@ -1,32 +1,17 @@
 use crate::{
-    scene::{
-        PostProcessSteps,
-        Scene,
-    },
+    scene::{PostProcessSteps, Scene},
     sys::{
-        aiMetadataEntry,
-        aiMetadataType_AI_UINT64,
-        aiMetadataType_AI_INT32,
-        aiMetadataType_AI_BOOL,
-        aiMetadataType_AI_DOUBLE,
-        aiMetadataType_AI_FLOAT,
-        aiMetadataType_AI_AISTRING,
-        aiMetadataType_AI_AIVECTOR3D,
-        aiVector3D,
-        aiMetadata,
+        aiMetadata, aiMetadataEntry, aiMetadataType_AI_AISTRING, aiMetadataType_AI_AIVECTOR3D,
+        aiMetadataType_AI_BOOL, aiMetadataType_AI_DOUBLE, aiMetadataType_AI_FLOAT,
+        aiMetadataType_AI_INT32, aiMetadataType_AI_UINT64, aiVector3D,
     },
-    Russult,
-    RussimpError,
-    Utils,
+    RussimpError, Russult, Utils,
 };
 
-use std::{
-    ffi::CStr,
-    os::raw::c_char,
-};
+use std::{ffi::CStr, os::raw::c_char};
 
-use derivative::Derivative;
 use crate::sys::aiString;
+use derivative::Derivative;
 
 trait MetaDataEntryCast<'a> {
     fn can_cast(&self) -> bool;
@@ -66,10 +51,12 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryULong<'a> {
         let raw = self.data.mData as *mut u64;
 
         if let Some(result) = unsafe { raw.as_ref() } {
-            return Ok(MetadataType::ULong(result.clone()));
+            return Ok(MetadataType::ULong(*result));
         }
 
-        Err(RussimpError::MetadataError("Cant convert from bool".to_string()))
+        Err(RussimpError::MetadataError(
+            "Cant convert from bool".to_string(),
+        ))
     }
 }
 
@@ -82,10 +69,12 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryInteger<'a> {
         let raw = self.data.mData as *mut i32;
 
         if let Some(result) = unsafe { raw.as_ref() } {
-            return Ok(MetadataType::Int(result.clone()));
+            return Ok(MetadataType::Int(*result));
         }
 
-        Err(RussimpError::MetadataError("Cant convert from bool".to_string()))
+        Err(RussimpError::MetadataError(
+            "Cant convert from bool".to_string(),
+        ))
     }
 }
 
@@ -98,10 +87,12 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryBool<'a> {
         let raw = self.data.mData as *mut bool;
 
         if let Some(result) = unsafe { raw.as_ref() } {
-            return Ok(MetadataType::Bool(result.clone()));
+            return Ok(MetadataType::Bool(*result));
         }
 
-        Err(RussimpError::MetadataError("Cant convert from bool".to_string()))
+        Err(RussimpError::MetadataError(
+            "Cant convert from bool".to_string(),
+        ))
     }
 }
 
@@ -114,10 +105,12 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryDouble<'a> {
         let raw = self.data.mData as *mut f64;
 
         if let Some(result) = unsafe { raw.as_ref() } {
-            return Ok(MetadataType::Double(result.clone()));
+            return Ok(MetadataType::Double(*result));
         }
 
-        Err(RussimpError::MetadataError("Cant convert from bool".to_string()))
+        Err(RussimpError::MetadataError(
+            "Cant convert from bool".to_string(),
+        ))
     }
 }
 
@@ -130,10 +123,12 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryFloat<'a> {
         let raw = self.data.mData as *mut f32;
 
         if let Some(result) = unsafe { raw.as_ref() } {
-            return Ok(MetadataType::Float(result.clone()));
+            return Ok(MetadataType::Float(*result));
         }
 
-        Err(RussimpError::MetadataError("Cant convert from bool".to_string()))
+        Err(RussimpError::MetadataError(
+            "Cant convert from bool".to_string(),
+        ))
     }
 }
 
@@ -144,7 +139,10 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryString<'a> {
 
     fn cast(&self) -> Russult<MetadataType> {
         let cstr = unsafe { CStr::from_ptr(self.data.mData as *const c_char) };
-        cstr.to_str().map_or_else(|e| Err(e.into()), |r| Ok(MetadataType::String(r.to_string())))
+        cstr.to_str().map_or_else(
+            |e| Err(e.into()),
+            |r| Ok(MetadataType::String(r.to_string())),
+        )
     }
 }
 
@@ -160,7 +158,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataVector3d<'a> {
     fn cast(&self) -> Russult<MetadataType> {
         let vec = self.data.mData as *mut aiVector3D;
         if let Some(content) = unsafe { vec.as_ref() } {
-            return Ok(MetadataType::Vector3d(content.clone()));
+            return Ok(MetadataType::Vector3d(*content));
         }
 
         Err(RussimpError::MetadataError("data is null".to_string()))
@@ -176,13 +174,18 @@ pub struct MetaData {
 
 impl MetaData {
     pub fn new(meta_data: &aiMetadata) -> MetaData {
-        let keys = Utils::get_vec(meta_data.mKeys, meta_data.mNumProperties, &|str: &aiString| { str.into() });
-        let values = Utils::get_vec(meta_data.mValues, meta_data.mNumProperties, &MetaDataEntry::new);
+        let keys = Utils::get_vec(
+            meta_data.mKeys,
+            meta_data.mNumProperties,
+            &|str: &aiString| str.into(),
+        );
+        let values = Utils::get_vec(
+            meta_data.mValues,
+            meta_data.mNumProperties,
+            &MetaDataEntry::new,
+        );
 
-        Self {
-            keys,
-            values,
-        }
+        Self { keys, values }
     }
 }
 
@@ -197,8 +200,8 @@ pub enum MetadataType {
     Double(f64),
     Int(i32),
     ULong(u64),
-    // MetaMax = aiMetadataType_AI_META_MAX, -- Not sure what it does
-    // Force32 = aiMetadataType_FORCE_32BIT, -- Not sure what it does
+    /* MetaMax = aiMetadataType_AI_META_MAX, -- Not sure what it does
+     * Force32 = aiMetadataType_FORCE_32BIT, -- Not sure what it does */
 }
 
 #[derive(Derivative)]
@@ -210,21 +213,14 @@ pub struct MetaDataEntry {
 impl MetaDataEntry {
     fn cast_data(data: &aiMetadataEntry) -> Russult<MetadataType> {
         let casters: Vec<Box<dyn MetaDataEntryCast>> = vec![
-            Box::new(MetaDataVector3d {
-                data
-            }), Box::new(MetaDataEntryString {
-                data
-            }), Box::new(MetaDataEntryBool {
-                data
-            }), Box::new(MetaDataEntryFloat {
-                data
-            }), Box::new(MetaDataEntryDouble {
-                data
-            }), Box::new(MetaDataEntryInteger {
-                data
-            }), Box::new(MetaDataEntryULong {
-                data
-            })];
+            Box::new(MetaDataVector3d { data }),
+            Box::new(MetaDataEntryString { data }),
+            Box::new(MetaDataEntryBool { data }),
+            Box::new(MetaDataEntryFloat { data }),
+            Box::new(MetaDataEntryDouble { data }),
+            Box::new(MetaDataEntryInteger { data }),
+            Box::new(MetaDataEntryULong { data }),
+        ];
 
         for caster in casters {
             if caster.can_cast() {
@@ -232,12 +228,14 @@ impl MetaDataEntry {
             }
         }
 
-        Err(RussimpError::MetadataError("could not find caster for metadata type".to_string()))
+        Err(RussimpError::MetadataError(
+            "could not find caster for metadata type".to_string(),
+        ))
     }
 
     pub fn new(data: &aiMetadataEntry) -> MetaDataEntry {
         Self {
-            data: Self::cast_data(data)
+            data: Self::cast_data(data),
         }
     }
 }
@@ -246,11 +244,16 @@ impl MetaDataEntry {
 fn metadata_for_box() {
     let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(current_directory_buf.as_str(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
+    let scene = Scene::from(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcessSteps::CalculateTangentSpace,
+            PostProcessSteps::Triangulate,
+            PostProcessSteps::JoinIdenticalVertices,
+            PostProcessSteps::SortByPrimitiveType,
+        ],
+    )
+    .unwrap();
 
     assert!(scene.metadata.is_none());
 }
@@ -259,11 +262,16 @@ fn metadata_for_box() {
 fn debug_metadata() {
     let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(current_directory_buf.as_str(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
+    let scene = Scene::from(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcessSteps::CalculateTangentSpace,
+            PostProcessSteps::Triangulate,
+            PostProcessSteps::JoinIdenticalVertices,
+            PostProcessSteps::SortByPrimitiveType,
+        ],
+    )
+    .unwrap();
 
     dbg!(&scene.metadata);
 }

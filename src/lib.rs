@@ -5,34 +5,31 @@
 pub extern crate russimp_sys as sys;
 
 use std::{
+    cell::RefCell,
     error::Error,
-    fmt,
-    fmt::{
-        Display,
-        Formatter,
-    },
     ffi::IntoStringError,
-    str::Utf8Error,
+    fmt,
+    fmt::{Display, Formatter},
     os::raw::c_uint,
     ptr::slice_from_raw_parts,
     rc::Rc,
-    cell::RefCell,
+    str::Utf8Error,
 };
-use sys::{aiVector3D, aiMatrix4x4, aiAABB, aiColor4D, aiColor3D, aiVector2D};
+use sys::{aiAABB, aiColor3D, aiColor4D, aiMatrix4x4, aiVector2D, aiVector3D};
 
 #[macro_use]
 extern crate num_derive;
 
-pub mod bone;
 pub mod animation;
+pub mod bone;
 pub mod camera;
 pub mod face;
-pub mod material;
 pub mod light;
-pub mod scene;
-pub mod node;
-pub mod metadata;
+pub mod material;
 pub mod mesh;
+pub mod metadata;
+pub mod node;
+pub mod scene;
 pub mod texture;
 
 #[derive(Debug)]
@@ -58,7 +55,7 @@ impl Display for RussimpError {
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct AABB{
+pub struct AABB {
     pub min: Vector3D,
     pub max: Vector3D,
 }
@@ -67,7 +64,7 @@ impl AABB {
     pub fn new(aabb: &aiAABB) -> AABB {
         Self {
             max: Vector3D::new(&aabb.mMax),
-            min: Vector3D::new(&aabb.mMin)
+            min: Vector3D::new(&aabb.mMin),
         }
     }
 }
@@ -165,7 +162,7 @@ impl Vector2D {
     pub fn new(color: &aiVector2D) -> Vector2D {
         Self {
             x: color.x,
-            y: color.y
+            y: color.y,
         }
     }
 }
@@ -185,7 +182,7 @@ impl Vector3D {
         Self {
             x: vec.x,
             y: vec.y,
-            z: vec.z
+            z: vec.z,
         }
     }
 }
@@ -208,23 +205,35 @@ struct Utils;
 
 impl Utils {
     fn get_model(relative_path_from_root: &str) -> String {
-        let mut github_root = std::env::var("GITHUB_WORKSPACE").unwrap();
+        if let Ok(mut github_root) = std::env::var("GITHUB_WORKSPACE") {
+            github_root.push('/');
+            github_root.push_str(relative_path_from_root);
 
-        github_root.push('/');
-        github_root.push_str(relative_path_from_root);
-
-        github_root
+            github_root
+        } else {
+            relative_path_from_root.into()
+        }
     }
 
-    fn get_raw<TRaw, TComponent>(raw: *mut TRaw, map: &dyn Fn(&TRaw) -> TComponent) -> Option<TComponent> {
-        unsafe { raw.as_ref() }.map_or(None, |x| Some(map(x)))
+    fn get_raw<TRaw, TComponent>(
+        raw: *mut TRaw,
+        map: &dyn Fn(&TRaw) -> TComponent,
+    ) -> Option<TComponent> {
+        unsafe { raw.as_ref() }.map(|x| map(x))
     }
 
-    fn get_rc_raw<TRaw, TComponent>(raw: *mut TRaw, map: &dyn Fn(&TRaw) -> TComponent) -> Option<Rc<RefCell<TComponent>>> {
-        unsafe { raw.as_ref() }.map_or(None, |x| Some(Rc::new(RefCell::new(map(x)))))
+    fn get_rc_raw<TRaw, TComponent>(
+        raw: *mut TRaw,
+        map: &dyn Fn(&TRaw) -> TComponent,
+    ) -> Option<Rc<RefCell<TComponent>>> {
+        unsafe { raw.as_ref() }.map(|x| Rc::new(RefCell::new(map(x))))
     }
 
-    fn get_vec<TRaw, TComponent>(raw: *mut TRaw, len: c_uint, map: &dyn Fn(&TRaw) -> TComponent) -> Vec<TComponent> {
+    fn get_vec<TRaw, TComponent>(
+        raw: *mut TRaw,
+        len: c_uint,
+        map: &dyn Fn(&TRaw) -> TComponent,
+    ) -> Vec<TComponent> {
         let slice = slice_from_raw_parts(raw as *const TRaw, len as usize);
         if slice.is_null() {
             return vec![];
@@ -234,7 +243,10 @@ impl Utils {
         raw.iter().map(|x| map(x)).collect()
     }
 
-    fn get_rawvec<TRaw>(raw: *mut TRaw, len: c_uint) -> Vec<TRaw> where TRaw: Clone {
+    fn get_rawvec<TRaw>(raw: *mut TRaw, len: c_uint) -> Vec<TRaw>
+    where
+        TRaw: Clone,
+    {
         let slice = slice_from_raw_parts(raw as *const TRaw, len as usize);
         if slice.is_null() {
             return vec![];
@@ -244,43 +256,65 @@ impl Utils {
         raw.to_vec()
     }
 
-    fn get_vec_from_raw<TComponent, TRaw>(raw_source: *mut *mut TRaw, num_raw_items: c_uint, map: &dyn Fn(&TRaw) -> TComponent) -> Vec<TComponent> {
+    fn get_vec_from_raw<TComponent, TRaw>(
+        raw_source: *mut *mut TRaw,
+        num_raw_items: c_uint,
+        map: &dyn Fn(&TRaw) -> TComponent,
+    ) -> Vec<TComponent> {
         let slice = slice_from_raw_parts(raw_source, num_raw_items as usize);
         if slice.is_null() {
             return vec![];
         }
 
         let raw = unsafe { slice.as_ref() }.unwrap();
-        raw.iter().map(|x| map(unsafe { x.as_ref() }.unwrap())).collect()
+        raw.iter()
+            .map(|x| map(unsafe { x.as_ref() }.unwrap()))
+            .collect()
     }
 
-    fn get_vec_rc_from_raw<TComponent, TRaw>(raw_source: *mut *mut TRaw, num_raw_items: c_uint, map: &dyn Fn(&TRaw) -> TComponent) -> Vec<Rc<RefCell<TComponent>>> {
+    fn get_vec_rc_from_raw<TComponent, TRaw>(
+        raw_source: *mut *mut TRaw,
+        num_raw_items: c_uint,
+        map: &dyn Fn(&TRaw) -> TComponent,
+    ) -> Vec<Rc<RefCell<TComponent>>> {
         let slice = slice_from_raw_parts(raw_source, num_raw_items as usize);
         if slice.is_null() {
             return vec![];
         }
 
         let raw = unsafe { slice.as_ref() }.unwrap();
-        raw.iter().map(|x| Rc::new(RefCell::new(map(unsafe { x.as_ref() }.unwrap())))).collect()
+        raw.iter()
+            .map(|x| Rc::new(RefCell::new(map(unsafe { x.as_ref() }.unwrap()))))
+            .collect()
     }
 
-    fn get_rawvec_from_slice<TRaw>(raw: &[*mut TRaw]) -> Vec<Option<TRaw>> where TRaw: Clone {
-        raw.iter().map(|x| {
-            if let Some(raw) = unsafe { x.as_ref() } {
-                Some(raw.clone())
-            } else {
-                None
-            }
-        }).collect()
+    fn get_rawvec_from_slice<TRaw>(raw: &[*mut TRaw]) -> Vec<Option<TRaw>>
+    where
+        TRaw: Clone,
+    {
+        raw.iter()
+            .map(|x| {
+                if let Some(raw) = unsafe { x.as_ref() } {
+                    Some(raw.clone())
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 
-    fn get_vec_from_slice<TRaw, TComponent>(raw: &[*mut TRaw], map: &dyn Fn(&TRaw) -> TComponent) -> Vec<Option<TComponent>> {
-        raw.iter().map(|x| {
-            if let Some(raw) = unsafe { x.as_ref() } {
-                Some(map(raw))
-            } else {
-                None
-            }
-        }).collect()
+    fn get_vec_from_slice<TRaw, TComponent>(
+        raw: &[*mut TRaw],
+        map: &dyn Fn(&TRaw) -> TComponent,
+    ) -> Vec<Option<TComponent>> {
+        raw.iter()
+            .map(|x| {
+                if let Some(raw) = unsafe { x.as_ref() } {
+                    Some(map(raw))
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 }

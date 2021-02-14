@@ -1,14 +1,7 @@
 use crate::{
-    sys::{
-        aiCamera,
-        aiVector3D
-    },
-    scene::{
-        PostProcessSteps,
-        Scene,
-    },
-    Utils,
-    Vector3D
+    scene::{PostProcessSteps, Scene},
+    sys::{aiCamera, aiVector3D},
+    Utils, Vector3D,
 };
 
 use derivative::Derivative;
@@ -45,11 +38,16 @@ impl Camera {
 fn camera_available() {
     let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
 
-    let scene = Scene::from(current_directory_buf.as_str(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
+    let scene = Scene::from(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcessSteps::CalculateTangentSpace,
+            PostProcessSteps::Triangulate,
+            PostProcessSteps::JoinIdenticalVertices,
+            PostProcessSteps::SortByPrimitiveType,
+        ],
+    )
+    .unwrap();
 
     assert_eq!(1, scene.cameras.len());
 
@@ -75,11 +73,16 @@ fn camera_available() {
 fn debug_camera() {
     let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
 
-    let scene = Scene::from(current_directory_buf.as_str(),
-                            vec![PostProcessSteps::CalcTangentSpace,
-                                 PostProcessSteps::Triangulate,
-                                 PostProcessSteps::JoinIdenticalVertices,
-                                 PostProcessSteps::SortByPType]).unwrap();
+    let scene = Scene::from(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcessSteps::CalculateTangentSpace,
+            PostProcessSteps::Triangulate,
+            PostProcessSteps::JoinIdenticalVertices,
+            PostProcessSteps::SortByPrimitiveType,
+        ],
+    )
+    .unwrap();
 
     dbg!(&scene.cameras);
 }
