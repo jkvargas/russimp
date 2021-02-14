@@ -1,12 +1,4 @@
-use crate::{
-    scene::{PostProcessSteps, Scene},
-    sys::{
-        aiAnimation, aiMesh, aiMeshAnim, aiMeshKey, aiMeshMorphAnim, aiMeshMorphKey, aiNode,
-        aiNodeAnim, aiQuatKey, aiQuaternion, aiVector3D, aiVectorKey,
-    },
-    Utils, Vector3D,
-};
-
+use crate::{sys::*, *};
 use derivative::Derivative;
 
 #[derive(Derivative)]
@@ -17,12 +9,12 @@ pub struct MeshMorphKey {
     pub weights: Vec<f64>,
 }
 
-impl MeshMorphKey {
-    pub fn new(mesh_morph_key: &aiMeshMorphKey) -> MeshMorphKey {
+impl From<&aiMeshMorphKey> for MeshMorphKey {
+    fn from(mesh_morph_key: &aiMeshMorphKey) -> Self {
         Self {
             time: mesh_morph_key.mTime,
-            values: Utils::get_rawvec(mesh_morph_key.mValues, mesh_morph_key.mNumValuesAndWeights),
-            weights: Utils::get_rawvec(
+            values: utils::get_raw_vec(mesh_morph_key.mValues, mesh_morph_key.mNumValuesAndWeights),
+            weights: utils::get_raw_vec(
                 mesh_morph_key.mWeights,
                 mesh_morph_key.mNumValuesAndWeights,
             ),
@@ -37,10 +29,10 @@ pub struct MeshMorphAnim {
     pub name: String,
 }
 
-impl MeshMorphAnim {
-    pub fn new(mesh: &aiMeshMorphAnim) -> MeshMorphAnim {
-        MeshMorphAnim {
-            keys: Utils::get_vec(mesh.mKeys, mesh.mNumKeys, &MeshMorphKey::new),
+impl From<&aiMeshMorphAnim> for MeshMorphAnim {
+    fn from(mesh: &aiMeshMorphAnim) -> Self {
+        Self {
+            keys: utils::get_vec(mesh.mKeys, mesh.mNumKeys),
             name: mesh.mName.into(),
         }
     }
@@ -53,11 +45,11 @@ pub struct VectorKey {
     pub value: Vector3D,
 }
 
-impl VectorKey {
-    pub fn new(vec: &aiVectorKey) -> VectorKey {
+impl From<&aiVectorKey> for VectorKey {
+    fn from(vec: &aiVectorKey) -> Self {
         Self {
             time: vec.mTime,
-            value: Vector3D::new(&vec.mValue),
+            value: (&vec.mValue).into(),
         }
     }
 }
@@ -70,11 +62,11 @@ pub struct QuatKey {
     pub value: Quaternion,
 }
 
-impl QuatKey {
-    pub fn new(quat_key: &aiQuatKey) -> QuatKey {
+impl From<&aiQuatKey> for QuatKey {
+    fn from(quat_key: &aiQuatKey) -> Self {
         Self {
             time: quat_key.mTime,
-            value: Quaternion::new(&quat_key.mValue),
+            value: (&quat_key.mValue).into(),
         }
     }
 }
@@ -88,8 +80,8 @@ pub struct Quaternion {
     pub z: f32,
 }
 
-impl Quaternion {
-    pub fn new(quaternion: &aiQuaternion) -> Quaternion {
+impl From<&aiQuaternion> for Quaternion {
+    fn from(quaternion: &aiQuaternion) -> Self {
         Self {
             w: quaternion.w,
             x: quaternion.x,
@@ -110,25 +102,13 @@ pub struct NodeAnim {
     pub pre_state: u32,
 }
 
-impl NodeAnim {
-    pub fn new(node_anim: &aiNodeAnim) -> NodeAnim {
+impl From<&aiNodeAnim> for NodeAnim {
+    fn from(node_anim: &aiNodeAnim) -> NodeAnim {
         NodeAnim {
             name: node_anim.mNodeName.into(),
-            position_keys: Utils::get_vec(
-                node_anim.mPositionKeys,
-                node_anim.mNumPositionKeys,
-                &VectorKey::new,
-            ),
-            rotation_keys: Utils::get_vec(
-                node_anim.mRotationKeys,
-                node_anim.mNumRotationKeys,
-                &QuatKey::new,
-            ),
-            scaling_keys: Utils::get_vec(
-                node_anim.mScalingKeys,
-                node_anim.mNumScalingKeys,
-                &VectorKey::new,
-            ),
+            position_keys: utils::get_vec(node_anim.mPositionKeys, node_anim.mNumPositionKeys),
+            rotation_keys: utils::get_vec(node_anim.mRotationKeys, node_anim.mNumRotationKeys),
+            scaling_keys: utils::get_vec(node_anim.mScalingKeys, node_anim.mNumScalingKeys),
             post_state: node_anim.mPostState,
             pre_state: node_anim.mPreState,
         }
@@ -142,11 +122,11 @@ pub struct MeshAnim {
     keys: Vec<MeshKey>,
 }
 
-impl MeshAnim {
-    pub fn new(mesh: &aiMeshAnim) -> MeshAnim {
+impl From<&aiMeshAnim> for MeshAnim {
+    fn from(mesh: &aiMeshAnim) -> MeshAnim {
         MeshAnim {
             name: mesh.mName.into(),
-            keys: Utils::get_vec(mesh.mKeys, mesh.mNumKeys, &MeshKey::new),
+            keys: utils::get_vec(mesh.mKeys, mesh.mNumKeys),
         }
     }
 }
@@ -158,8 +138,8 @@ struct MeshKey {
     value: u32,
 }
 
-impl MeshKey {
-    pub fn new(mesh_key: &aiMeshKey) -> MeshKey {
+impl From<&aiMeshKey> for MeshKey {
+    fn from(mesh_key: &aiMeshKey) -> MeshKey {
         MeshKey {
             time: mesh_key.mTime,
             value: mesh_key.mValue,
@@ -167,7 +147,7 @@ impl MeshKey {
     }
 }
 
-#[derive(Derivative)]
+#[derive(Default, Derivative)]
 #[derivative(Debug)]
 pub struct Animation {
     pub name: String,
@@ -178,25 +158,19 @@ pub struct Animation {
     pub ticks_per_second: f64,
 }
 
-impl Animation {
-    pub fn new(animation: &aiAnimation) -> Animation {
+impl From<&aiAnimation> for Animation {
+    fn from(animation: &aiAnimation) -> Self {
         Self {
             name: animation.mName.into(),
-            channels: Utils::get_vec_from_raw(
-                animation.mChannels,
-                animation.mNumChannels,
-                &NodeAnim::new,
-            ),
+            channels: utils::get_vec_from_raw(animation.mChannels, animation.mNumChannels),
             duration: animation.mDuration,
-            morph_mesh_channels: Utils::get_vec_from_raw(
+            morph_mesh_channels: utils::get_vec_from_raw(
                 animation.mMorphMeshChannels,
                 animation.mNumMorphMeshChannels,
-                &MeshMorphAnim::new,
             ),
-            mesh_channels: Utils::get_vec_from_raw(
+            mesh_channels: utils::get_vec_from_raw(
                 animation.mMeshChannels,
                 animation.mNumMeshChannels,
-                &MeshAnim::new,
             ),
             ticks_per_second: animation.mTicksPerSecond,
         }
@@ -205,15 +179,17 @@ impl Animation {
 
 #[test]
 fn camera_roll_animation_read() {
-    let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
+    use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/3DS/CameraRollAnim.3ds");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();
@@ -288,15 +264,17 @@ fn camera_roll_animation_read() {
 
 #[test]
 fn debug_animations() {
-    let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
+    use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/3DS/CameraRollAnim.3ds");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();

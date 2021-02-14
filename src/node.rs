@@ -1,15 +1,8 @@
-use crate::{
-    metadata::MetaData,
-    scene::{PostProcessSteps, Scene},
-    sys::{aiMatrix4x4, aiNode},
-    Matrix4x4, Utils,
-};
-
+use crate::{metadata::MetaData, sys::aiNode, *};
+use derivative::Derivative;
 use std::{cell::RefCell, ptr::slice_from_raw_parts, rc::Rc};
 
-use derivative::Derivative;
-
-#[derive(Derivative)]
+#[derive(Default, Derivative)]
 #[derivative(Debug)]
 pub struct Node {
     pub name: String,
@@ -22,7 +15,7 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn new(node: &aiNode) -> Rc<RefCell<Node>> {
+    pub(crate) fn new(node: &aiNode) -> Rc<RefCell<Node>> {
         Self::go_through(node, None)
     }
 
@@ -55,9 +48,9 @@ impl Node {
         Node {
             name: node.mName.into(),
             children: Vec::new(),
-            meshes: Utils::get_rawvec(node.mMeshes, node.mNumMeshes),
-            metadata: Utils::get_raw(node.mMetaData, &MetaData::new),
-            transformation: Matrix4x4::new(&node.mTransformation),
+            meshes: utils::get_raw_vec(node.mMeshes, node.mNumMeshes),
+            metadata: utils::get_raw(node.mMetaData),
+            transformation: (&node.mTransformation).into(),
             parent: None,
         }
     }
@@ -65,15 +58,17 @@ impl Node {
 
 #[test]
 fn checking_nodes() {
-    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
+    use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();
@@ -102,15 +97,17 @@ fn checking_nodes() {
 
 #[test]
 fn childs_parent_name_matches() {
-    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
+    use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();
@@ -128,15 +125,17 @@ fn childs_parent_name_matches() {
 
 #[test]
 fn debug_root() {
-    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
+    use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();

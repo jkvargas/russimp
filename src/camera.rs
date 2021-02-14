@@ -1,9 +1,4 @@
-use crate::{
-    scene::{PostProcessSteps, Scene},
-    sys::{aiCamera, aiVector3D},
-    Utils, Vector3D,
-};
-
+use crate::{sys::aiCamera, Vector3D};
 use derivative::Derivative;
 
 #[derive(Derivative)]
@@ -19,32 +14,37 @@ pub struct Camera {
     pub up: Vector3D,
 }
 
-impl Camera {
-    pub fn new(camera: &aiCamera) -> Camera {
+impl From<&aiCamera> for Camera {
+    fn from(camera: &aiCamera) -> Self {
         Self {
             name: camera.mName.into(),
             aspect: camera.mAspect,
             clip_plane_far: camera.mClipPlaneFar,
             clip_plane_near: camera.mClipPlaneNear,
             horizontal_fov: camera.mHorizontalFOV,
-            look_at: Vector3D::new(&camera.mLookAt),
-            position: Vector3D::new(&camera.mPosition),
-            up: Vector3D::new(&camera.mUp),
+            look_at: (&camera.mLookAt).into(),
+            position: (&camera.mPosition).into(),
+            up: (&camera.mUp).into(),
         }
     }
 }
 
 #[test]
 fn camera_available() {
-    let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
+    use crate::{
+        scene::{PostProcess, Scene},
+        utils,
+    };
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/3DS/CameraRollAnim.3ds");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();
@@ -71,15 +71,20 @@ fn camera_available() {
 
 #[test]
 fn debug_camera() {
-    let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
+    use crate::{
+        scene::{PostProcess, Scene},
+        utils,
+    };
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/3DS/CameraRollAnim.3ds");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();

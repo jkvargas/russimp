@@ -1,17 +1,6 @@
-use crate::{
-    scene::{PostProcessSteps, Scene},
-    sys::{
-        aiMetadata, aiMetadataEntry, aiMetadataType_AI_AISTRING, aiMetadataType_AI_AIVECTOR3D,
-        aiMetadataType_AI_BOOL, aiMetadataType_AI_DOUBLE, aiMetadataType_AI_FLOAT,
-        aiMetadataType_AI_INT32, aiMetadataType_AI_UINT64, aiVector3D,
-    },
-    RussimpError, Russult, Utils,
-};
-
-use std::{ffi::CStr, os::raw::c_char};
-
-use crate::sys::aiString;
+use crate::{sys::*, *};
 use derivative::Derivative;
+use std::{ffi::CStr, os::raw::c_char};
 
 trait MetaDataEntryCast<'a> {
     fn can_cast(&self) -> bool;
@@ -172,20 +161,12 @@ pub struct MetaData {
     pub values: Vec<MetaDataEntry>,
 }
 
-impl MetaData {
-    pub fn new(meta_data: &aiMetadata) -> MetaData {
-        let keys = Utils::get_vec(
-            meta_data.mKeys,
-            meta_data.mNumProperties,
-            &|str: &aiString| str.into(),
-        );
-        let values = Utils::get_vec(
-            meta_data.mValues,
-            meta_data.mNumProperties,
-            &MetaDataEntry::new,
-        );
-
-        Self { keys, values }
+impl From<&aiMetadata> for MetaData {
+    fn from(meta_data: &aiMetadata) -> Self {
+        Self {
+            keys: utils::get_vec(meta_data.mKeys, meta_data.mNumProperties),
+            values: utils::get_vec(meta_data.mValues, meta_data.mNumProperties),
+        }
     }
 }
 
@@ -206,9 +187,7 @@ pub enum MetadataType {
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct MetaDataEntry {
-    pub data: Russult<MetadataType>,
-}
+pub struct MetaDataEntry(Russult<MetadataType>);
 
 impl MetaDataEntry {
     fn cast_data(data: &aiMetadataEntry) -> Russult<MetadataType> {
@@ -232,25 +211,27 @@ impl MetaDataEntry {
             "could not find caster for metadata type".to_string(),
         ))
     }
+}
 
-    pub fn new(data: &aiMetadataEntry) -> MetaDataEntry {
-        Self {
-            data: Self::cast_data(data),
-        }
+impl From<&aiMetadataEntry> for MetaDataEntry {
+    fn from(data: &aiMetadataEntry) -> Self {
+        Self(Self::cast_data(data))
     }
 }
 
 #[test]
 fn metadata_for_box() {
-    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
+    use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();
@@ -260,15 +241,17 @@ fn metadata_for_box() {
 
 #[test]
 fn debug_metadata() {
-    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
+    use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();

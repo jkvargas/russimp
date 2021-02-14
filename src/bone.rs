@@ -1,12 +1,10 @@
 use crate::{
-    sys::{aiBone, aiMatrix4x4, aiVertexWeight},
-    Matrix4x4, Utils,
+    sys::{aiBone, aiVertexWeight},
+    *,
 };
-
-use crate::scene::{PostProcessSteps, Scene};
 use derivative::Derivative;
 
-#[derive(Derivative)]
+#[derive(Default, Derivative)]
 #[derivative(Debug)]
 pub struct Bone {
     pub weights: Vec<VertexWeight>,
@@ -14,44 +12,45 @@ pub struct Bone {
     pub offset_matrix: Matrix4x4,
 }
 
-impl Bone {
-    pub fn new(bone: &aiBone) -> Bone {
+impl From<&aiBone> for Bone {
+    fn from(bone: &aiBone) -> Self {
         Bone {
-            weights: Utils::get_vec(bone.mWeights, bone.mNumWeights, &VertexWeight::convert),
+            weights: utils::get_vec(bone.mWeights, bone.mNumWeights),
             name: bone.mName.into(),
-            offset_matrix: Matrix4x4::new(&bone.mOffsetMatrix),
+            offset_matrix: (&bone.mOffsetMatrix).into(),
         }
     }
 }
 
-#[derive(Derivative)]
+#[derive(Default, Derivative)]
 #[derivative(Debug)]
 pub struct VertexWeight {
     pub weight: f32,
     pub vertex_id: u32,
 }
 
-impl VertexWeight {
-    pub fn new(vertex_id: u32, weight: f32) -> VertexWeight {
-        VertexWeight { weight, vertex_id }
-    }
-
-    pub fn convert(vertex: &aiVertexWeight) -> VertexWeight {
-        VertexWeight::new(vertex.mVertexId, vertex.mWeight)
+impl From<&aiVertexWeight> for VertexWeight {
+    fn from(vertex: &aiVertexWeight) -> Self {
+        Self {
+            weight: vertex.mWeight,
+            vertex_id: vertex.mVertexId,
+        }
     }
 }
 
 #[test]
 fn debug_bones() {
-    let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
+    use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/3DS/CameraRollAnim.3ds");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();

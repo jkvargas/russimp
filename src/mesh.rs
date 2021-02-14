@@ -1,24 +1,9 @@
+use crate::{bone::Bone, face::Face, sys::*, *};
+use derivative::Derivative;
+use num_traits::ToPrimitive;
 use std::ops::BitAnd;
 
-use crate::{
-    bone::Bone,
-    face::Face,
-    scene::{PostProcessSteps, Scene},
-    sys::{
-        aiAABB, aiAnimMesh, aiColor4D, aiMesh, aiPrimitiveType__aiPrimitiveType_Force32Bit,
-        aiPrimitiveType_aiPrimitiveType_LINE, aiPrimitiveType_aiPrimitiveType_POINT,
-        aiPrimitiveType_aiPrimitiveType_POLYGON, aiPrimitiveType_aiPrimitiveType_TRIANGLE,
-        aiVector3D,
-    },
-    Color4D, Utils, Vector3D, AABB,
-};
-
-use num_traits::ToPrimitive;
-
-use crate::metadata::MetadataType::Vector3d;
-use derivative::Derivative;
-
-#[derive(Derivative)]
+#[derive(Default, Derivative)]
 #[derivative(Debug)]
 pub struct Mesh {
     pub normals: Vec<Vector3D>,
@@ -49,43 +34,35 @@ pub enum PrimitiveType {
     Triangle = aiPrimitiveType_aiPrimitiveType_TRIANGLE,
 }
 
-impl Mesh {
-    pub fn new(mesh: &aiMesh) -> Mesh {
+impl From<&aiMesh> for Mesh {
+    fn from(mesh: &aiMesh) -> Self {
         Self {
-            normals: Utils::get_vec(mesh.mNormals, mesh.mNumVertices, &Vector3D::new),
+            normals: utils::get_vec(mesh.mNormals, mesh.mNumVertices),
             name: mesh.mName.into(),
-            vertices: Utils::get_vec(mesh.mVertices, mesh.mNumVertices, &Vector3D::new),
-            texture_coords: Utils::get_vec_from_slice(&mesh.mTextureCoords, &Vector3D::new),
-            tangents: Utils::get_vec(mesh.mTangents, mesh.mNumVertices, &Vector3D::new),
-            bitangents: Utils::get_vec(mesh.mBitangents, mesh.mNumVertices, &Vector3D::new),
+            vertices: utils::get_vec(mesh.mVertices, mesh.mNumVertices),
+            texture_coords: utils::get_vec_from_slice(&mesh.mTextureCoords),
+            tangents: utils::get_vec(mesh.mTangents, mesh.mNumVertices),
+            bitangents: utils::get_vec(mesh.mBitangents, mesh.mNumVertices),
             uv_components: mesh.mNumUVComponents.to_vec(),
             primitive_types: mesh.mPrimitiveTypes as u32,
-            bones: Utils::get_vec_from_raw(mesh.mBones, mesh.mNumBones, &Bone::new),
+            bones: utils::get_vec_from_raw(mesh.mBones, mesh.mNumBones),
             material_index: mesh.mMaterialIndex,
             method: mesh.mMethod,
-            anim_meshes: Utils::get_vec_from_raw(
-                mesh.mAnimMeshes,
-                mesh.mNumAnimMeshes,
-                &AnimMesh::new,
-            ),
-            faces: Utils::get_vec(mesh.mFaces, mesh.mNumFaces, &Face::new),
-            colors: Utils::get_vec_from_slice(&mesh.mColors, &Color4D::new),
-            aabb: AABB::new(&mesh.mAABB),
+            anim_meshes: utils::get_vec_from_raw(mesh.mAnimMeshes, mesh.mNumAnimMeshes),
+            faces: utils::get_vec(mesh.mFaces, mesh.mNumFaces),
+            colors: utils::get_vec_from_slice(&mesh.mColors),
+            aabb: (&mesh.mAABB).into(),
         }
     }
 }
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct AnimMesh {
-    bitangents: Vec<Vector3D>,
-}
+pub struct AnimMesh(Vec<Vector3D>);
 
-impl AnimMesh {
-    pub fn new(mesh: &aiAnimMesh) -> AnimMesh {
-        Self {
-            bitangents: Utils::get_vec(mesh.mBitangents, mesh.mNumVertices, &Vector3D::new),
-        }
+impl From<&aiAnimMesh> for AnimMesh {
+    fn from(mesh: &aiAnimMesh) -> Self {
+        Self(utils::get_vec(mesh.mBitangents, mesh.mNumVertices))
     }
 }
 
@@ -115,15 +92,17 @@ impl BitAnd<u32> for PrimitiveType {
 
 #[test]
 fn mesh_available() {
-    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
+    use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();
@@ -154,15 +133,17 @@ fn mesh_available() {
 
 #[test]
 fn bitwise_primitive_types() {
-    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
+    use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();
@@ -179,15 +160,17 @@ fn bitwise_primitive_types() {
 
 #[test]
 fn debug_mesh() {
-    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
+    use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();
