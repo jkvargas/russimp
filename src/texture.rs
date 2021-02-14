@@ -1,12 +1,9 @@
-use std::ffi::CStr;
-
 use crate::{
-    scene::{PostProcessSteps, Scene},
     sys::{aiTexel, aiTexture},
-    Utils,
+    *,
 };
-
 use derivative::Derivative;
+use std::ffi::CStr;
 
 #[repr(C, packed)]
 #[derive(Derivative, Copy, Clone)]
@@ -18,8 +15,8 @@ pub struct Texel {
     pub a: u8,
 }
 
-impl Texel {
-    fn new(texel: &aiTexel) -> Texel {
+impl From<&aiTexel> for Texel {
+    fn from(texel: &aiTexel) -> Self {
         Texel {
             b: texel.b,
             g: texel.g,
@@ -29,7 +26,7 @@ impl Texel {
     }
 }
 
-#[derive(Derivative)]
+#[derive(Default, Derivative)]
 #[derivative(Debug)]
 pub struct Texture {
     filename: String,
@@ -39,8 +36,8 @@ pub struct Texture {
     data: Vec<Texel>,
 }
 
-impl Texture {
-    pub fn new(texture: &aiTexture) -> Texture {
+impl From<&aiTexture> for Texture {
+    fn from(texture: &aiTexture) -> Self {
         let content = unsafe { CStr::from_ptr(texture.achFormatHint.as_ptr()) };
         let ach_format_hint = content.to_str().unwrap().to_string();
 
@@ -49,26 +46,24 @@ impl Texture {
             height: texture.mHeight,
             width: texture.mWidth,
             ach_format_hint,
-            data: Utils::get_vec(
-                texture.pcData,
-                texture.mHeight * texture.mWidth,
-                &Texel::new,
-            ),
+            data: utils::get_vec(texture.pcData, texture.mHeight * texture.mWidth),
         }
     }
 }
 
 #[test]
 fn debug_texture() {
-    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
+    use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();

@@ -1,19 +1,7 @@
-use num_traits::ToPrimitive;
-
-use crate::{
-    scene::{PostProcessSteps, Scene},
-    sys::{
-        aiColor3D, aiLight, aiLightSourceType, aiLightSourceType_aiLightSource_AMBIENT,
-        aiLightSourceType_aiLightSource_AREA, aiLightSourceType_aiLightSource_DIRECTIONAL,
-        aiLightSourceType_aiLightSource_POINT, aiLightSourceType_aiLightSource_SPOT,
-        aiLightSourceType_aiLightSource_UNDEFINED, aiVector2D, aiVector3D,
-    },
-    Color3D, Utils, Vector2D, Vector3D,
-};
-
+use crate::{sys::*, Color3D, Vector2D, Vector3D};
 use derivative::Derivative;
 
-#[derive(Derivative)]
+#[derive(Default, Derivative)]
 #[derivative(Debug)]
 pub struct Light {
     up: Vector3D,
@@ -32,78 +20,62 @@ pub struct Light {
     light_source_type: LightSourceType,
 }
 
-impl Light {
-    fn get_light_source_type_from(m_type: &aiLightSourceType) -> LightSourceType {
-        if (ToPrimitive::to_u32(&LightSourceType::Area).unwrap() & *m_type) != 0 {
-            return LightSourceType::Area;
-        }
-
-        if (ToPrimitive::to_u32(&LightSourceType::Ambient).unwrap() & *m_type) != 0 {
-            return LightSourceType::Ambient;
-        }
-
-        if (ToPrimitive::to_u32(&LightSourceType::Spot).unwrap() & *m_type) != 0 {
-            return LightSourceType::Spot;
-        }
-
-        if (ToPrimitive::to_u32(&LightSourceType::Point).unwrap() & *m_type) != 0 {
-            return LightSourceType::Point;
-        }
-
-        if (ToPrimitive::to_u32(&LightSourceType::Directional).unwrap() & *m_type) != 0 {
-            return LightSourceType::Directional;
-        }
-
-        if (ToPrimitive::to_u32(&LightSourceType::Undefined).unwrap() & *m_type) != 0 {
-            return LightSourceType::Undefined;
-        }
-
-        LightSourceType::Undefined
-    }
-
-    pub fn new(light: &aiLight) -> Light {
+impl From<&aiLight> for Light {
+    fn from(light: &aiLight) -> Self {
         Self {
-            up: Vector3D::new(&light.mUp),
-            pos: Vector3D::new(&light.mPosition),
+            up: (&light.mUp).into(),
+            pos: (&light.mPosition).into(),
             name: light.mName.into(),
             angle_inner_cone: light.mAngleInnerCone,
             angle_outer_cone: light.mAngleOuterCone,
             attenuation_linear: light.mAttenuationLinear,
             attenuation_quadratic: light.mAttenuationQuadratic,
             attenuation_constant: light.mAttenuationConstant,
-            color_ambient: Color3D::new(&light.mColorAmbient),
-            color_specular: Color3D::new(&light.mColorSpecular),
-            color_diffuse: Color3D::new(&light.mColorDiffuse),
-            direction: Vector3D::new(&light.mDirection),
-            size: Vector2D::new(&light.mSize),
-            light_source_type: Light::get_light_source_type_from(&light.mType),
+            color_ambient: (&light.mColorAmbient).into(),
+            color_specular: (&light.mColorSpecular).into(),
+            color_diffuse: (&light.mColorDiffuse).into(),
+            direction: (&light.mDirection).into(),
+            size: (&light.mSize).into(),
+            light_source_type: light.mType.into(),
         }
     }
 }
 
-#[derive(Derivative, ToPrimitive, PartialEq)]
+#[derive(Derivative, num_enum::IntoPrimitive, num_enum::FromPrimitive, PartialEq)]
 #[derivative(Debug)]
 #[repr(u32)]
 pub enum LightSourceType {
-    Undefined = aiLightSourceType_aiLightSource_UNDEFINED,
     Ambient = aiLightSourceType_aiLightSource_AMBIENT,
     Area = aiLightSourceType_aiLightSource_AREA,
+    Directional = aiLightSourceType_aiLightSource_DIRECTIONAL,
     Point = aiLightSourceType_aiLightSource_POINT,
     Spot = aiLightSourceType_aiLightSource_SPOT,
-    Directional = aiLightSourceType_aiLightSource_DIRECTIONAL,
+    #[num_enum(default)]
+    Undefined = aiLightSourceType_aiLightSource_UNDEFINED,
+}
+
+impl Default for LightSourceType {
+    fn default() -> Self {
+        LightSourceType::Undefined
+    }
 }
 
 #[test]
 fn light_available() {
-    let current_directory_buf = Utils::get_model("models/BLEND/AreaLight_269.blend");
+    use crate::{
+        scene::{PostProcess, Scene},
+        utils,
+    };
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/BLEND/AreaLight_269.blend");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();
@@ -138,22 +110,27 @@ fn light_available() {
     assert_eq!(0.0, scene.lights[0].size.x);
     assert_eq!(0.0, scene.lights[0].size.x);
 
-    assert_eq!(LightSourceType::Spot, scene.lights[0].light_source_type);
+    assert_eq!(LightSourceType::Point, scene.lights[0].light_source_type);
     assert_eq!(LightSourceType::Area, scene.lights[1].light_source_type);
     assert_eq!(LightSourceType::Area, scene.lights[2].light_source_type);
 }
 
 #[test]
 fn debug_light() {
-    let current_directory_buf = Utils::get_model("models/BLEND/AreaLight_269.blend");
+    use crate::{
+        scene::{PostProcess, Scene},
+        utils,
+    };
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/BLEND/AreaLight_269.blend");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();

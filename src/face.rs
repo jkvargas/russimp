@@ -1,33 +1,29 @@
-use crate::{sys::aiFace, Utils};
-
-use crate::scene::{PostProcessSteps, Scene};
+use crate::{sys::aiFace, *};
 use derivative::Derivative;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Face {
-    pub indices: Vec<u32>,
-}
+pub struct Face(Vec<u32>);
 
-impl Face {
-    pub fn new(face: &aiFace) -> Face {
-        Self {
-            indices: Utils::get_rawvec(face.mIndices, face.mNumIndices),
-        }
+impl From<&aiFace> for Face {
+    fn from(face: &aiFace) -> Self {
+        Self(utils::get_raw_vec(face.mIndices, face.mNumIndices))
     }
 }
 
 #[test]
 fn debug_face() {
-    let current_directory_buf = Utils::get_model("models/3DS/CameraRollAnim.3ds");
+    use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from(
+    let current_directory_buf = utils::get_model("models/3DS/CameraRollAnim.3ds");
+
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();

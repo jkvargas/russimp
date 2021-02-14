@@ -1,44 +1,12 @@
+use crate::{
+    animation::Animation, camera::Camera, light::Light, material::Material, mesh::Mesh,
+    metadata::MetaData, node::Node, sys::*, texture::Texture, *,
+};
+use derivative::Derivative;
 use std::{
     cell::RefCell,
     ffi::{CStr, CString},
     rc::Rc,
-};
-
-use derivative::Derivative;
-
-use crate::{
-    animation::Animation,
-    camera::Camera,
-    light::Light,
-    material::Material,
-    mesh::Mesh,
-    metadata::MetaData,
-    node::Node,
-    sys::{
-        aiGetErrorString, aiImportFile, aiPostProcessSteps_aiProcess_CalcTangentSpace,
-        aiPostProcessSteps_aiProcess_Debone, aiPostProcessSteps_aiProcess_DropNormals,
-        aiPostProcessSteps_aiProcess_EmbedTextures, aiPostProcessSteps_aiProcess_FindDegenerates,
-        aiPostProcessSteps_aiProcess_FindInstances, aiPostProcessSteps_aiProcess_FindInvalidData,
-        aiPostProcessSteps_aiProcess_FixInfacingNormals, aiPostProcessSteps_aiProcess_FlipUVs,
-        aiPostProcessSteps_aiProcess_FlipWindingOrder,
-        aiPostProcessSteps_aiProcess_ForceGenNormals,
-        aiPostProcessSteps_aiProcess_GenBoundingBoxes, aiPostProcessSteps_aiProcess_GenNormals,
-        aiPostProcessSteps_aiProcess_GenSmoothNormals, aiPostProcessSteps_aiProcess_GenUVCoords,
-        aiPostProcessSteps_aiProcess_GlobalScale,
-        aiPostProcessSteps_aiProcess_ImproveCacheLocality,
-        aiPostProcessSteps_aiProcess_JoinIdenticalVertices,
-        aiPostProcessSteps_aiProcess_LimitBoneWeights, aiPostProcessSteps_aiProcess_MakeLeftHanded,
-        aiPostProcessSteps_aiProcess_OptimizeGraph, aiPostProcessSteps_aiProcess_OptimizeMeshes,
-        aiPostProcessSteps_aiProcess_PreTransformVertices,
-        aiPostProcessSteps_aiProcess_RemoveComponent,
-        aiPostProcessSteps_aiProcess_RemoveRedundantMaterials,
-        aiPostProcessSteps_aiProcess_SortByPType, aiPostProcessSteps_aiProcess_SplitByBoneCount,
-        aiPostProcessSteps_aiProcess_SplitLargeMeshes,
-        aiPostProcessSteps_aiProcess_TransformUVCoords, aiPostProcessSteps_aiProcess_Triangulate,
-        aiPostProcessSteps_aiProcess_ValidateDataStructure, aiReleaseImport, aiScene,
-    },
-    texture::Texture,
-    RussimpError, Russult, Utils,
 };
 
 #[derive(Derivative)]
@@ -58,7 +26,7 @@ pub struct Scene {
 #[derive(Derivative)]
 #[derivative(Debug)]
 #[repr(u32)]
-pub enum PostProcessSteps {
+pub enum PostProcess {
     /// Calculates the tangents and bitangents for the imported meshes.
     ///
     /// Does nothing if a mesh does not have normals. You might want this post
@@ -89,7 +57,7 @@ pub enum PostProcessSteps {
     ///
     /// you’ll probably want to consider this flag if you use Direct3D for
     /// rendering. The
-    /// [`ConvertToLeftHanded`](PostProcessSteps::ConvertToLeftHanded) flag
+    /// [`ConvertToLeftHanded`](PostProcess::ConvertToLeftHanded) flag
     /// supersedes this setting and bundles all conversions typically
     /// required for D3D-based applications.
     MakeLeftHanded = aiPostProcessSteps_aiProcess_MakeLeftHanded,
@@ -102,8 +70,8 @@ pub enum PostProcessSteps {
     /// modified! If you want ‘triangles only’ with no other kinds of
     /// primitives, try the following solution:
     ///
-    /// * Specify both [`Triangulate`](PostProcessSteps::Triangulate) and
-    ///   [`SortByPrimitiveType`](PostProcessSteps::SortByPrimitiveType)
+    /// * Specify both [`Triangulate`](PostProcess::Triangulate) and
+    ///   [`SortByPrimitiveType`](PostProcess::SortByPrimitiveType)
     /// * Ignore all point and line meshes when you process assimp's output
     Triangulate = aiPostProcessSteps_aiProcess_Triangulate,
     /// Removes some parts of the data structure (animations, materials, light
@@ -123,7 +91,7 @@ pub enum PostProcessSteps {
     /// misunderstood. Consider the following case: a 3D model has been exported
     /// from a CAD app, and it has per-face vertex colors. Vertex positions
     /// can't be shared, thus the
-    /// [`JoinIdenticalVertices`](PostProcessSteps::JoinIdenticalVertices) step
+    /// [`JoinIdenticalVertices`](PostProcess::JoinIdenticalVertices) step
     /// fails to optimize the data because of these nasty little vertex colors.
     /// Most apps don't even process them, so it’s all for nothing. By using
     /// this step, unneeded components are excluded as early as possible thus
@@ -136,11 +104,11 @@ pub enum PostProcessSteps {
     /// they’re usually already there. Face normals are shared between all
     /// points of a single face, so a single point can have multiple
     /// normals, which forces the library to duplicate vertices in some cases.
-    /// [`JoinIdenticalVertices`](PostProcessSteps::JoinIdenticalVertices) is
+    /// [`JoinIdenticalVertices`](PostProcess::JoinIdenticalVertices) is
     /// *senseless* then.
     ///
     /// This flag may *not* be specified together with
-    /// [`GenerateSmoothNormals`](PostProcessSteps::GenerateSmoothNormals).
+    /// [`GenerateSmoothNormals`](PostProcess::GenerateSmoothNormals).
     GenerateNormals = aiPostProcessSteps_aiProcess_GenNormals,
     /// Generates smooth normals for all vertices in the mesh.
     ///
@@ -149,7 +117,7 @@ pub enum PostProcessSteps {
     /// they're usually already there.
     ///
     /// This flag may not be specified together with
-    /// [`GenerateNormals`](PostProcessSteps::GenerateNormals)
+    /// [`GenerateNormals`](PostProcess::GenerateNormals)
     ///
     /// There’s a configuration option, `AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE`,
     /// which allows you to specify an angle maximum for the normal smoothing
@@ -239,8 +207,8 @@ pub enum PostProcessSteps {
     /// Searches for redundant/unreferenced materials and removes them.
     ///
     /// This is especially useful in combination with the
-    /// [`PreTransformVertices`](PostProcessSteps::PreTransformVertices) and
-    /// [`OptimizeMeshes`](PostProcessSteps::OptimizeMeshes) flags. Both join
+    /// [`PreTransformVertices`](PostProcess::PreTransformVertices) and
+    /// [`OptimizeMeshes`](PostProcess::OptimizeMeshes) flags. Both join
     /// small meshes with equal characteristics, but they can't do their
     /// work if two meshes have different materials. Because several
     /// material settings are lost during Assimp's import filters, (and
@@ -357,10 +325,10 @@ pub enum PostProcessSteps {
     /// This will, in fact, reduce the number of draw calls.
     ///
     /// This is a very effective optimization and is recommended to be used
-    /// together with [`OptimizeGraph`](PostProcessSteps::OptimizeGraph), if
+    /// together with [`OptimizeGraph`](PostProcess::OptimizeGraph), if
     /// possible. The flag is fully compatible with both
-    /// [`SplitLargeMeshes`](PostProcessSteps::SplitLargeMeshes) and
-    /// [`SortByPrimitiveType`](PostProcessSteps::SortByPrimitiveType).
+    /// [`SplitLargeMeshes`](PostProcess::SplitLargeMeshes) and
+    /// [`SortByPrimitiveType`](PostProcess::SortByPrimitiveType).
     OptimizeMeshes = aiPostProcessSteps_aiProcess_OptimizeMeshes,
     /// Optimizes the scene hierarchy.
     ///
@@ -380,13 +348,13 @@ pub enum PostProcessSteps {
     /// own format, and render it as fast as possible.
     ///
     /// This flag is designed to be used with
-    /// [`OptimizeMeshes`](PostProcessSteps::OptimizeMeshes) for best
+    /// [`OptimizeMeshes`](PostProcess::OptimizeMeshes) for best
     /// results.
     ///
     /// > ‘Crappy’ scenes with thousands of extremely small meshes packed in
     /// deeply nested nodes exist for almost all file formats.
-    /// [`OptimizeMeshes`](PostProcessSteps::OptimizeMeshes) in combination with
-    /// [`OptimizeGraph`](PostProcessSteps::OptimizeGraph) usually fixes
+    /// [`OptimizeMeshes`](PostProcess::OptimizeMeshes) in combination with
+    /// [`OptimizeGraph`](PostProcess::OptimizeGraph) usually fixes
     /// them all and makes them renderable.
     OptimizeGraph = aiPostProcessSteps_aiProcess_OptimizeGraph,
     /// This step flips all UV coordinates along the y-axis and adjusts material
@@ -394,7 +362,7 @@ pub enum PostProcessSteps {
     ///
     /// You’ll probably want to consider this flag if you use Direct3D for
     /// rendering. The
-    /// [`ConvertToLeftHanded`](PostProcessSteps::ConvertToLeftHanded) flag
+    /// [`ConvertToLeftHanded`](PostProcess::ConvertToLeftHanded) flag
     /// supersedes this setting and bundles all conversions typically
     /// required for Direct3D-based applications.
     FlipUVs = aiPostProcessSteps_aiProcess_FlipUVs,
@@ -432,40 +400,36 @@ pub enum PostProcessSteps {
     GenerateBoundingBoxes = aiPostProcessSteps_aiProcess_GenBoundingBoxes,
 }
 
+pub type PostProcessSteps = Vec<PostProcess>;
+
+impl From<&aiScene> for Scene {
+    fn from(scene: &aiScene) -> Self {
+        let root = unsafe { scene.mRootNode.as_ref() };
+
+        Self {
+            materials: utils::get_vec_from_raw(scene.mMaterials, scene.mNumMaterials),
+            meshes: utils::get_vec_from_raw(scene.mMeshes, scene.mNumMeshes),
+            metadata: utils::get_raw(scene.mMetaData),
+            animations: utils::get_vec_from_raw(scene.mAnimations, scene.mNumAnimations),
+            cameras: utils::get_vec_from_raw(scene.mCameras, scene.mNumCameras),
+            lights: utils::get_vec_from_raw(scene.mLights, scene.mNumLights),
+            root: root.map(|f| Node::new(f)),
+            textures: utils::get_vec_from_raw(scene.mTextures, scene.mNumTextures),
+            flags: scene.mFlags,
+        }
+    }
+}
+
 impl Scene {
-    pub fn from(file_path: &str, flags: Vec<PostProcessSteps>) -> Russult<Scene> {
+    pub fn from_file(file_path: &str, flags: PostProcessSteps) -> Russult<Scene> {
         let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
         let file_path = CString::new(file_path).unwrap();
 
         let raw_scene = Scene::get_scene_from_file(file_path, bitwise_flag);
-        let result = raw_scene.map_or(Err(Scene::get_error()), |scene| Ok(Scene::new(scene)));
+        let result = raw_scene.map_or(Err(Scene::get_error()), |scene| Ok(scene.into()));
         Scene::drop_scene(raw_scene);
 
         result
-    }
-
-    pub fn new(scene: &aiScene) -> Scene {
-        let root = unsafe { scene.mRootNode.as_ref() };
-
-        Self {
-            materials: Utils::get_vec_from_raw(
-                scene.mMaterials,
-                scene.mNumMaterials,
-                &Material::new,
-            ),
-            meshes: Utils::get_vec_from_raw(scene.mMeshes, scene.mNumMeshes, &Mesh::new),
-            metadata: Utils::get_raw(scene.mMetaData, &MetaData::new),
-            animations: Utils::get_vec_from_raw(
-                scene.mAnimations,
-                scene.mNumAnimations,
-                &Animation::new,
-            ),
-            cameras: Utils::get_vec_from_raw(scene.mCameras, scene.mNumCameras, &Camera::new),
-            lights: Utils::get_vec_from_raw(scene.mLights, scene.mNumLights, &Light::new),
-            root: root.map(|f| Node::new(f)),
-            textures: Utils::get_vec_from_raw(scene.mTextures, scene.mNumTextures, &Texture::new),
-            flags: scene.mFlags,
-        }
     }
 
     #[inline]
@@ -491,15 +455,15 @@ impl Scene {
 
 #[test]
 fn importing_invalid_file_returns_error() {
-    let current_directory_buf = Utils::get_model("models/box.blend");
+    let current_directory_buf = utils::get_model("models/box.blend");
 
-    let scene = Scene::from(
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     );
 
@@ -508,15 +472,15 @@ fn importing_invalid_file_returns_error() {
 
 #[test]
 fn importing_valid_file_returns_scene() {
-    let current_directory_buf = Utils::get_model("models/BLEND/box.blend");
+    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(
+    let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();
@@ -526,15 +490,15 @@ fn importing_valid_file_returns_scene() {
 
 #[test]
 fn debug_scene() {
-    let box_file_path = Utils::get_model("models/BLEND/box.blend");
+    let box_file_path = utils::get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from(
+    let scene = Scene::from_file(
         box_file_path.as_str(),
         vec![
-            PostProcessSteps::CalculateTangentSpace,
-            PostProcessSteps::Triangulate,
-            PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPrimitiveType,
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
         ],
     )
     .unwrap();
