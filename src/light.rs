@@ -100,10 +100,10 @@ fn light_available() {
     let scene = Scene::from(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::CalculateTangentSpace,
             PostProcessSteps::Triangulate,
             PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPType,
+            PostProcessSteps::SortByPrimitiveType,
         ],
     )
     .unwrap();
@@ -150,10 +150,10 @@ fn debug_light() {
     let scene = Scene::from(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::CalculateTangentSpace,
             PostProcessSteps::Triangulate,
             PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPType,
+            PostProcessSteps::SortByPrimitiveType,
         ],
     )
     .unwrap();

@@ -113,10 +113,10 @@ fn material_for_box() {
     let scene = Scene::from(
         box_file_path.as_str(),
         vec![
-            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::CalculateTangentSpace,
             PostProcessSteps::Triangulate,
             PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPType,
+            PostProcessSteps::SortByPrimitiveType,
         ],
     )
     .unwrap();
@@ -147,10 +147,10 @@ fn debug_light() {
     let scene = Scene::from(
         box_file_path.as_str(),
         vec![
-            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::CalculateTangentSpace,
             PostProcessSteps::Triangulate,
             PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPType,
+            PostProcessSteps::SortByPrimitiveType,
         ],
     )
     .unwrap();

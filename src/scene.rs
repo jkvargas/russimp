@@ -67,7 +67,7 @@ pub enum PostProcessSteps {
     /// a config setting, `AI_CONFIG_PP_CT_MAX_SMOOTHING_ANGLE`, which
     /// allows you to specify a maximum smoothing angle for the algorithm.
     /// However, usually you’ll want to leave it at the default value.
-    CalcTangentSpace = aiPostProcessSteps_aiProcess_CalcTangentSpace,
+    CalculateTangentSpace = aiPostProcessSteps_aiProcess_CalcTangentSpace,
     /// Identifies and joins identical vertex data sets within all imported
     /// meshes.
     ///
@@ -290,11 +290,11 @@ pub enum PostProcessSteps {
     ///     they're detected. They won't pass any further pipeline steps.
     /// 2. (if you don't support lines and points at all)
     ///   * Specify the aiProcess_FindDegenerates flag.
-    ///   * Specify the aiProcess_SortByPType flag. This moves line and point
-    ///     primitives to separate meshes.
+    ///   * Specify the aiProcess_SortByPrimitiveType flag. This moves line and
+    ///     point primitives to separate meshes.
     ///   * Set the `AI_CONFIG_PP_SBP_REMOVE` option to `aiPrimitiveType_POINTS
-    ///     | aiPrimitiveType_LINES` to cause SortByPType to reject point and
-    ///     line meshes from the scene.
+    ///     | aiPrimitiveType_LINES` to cause SortByPrimitiveType to reject
+    ///     point and line meshes from the scene.
     ///
     /// > Degenerate polygons are not necessarily evil and that’s why they’re
     /// not removed by default. There are several file formats which don't
@@ -496,7 +496,7 @@ fn importing_invalid_file_returns_error() {
     let scene = Scene::from(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::CalculateTangentSpace,
             PostProcessSteps::Triangulate,
             PostProcessSteps::JoinIdenticalVertices,
             PostProcessSteps::SortByPrimitiveType,
@@ -513,7 +513,7 @@ fn importing_valid_file_returns_scene() {
     let scene = Scene::from(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::CalculateTangentSpace,
             PostProcessSteps::Triangulate,
             PostProcessSteps::JoinIdenticalVertices,
             PostProcessSteps::SortByPrimitiveType,
@@ -531,7 +531,7 @@ fn debug_scene() {
     let scene = Scene::from(
         box_file_path.as_str(),
         vec![
-            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::CalculateTangentSpace,
             PostProcessSteps::Triangulate,
             PostProcessSteps::JoinIdenticalVertices,
             PostProcessSteps::SortByPrimitiveType,

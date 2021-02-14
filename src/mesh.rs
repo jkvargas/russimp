@@ -120,10 +120,10 @@ fn mesh_available() {
     let scene = Scene::from(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::CalculateTangentSpace,
             PostProcessSteps::Triangulate,
             PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPType,
+            PostProcessSteps::SortByPrimitiveType,
         ],
     )
     .unwrap();
@@ -159,10 +159,10 @@ fn bitwise_primitive_types() {
     let scene = Scene::from(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::CalculateTangentSpace,
             PostProcessSteps::Triangulate,
             PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPType,
+            PostProcessSteps::SortByPrimitiveType,
         ],
     )
     .unwrap();
@@ -184,10 +184,10 @@ fn debug_mesh() {
     let scene = Scene::from(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::CalculateTangentSpace,
             PostProcessSteps::Triangulate,
             PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPType,
+            PostProcessSteps::SortByPrimitiveType,
         ],
     )
     .unwrap();

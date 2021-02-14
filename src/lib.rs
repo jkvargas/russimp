@@ -205,12 +205,14 @@ struct Utils;
 
 impl Utils {
     fn get_model(relative_path_from_root: &str) -> String {
-        let mut github_root = std::env::var("GITHUB_WORKSPACE").unwrap();
+        if let Ok(mut github_root) = std::env::var("GITHUB_WORKSPACE") {
+            github_root.push('/');
+            github_root.push_str(relative_path_from_root);
 
-        github_root.push('/');
-        github_root.push_str(relative_path_from_root);
-
-        github_root
+            github_root
+        } else {
+            relative_path_from_root.into()
+        }
     }
 
     fn get_raw<TRaw, TComponent>(

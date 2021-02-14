@@ -247,10 +247,10 @@ fn metadata_for_box() {
     let scene = Scene::from(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::CalculateTangentSpace,
             PostProcessSteps::Triangulate,
             PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPType,
+            PostProcessSteps::SortByPrimitiveType,
         ],
     )
     .unwrap();
@@ -265,10 +265,10 @@ fn debug_metadata() {
     let scene = Scene::from(
         current_directory_buf.as_str(),
         vec![
-            PostProcessSteps::CalcTangentSpace,
+            PostProcessSteps::CalculateTangentSpace,
             PostProcessSteps::Triangulate,
             PostProcessSteps::JoinIdenticalVertices,
-            PostProcessSteps::SortByPType,
+            PostProcessSteps::SortByPrimitiveType,
         ],
     )
     .unwrap();
