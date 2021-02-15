@@ -199,17 +199,10 @@ impl Into<RussimpError> for IntoStringError {
     }
 }
 
-/*
-impl From<&aiString> for String {
-    fn from(string: &aiString) -> Self {
-        string.into()
-    }
-}*/
-
 pub type Russult<T> = Result<T, RussimpError>;
 
 mod utils {
-    use std::{cell::RefCell, os::raw::c_uint, ptr::slice_from_raw_parts, rc::Rc};
+    use std::{os::raw::c_uint, ptr::slice_from_raw_parts};
 
     #[allow(dead_code)]
     pub(crate) fn get_model(relative_path_from_root: &str) -> String {
@@ -227,13 +220,6 @@ mod utils {
         raw: *mut TRaw,
     ) -> Option<TComponent> {
         unsafe { raw.as_ref() }.map(|x| x.into())
-    }
-
-    fn _get_rc_raw<TRaw, TComponent>(
-        raw: *mut TRaw,
-        map: &dyn Fn(&TRaw) -> TComponent,
-    ) -> Option<Rc<RefCell<TComponent>>> {
-        unsafe { raw.as_ref() }.map(|x| Rc::new(RefCell::new(map(x))))
     }
 
     pub(crate) fn get_vec<'a, TRaw: 'a, TComponent: From<&'a TRaw>>(
@@ -274,37 +260,6 @@ mod utils {
         let raw = unsafe { slice.as_ref() }.unwrap();
         raw.iter()
             .map(|x| (unsafe { x.as_ref() }.unwrap()).into())
-            .collect()
-    }
-
-    fn _get_vec_rc_from_raw<TComponent, TRaw>(
-        raw_source: *mut *mut TRaw,
-        num_raw_items: c_uint,
-        map: &dyn Fn(&TRaw) -> TComponent,
-    ) -> Vec<Rc<RefCell<TComponent>>> {
-        let slice = slice_from_raw_parts(raw_source, num_raw_items as usize);
-        if slice.is_null() {
-            return vec![];
-        }
-
-        let raw = unsafe { slice.as_ref() }.unwrap();
-        raw.iter()
-            .map(|x| Rc::new(RefCell::new(map(unsafe { x.as_ref() }.unwrap()))))
-            .collect()
-    }
-
-    fn _get_rawvec_from_slice<TRaw>(raw: &[*mut TRaw]) -> Vec<Option<TRaw>>
-    where
-        TRaw: Clone,
-    {
-        raw.iter()
-            .map(|x| {
-                if let Some(raw) = unsafe { x.as_ref() } {
-                    Some(raw.clone())
-                } else {
-                    None
-                }
-            })
             .collect()
     }
 

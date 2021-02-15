@@ -145,9 +145,9 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataVector3d<'a> {
     }
 
     fn cast(&self) -> Russult<MetadataType> {
-        let vec = self.data.mData as *mut aiVector3D;
+        let vec : *const aiVector3D = self.data.mData as *const aiVector3D;
         if let Some(content) = unsafe { vec.as_ref() } {
-            return Ok(MetadataType::Vector3d(*content));
+            return Ok(MetadataType::Vector3d(content.into()));
         }
 
         Err(RussimpError::MetadataError("data is null".to_string()))
@@ -175,7 +175,7 @@ impl From<&aiMetadata> for MetaData {
 #[repr(u32)]
 pub enum MetadataType {
     String(String),
-    Vector3d(aiVector3D),
+    Vector3d(Vector3D),
     Bool(bool),
     Float(f32),
     Double(f64),
