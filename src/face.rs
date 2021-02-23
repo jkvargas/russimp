@@ -3,7 +3,7 @@ use derivative::Derivative;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Face(Vec<u32>);
+pub struct Face(pub Vec<u32>);
 
 impl From<&aiFace> for Face {
     fn from(face: &aiFace) -> Self {
