@@ -14,14 +14,6 @@ Try to do it with tests =)
 
 We need help to compile it on windows and on mac.
 
-## Testing
-
-To test the api on your local machine you will need to have the environment variable GITHUB_WORKSPACE set up with the project root path.
-
-```shell
-GITHUB_WORKSPACE=./ cargo test --verbose
-```
-
 # Requirements
 
 ## Rust
@@ -30,12 +22,12 @@ You will need rust stable, cmake, C and C++ compiler as well.
 
 # How to use it?
 
-Just call Scene::from with the filename and the flags you want. From the scene you will have access to the underlying structs.
+Just call Scene::from_file with the filename and the flags you want. From the scene you will have access to the underlying structs.
 
 ```rust
-let scene = Scene::from("myfile.blend",
-vec![PostProcessSteps::CalcTangentSpace,
-     PostProcessSteps::Triangulate,
-     PostProcessSteps::JoinIdenticalVertices,
-     PostProcessSteps::SortByPType]).unwrap();
+let scene = Scene::from_file("myfile.blend",
+vec![PostProcess::CalcTangentSpace,
+     PostProcess::Triangulate,
+     PostProcess::JoinIdenticalVertices,
+     PostProcess::SortByPType]).unwrap();
 ```
