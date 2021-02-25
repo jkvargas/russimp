@@ -17,6 +17,7 @@ use std::{
     str::Utf8Error,
 };
 use sys::{aiAABB, aiColor3D, aiColor4D, aiMatrix4x4, aiVector2D, aiVector3D};
+use derivative::Derivative;
 
 #[macro_use]
 extern crate num_derive;
@@ -33,7 +34,8 @@ pub mod node;
 pub mod scene;
 pub mod texture;
 
-#[derive(Debug)]
+#[derive(Derivative)]
+#[derivative(Debug)]
 pub enum RussimpError {
     Import(String),
     MetadataError(String),
@@ -54,7 +56,8 @@ impl Display for RussimpError {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Default, Derivative)]
+#[derivative(Debug)]
 #[repr(C)]
 pub struct AABB {
     pub min: Vector3D,
@@ -70,7 +73,8 @@ impl From<&aiAABB> for AABB {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Default, Derivative)]
+#[derivative(Debug)]
 #[repr(C)]
 pub struct Color4D {
     pub r: f32,
@@ -90,7 +94,8 @@ impl From<&aiColor4D> for Color4D {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Default, Derivative)]
+#[derivative(Debug)]
 #[repr(C)]
 pub struct Color3D {
     pub r: f32,
@@ -107,7 +112,8 @@ impl From<&aiColor3D> for Color3D {
         }
     }
 }
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Default, Derivative)]
+#[derivative(Debug)]
 #[repr(C)]
 pub struct Matrix4x4 {
     pub a1: f32,
@@ -151,7 +157,8 @@ impl From<&aiMatrix4x4> for Matrix4x4 {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Default, Derivative)]
+#[derivative(Debug)]
 #[repr(C)]
 pub struct Vector2D {
     pub x: f32,
@@ -169,7 +176,8 @@ impl From<&aiVector2D> for Vector2D {
 
 impl Error for RussimpError {}
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Default, Derivative)]
+#[derivative(Debug)]
 #[repr(C)]
 pub struct Vector3D {
     pub x: f32,

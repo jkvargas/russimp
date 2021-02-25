@@ -29,11 +29,11 @@ impl From<&aiTexel> for Texel {
 #[derive(Default, Derivative)]
 #[derivative(Debug)]
 pub struct Texture {
-    filename: String,
-    height: u32,
-    width: u32,
-    ach_format_hint: String,
-    data: Vec<Texel>,
+    pub filename: String,
+    pub height: u32,
+    pub width: u32,
+    pub ach_format_hint: String,
+    pub data: Vec<Texel>,
 }
 
 impl From<&aiTexture> for Texture {

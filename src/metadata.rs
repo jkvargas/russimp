@@ -44,7 +44,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryULong<'a> {
         }
 
         Err(RussimpError::MetadataError(
-            "Cant convert from bool".to_string(),
+            "Cant convert to ulong".to_string(),
         ))
     }
 }
@@ -62,7 +62,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryInteger<'a> {
         }
 
         Err(RussimpError::MetadataError(
-            "Cant convert from bool".to_string(),
+            "Cant convert to integer".to_string(),
         ))
     }
 }
@@ -80,7 +80,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryBool<'a> {
         }
 
         Err(RussimpError::MetadataError(
-            "Cant convert from bool".to_string(),
+            "Cant convert to bool".to_string(),
         ))
     }
 }
@@ -98,7 +98,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryDouble<'a> {
         }
 
         Err(RussimpError::MetadataError(
-            "Cant convert from bool".to_string(),
+            "Cant convert to double".to_string(),
         ))
     }
 }
@@ -116,7 +116,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryFloat<'a> {
         }
 
         Err(RussimpError::MetadataError(
-            "Cant convert from bool".to_string(),
+            "Cant convert to float".to_string(),
         ))
     }
 }

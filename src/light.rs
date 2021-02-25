@@ -4,20 +4,20 @@ use derivative::Derivative;
 #[derive(Default, Derivative)]
 #[derivative(Debug)]
 pub struct Light {
-    up: Vector3D,
-    pos: Vector3D,
-    name: String,
-    angle_inner_cone: f32,
-    angle_outer_cone: f32,
-    attenuation_linear: f32,
-    attenuation_quadratic: f32,
-    attenuation_constant: f32,
-    color_ambient: Color3D,
-    color_specular: Color3D,
-    color_diffuse: Color3D,
-    direction: Vector3D,
-    size: Vector2D,
-    light_source_type: LightSourceType,
+    pub up: Vector3D,
+    pub pos: Vector3D,
+    pub name: String,
+    pub angle_inner_cone: f32,
+    pub angle_outer_cone: f32,
+    pub attenuation_linear: f32,
+    pub attenuation_quadratic: f32,
+    pub attenuation_constant: f32,
+    pub color_ambient: Color3D,
+    pub color_specular: Color3D,
+    pub color_diffuse: Color3D,
+    pub direction: Vector3D,
+    pub size: Vector2D,
+    pub light_source_type: LightSourceType,
 }
 
 impl From<&aiLight> for Light {

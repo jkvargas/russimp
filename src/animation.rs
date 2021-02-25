@@ -118,8 +118,8 @@ impl From<&aiNodeAnim> for NodeAnim {
 #[derive(Derivative)]
 #[derivative(Debug)]
 pub struct MeshAnim {
-    name: String,
-    keys: Vec<MeshKey>,
+    pub name: String,
+    pub keys: Vec<MeshKey>,
 }
 
 impl From<&aiMeshAnim> for MeshAnim {
@@ -133,9 +133,9 @@ impl From<&aiMeshAnim> for MeshAnim {
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-struct MeshKey {
-    time: f64,
-    value: u32,
+pub struct MeshKey {
+    pub time: f64,
+    pub value: u32,
 }
 
 impl From<&aiMeshKey> for MeshKey {

@@ -58,7 +58,7 @@ impl From<&aiMesh> for Mesh {
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct AnimMesh(Vec<Vector3D>);
+pub struct AnimMesh(pub Vec<Vector3D>);
 
 impl From<&aiAnimMesh> for AnimMesh {
     fn from(mesh: &aiAnimMesh) -> Self {

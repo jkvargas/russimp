@@ -1,6 +1,6 @@
 [package]
 name = "russimp"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Jhonny Knaak de Vargas"]
 edition = "2018"
 license-file = "LICENSE"
@@ -10,7 +10,7 @@ categories = ["rendering", "external-ffi-bindings", "game-engines", "multimedia"
 keywords = ["assimp", "3d", "blend", "3ds", "glTF"]
 repository = "https://github.com/jkvargas/russimp"
 description = "Assimp bindings for rust"
-exclude = [ "*.bash" ]
+exclude = [ "*.bash", "/models" ]
 
 [lib]
 name = "russimp"

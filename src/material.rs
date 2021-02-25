@@ -6,7 +6,7 @@ use std::ptr::slice_from_raw_parts;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Material(Vec<MaterialProperty>);
+pub struct Material(pub Vec<MaterialProperty>);
 
 impl From<&aiMaterial> for Material {
     fn from(material: &aiMaterial) -> Self {
@@ -20,11 +20,11 @@ impl From<&aiMaterial> for Material {
 #[derive(Derivative)]
 #[derivative(Debug)]
 pub struct MaterialProperty {
-    key: String,
-    data: Vec<u8>,
-    index: usize,
-    material_type: PropertyTypeInfo,
-    semantic: TextureType,
+    pub key: String,
+    pub data: Vec<u8>,
+    pub index: usize,
+    pub material_type: PropertyTypeInfo,
+    pub semantic: TextureType,
 }
 
 #[derive(Derivative, FromPrimitive, PartialEq)]
