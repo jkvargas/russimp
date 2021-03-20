@@ -145,7 +145,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataVector3d<'a> {
     }
 
     fn cast(&self) -> Russult<MetadataType> {
-        let vec : *const aiVector3D = self.data.mData as *const aiVector3D;
+        let vec: *const aiVector3D = self.data.mData as *const aiVector3D;
         if let Some(content) = unsafe { vec.as_ref() } {
             return Ok(MetadataType::Vector3d(content.into()));
         }

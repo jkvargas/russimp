@@ -9,6 +9,7 @@ mod impl_mint;
 #[cfg(feature = "mint")]
 pub use impl_mint::*;
 
+use derivative::Derivative;
 use std::{
     error::Error,
     ffi::IntoStringError,
@@ -17,7 +18,6 @@ use std::{
     str::Utf8Error,
 };
 use sys::{aiAABB, aiColor3D, aiColor4D, aiMatrix4x4, aiVector2D, aiVector3D};
-use derivative::Derivative;
 
 #[macro_use]
 extern crate num_derive;
