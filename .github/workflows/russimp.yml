@@ -35,8 +35,6 @@ jobs:
     - uses: actions/checkout@v2
     - name: Checkout submodules
       run: git submodule update --init --recursive
-    - name: Tag build
-      run: git tag
     - name: Install assimp
       run: sudo bash ${GITHUB_WORKSPACE}/install_assimp.bash
     - name: Install stable
