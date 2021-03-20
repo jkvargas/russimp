@@ -14,6 +14,8 @@ Try to do it with tests =)
 
 We need help to compile it on windows and on mac.
 
+Make sure to run cargo fmt before creating a pull request.
+
 # Requirements
 
 ## Rust
