@@ -2,7 +2,7 @@ use crate::{sys::*, *};
 use derivative::Derivative;
 use std::{ffi::CStr, os::raw::c_char};
 
-trait MetaDataEntryCast<'a> {
+trait MetaDataEntryCast {
     fn can_cast(&self) -> bool;
     fn cast(&self) -> Russult<MetadataType>;
 }
@@ -31,7 +31,7 @@ struct MetaDataEntryULong<'a> {
     data: &'a aiMetadataEntry,
 }
 
-impl<'a> MetaDataEntryCast<'a> for MetaDataEntryULong<'a> {
+impl<'a> MetaDataEntryCast for MetaDataEntryULong<'a> {
     fn can_cast(&self) -> bool {
         (self.data.mType & aiMetadataType_AI_UINT64) != 0
     }
@@ -49,7 +49,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryULong<'a> {
     }
 }
 
-impl<'a> MetaDataEntryCast<'a> for MetaDataEntryInteger<'a> {
+impl<'a> MetaDataEntryCast for MetaDataEntryInteger<'a> {
     fn can_cast(&self) -> bool {
         (self.data.mType & aiMetadataType_AI_INT32) != 0
     }
@@ -67,7 +67,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryInteger<'a> {
     }
 }
 
-impl<'a> MetaDataEntryCast<'a> for MetaDataEntryBool<'a> {
+impl<'a> MetaDataEntryCast for MetaDataEntryBool<'a> {
     fn can_cast(&self) -> bool {
         (self.data.mType & aiMetadataType_AI_BOOL) != 0
     }
@@ -85,7 +85,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryBool<'a> {
     }
 }
 
-impl<'a> MetaDataEntryCast<'a> for MetaDataEntryDouble<'a> {
+impl<'a> MetaDataEntryCast for MetaDataEntryDouble<'a> {
     fn can_cast(&self) -> bool {
         (self.data.mType & aiMetadataType_AI_DOUBLE) != 0
     }
@@ -103,7 +103,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryDouble<'a> {
     }
 }
 
-impl<'a> MetaDataEntryCast<'a> for MetaDataEntryFloat<'a> {
+impl<'a> MetaDataEntryCast for MetaDataEntryFloat<'a> {
     fn can_cast(&self) -> bool {
         (self.data.mType & aiMetadataType_AI_FLOAT) != 0
     }
@@ -121,7 +121,7 @@ impl<'a> MetaDataEntryCast<'a> for MetaDataEntryFloat<'a> {
     }
 }
 
-impl<'a> MetaDataEntryCast<'a> for MetaDataEntryString<'a> {
+impl<'a> MetaDataEntryCast for MetaDataEntryString<'a> {
     fn can_cast(&self) -> bool {
         (self.data.mType & aiMetadataType_AI_AISTRING) != 0
     }
@@ -139,7 +139,7 @@ struct MetaDataVector3d<'a> {
     data: &'a aiMetadataEntry,
 }
 
-impl<'a> MetaDataEntryCast<'a> for MetaDataVector3d<'a> {
+impl<'a> MetaDataEntryCast for MetaDataVector3d<'a> {
     fn can_cast(&self) -> bool {
         (self.data.mType & aiMetadataType_AI_AIVECTOR3D) != 0
     }

@@ -1,19 +1,38 @@
-use crate::{sys::*, utils};
+use crate::{sys::*, utils, RussimpError, Russult};
 use derivative::Derivative;
 use num_enum::TryFromPrimitive;
 use num_traits::FromPrimitive;
-use std::ptr::slice_from_raw_parts;
+use std::{
+    array::TryFromSliceError, convert::TryInto, mem::MaybeUninit, ptr::slice_from_raw_parts,
+};
 
 #[derive(Derivative)]
 #[derivative(Debug)]
 pub struct Material(pub Vec<MaterialProperty>);
 
+impl Material {
+    fn get_properties(material: &aiMaterial) -> Vec<MaterialProperty> {
+        let properties =
+            slice_from_raw_parts(material.mProperties, material.mNumProperties as usize);
+        if properties.is_null() {
+            return vec![];
+        }
+
+        let raw = unsafe { properties.as_ref() }.unwrap();
+        let mut result = Vec::new();
+
+        for item in raw {
+            let property = unsafe { item.as_ref() }.unwrap();
+            result.push(MaterialProperty::new(material, property));
+        }
+
+        result
+    }
+}
+
 impl From<&aiMaterial> for Material {
     fn from(material: &aiMaterial) -> Self {
-        Material(utils::get_vec_from_raw(
-            material.mProperties,
-            material.mNumProperties,
-        ))
+        Material(Self::get_properties(material))
     }
 }
 
@@ -21,22 +40,167 @@ impl From<&aiMaterial> for Material {
 #[derivative(Debug)]
 pub struct MaterialProperty {
     pub key: String,
-    pub data: Vec<u8>,
+    pub data: PropertyTypeInfo,
     pub index: usize,
-    pub material_type: PropertyTypeInfo,
     pub semantic: TextureType,
 }
 
-#[derive(Derivative, FromPrimitive, PartialEq)]
+trait MaterialPropertyCaster {
+    fn can_cast(&self) -> bool;
+    fn cast(&self) -> Russult<PropertyTypeInfo>;
+}
+
+struct StringPropertyContent<'a> {
+    property_info: &'a aiPropertyTypeInfo,
+    key: &'a aiString,
+    c_type: u32,
+    index: u32,
+    mat: &'a aiMaterial,
+}
+
+struct DoublePropertyContent<'a> {
+    property_info: &'a aiPropertyTypeInfo,
+    data: &'a [u8],
+}
+
+struct FloatPropertyContent<'a> {
+    property_info: &'a aiPropertyTypeInfo,
+    key: &'a aiString,
+    c_type: u32,
+    index: u32,
+    mat: &'a aiMaterial,
+    data: &'a [u8],
+}
+
+struct IntegerPropertyContent<'a> {
+    property_info: &'a aiPropertyTypeInfo,
+    data: &'a [u8],
+}
+
+struct BufferPropertyContent<'a> {
+    property_info: &'a aiPropertyTypeInfo,
+    data: &'a [u8],
+}
+
+impl<'a> MaterialPropertyCaster for BufferPropertyContent<'a> {
+    fn can_cast(&self) -> bool {
+        *self.property_info == aiPropertyTypeInfo_aiPTI_Buffer
+    }
+
+    fn cast(&self) -> Russult<PropertyTypeInfo> {
+        Ok(PropertyTypeInfo::Buffer(self.data.to_vec()))
+    }
+}
+
+impl<'a> MaterialPropertyCaster for IntegerPropertyContent<'a> {
+    fn can_cast(&self) -> bool {
+        *self.property_info == aiPropertyTypeInfo_aiPTI_Integer
+    }
+
+    fn cast(&self) -> Russult<PropertyTypeInfo> {
+        if self.data.len() != 4 {
+            return Err(RussimpError::MeterialError(format!(
+                "Cannot convert data len {} to i32",
+                self.data.len()
+            )));
+        }
+
+        Ok(PropertyTypeInfo::IntegerArray(vec![]))
+    }
+}
+
+impl<'a> MaterialPropertyCaster for FloatPropertyContent<'a> {
+    fn can_cast(&self) -> bool {
+        *self.property_info == aiPropertyTypeInfo_aiPTI_Float
+    }
+
+    fn cast(&self) -> Russult<PropertyTypeInfo> {
+        let mut max = self.data.len() as u32 / 4;
+        let result: Vec<f32> = vec![0.0; max as usize];
+
+        if unsafe {
+            aiGetMaterialFloatArray(
+                self.mat,
+                self.key.data.as_ptr(),
+                self.c_type,
+                self.index,
+                result.as_ptr() as *mut f32,
+                &mut max,
+            )
+        } == aiReturn_aiReturn_SUCCESS
+        {
+            return Ok(PropertyTypeInfo::FloatArray(result));
+        }
+
+        let key_string: String = self.key.into();
+        Err(RussimpError::MeterialError(format!(
+            "Error while parsing {} to string",
+            key_string
+        )))
+    }
+}
+
+impl<'a> MaterialPropertyCaster for DoublePropertyContent<'a> {
+    fn can_cast(&self) -> bool {
+        *self.property_info == aiPropertyTypeInfo_aiPTI_Double
+    }
+
+    fn cast(&self) -> Russult<PropertyTypeInfo> {
+        if self.data.len() != 8 {
+            return Err(RussimpError::MeterialError(format!(
+                "Cannot convert data len {} to f64",
+                self.data.len()
+            )));
+        }
+
+        let bytes: [u8; 8] = self
+            .data
+            .try_into()
+            .map_err(|err: TryFromSliceError| RussimpError::MeterialError(err.to_string()))?;
+
+        Ok(PropertyTypeInfo::Double(f64::from_le_bytes(bytes)))
+    }
+}
+
+impl<'a> MaterialPropertyCaster for StringPropertyContent<'a> {
+    fn can_cast(&self) -> bool {
+        *self.property_info == aiPropertyTypeInfo_aiPTI_String
+    }
+
+    fn cast(&self) -> Russult<PropertyTypeInfo> {
+        let mut content = MaybeUninit::zeroed();
+        if unsafe {
+            aiGetMaterialString(
+                self.mat,
+                self.key.data.as_ptr(),
+                self.c_type,
+                self.index,
+                content.as_mut_ptr(),
+            )
+        } == aiReturn_aiReturn_SUCCESS
+        {
+            let ans = unsafe { content.assume_init() };
+            return Ok(PropertyTypeInfo::String(ans.into()));
+        }
+
+        let key_string: String = self.key.into();
+        Err(RussimpError::MeterialError(format!(
+            "Error while parsing {} to string",
+            key_string
+        )))
+    }
+}
+
+#[derive(Derivative, PartialEq)]
 #[derivative(Debug)]
 #[repr(u32)]
 pub enum PropertyTypeInfo {
-    Force32Bit = aiPropertyTypeInfo__aiPTI_Force32Bit,
-    Buffer = aiPropertyTypeInfo_aiPTI_Buffer,
-    Double = aiPropertyTypeInfo_aiPTI_Double,
-    Float = aiPropertyTypeInfo_aiPTI_Float,
-    Integer = aiPropertyTypeInfo_aiPTI_Integer,
-    String = aiPropertyTypeInfo_aiPTI_String,
+    // Force32Bit, aiPropertyTypeInfo__aiPTI_Force32Bit Not sure how to handle this
+    Buffer(Vec<u8>),
+    Double(f64),
+    FloatArray(Vec<f32>),
+    IntegerArray(Vec<i32>),
+    String(String),
 }
 
 #[derive(Derivative, FromPrimitive, PartialEq, TryFromPrimitive)]
@@ -66,18 +230,65 @@ pub enum TextureType {
     Force32bit = aiTextureType__aiTextureType_Force32Bit,
 }
 
-impl From<&aiMaterialProperty> for MaterialProperty {
-    fn from(material: &aiMaterialProperty) -> Self {
+impl MaterialProperty {
+    fn try_get_data_from_property(
+        material: &aiMaterial,
+        property: &aiMaterialProperty,
+    ) -> Russult<PropertyTypeInfo> {
         let slice =
-            slice_from_raw_parts(material.mData as *const u8, material.mDataLength as usize);
+            slice_from_raw_parts(property.mData as *const u8, property.mDataLength as usize);
         let data = unsafe { slice.as_ref() }.unwrap();
 
+        let casters: Vec<Box<dyn MaterialPropertyCaster>> = vec![
+            Box::new(StringPropertyContent {
+                key: &property.mKey,
+                index: property.mIndex,
+                c_type: property.mSemantic,
+                mat: &material,
+                property_info: &property.mType,
+            }),
+            Box::new(FloatPropertyContent {
+                key: &property.mKey,
+                index: property.mIndex,
+                c_type: property.mSemantic,
+                mat: &material,
+                property_info: &property.mType,
+                data,
+            }),
+            Box::new(DoublePropertyContent {
+                data,
+                property_info: &property.mType,
+            }),
+            Box::new(IntegerPropertyContent {
+                data,
+                property_info: &property.mType,
+            }),
+            Box::new(BufferPropertyContent {
+                data,
+                property_info: &property.mType,
+            }),
+        ];
+
+        for caster in casters {
+            if caster.can_cast() {
+                let data = caster.cast()?;
+                return Ok(data);
+            }
+        }
+
+        Err(RussimpError::MeterialError(
+            "could not find caster for property type".to_string(),
+        ))
+    }
+
+    pub fn new(material: &aiMaterial, property: &aiMaterialProperty) -> MaterialProperty {
+        let data = Self::try_get_data_from_property(material, property).unwrap();
+
         MaterialProperty {
-            key: material.mKey.into(),
-            data: data.to_vec(),
-            index: material.mIndex as usize,
-            material_type: FromPrimitive::from_u32(material.mType as u32).unwrap(),
-            semantic: FromPrimitive::from_u32(material.mSemantic as u32).unwrap(),
+            key: property.mKey.into(),
+            data,
+            index: property.mIndex as usize,
+            semantic: FromPrimitive::from_u32(property.mSemantic as u32).unwrap(),
         }
     }
 }
@@ -102,21 +313,21 @@ fn material_for_box() {
     assert_eq!(1, scene.materials.len());
     assert_eq!(41, scene.materials[0].0.len());
 
-    assert_eq!(false, scene.materials[0].0[40].data.is_empty());
+    // assert_eq!(false, scene.materials[0].0[40].data.is_empty());
     assert_eq!(
         "$mat.blend.mirror.glossAnisotropic",
         scene.materials[0].0[40].key.as_str()
     );
     assert_eq!(0, scene.materials[0].0[40].index);
-    assert_eq!(
-        PropertyTypeInfo::Float,
-        scene.materials[0].0[40].material_type
-    );
+    // assert_eq!(
+    //     PropertyTypeInfo::Float,
+    //     scene.materials[0].0[40].material_type
+    // );
     assert_eq!(TextureType::None, scene.materials[0].0[40].semantic);
 }
 
 #[test]
-fn debug_light() {
+fn debug_material() {
     use crate::scene::{PostProcess, Scene};
 
     let box_file_path = utils::get_model("models/BLEND/box.blend");
@@ -132,5 +343,5 @@ fn debug_light() {
     )
     .unwrap();
 
-    dbg!(&scene.lights);
+    dbg!(&scene.materials);
 }
