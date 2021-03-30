@@ -1,4 +1,4 @@
-use crate::{sys::*, utils, RussimpError, Russult};
+use crate::{sys::*, RussimpError, Russult};
 use derivative::Derivative;
 use num_enum::TryFromPrimitive;
 use num_traits::FromPrimitive;
@@ -166,7 +166,7 @@ impl<'a> MaterialPropertyCaster for StringPropertyContent<'a> {
     }
 
     fn cast(&self) -> Russult<PropertyTypeInfo> {
-        let mut content = MaybeUninit::zeroed();
+        let mut content = MaybeUninit::uninit();
         if unsafe {
             aiGetMaterialString(
                 self.mat,
@@ -292,7 +292,7 @@ impl MaterialProperty {
 
 #[test]
 fn material_for_box() {
-    use crate::scene::{PostProcess, Scene};
+    use crate::{scene::{PostProcess, Scene}, utils};
 
     let box_file_path = utils::get_model("models/BLEND/box.blend");
 
@@ -328,7 +328,7 @@ fn material_for_box() {
 
 #[test]
 fn debug_material() {
-    use crate::scene::{PostProcess, Scene};
+    use crate::{scene::{PostProcess, Scene}, utils};
 
     let box_file_path = utils::get_model("models/BLEND/box.blend");
 
