@@ -57,6 +57,15 @@ struct StringPropertyContent<'a> {
     mat: &'a aiMaterial,
 }
 
+struct IntegerPropertyContent<'a> {
+    property_info: &'a aiPropertyTypeInfo,
+    key: &'a aiString,
+    c_type: u32,
+    index: u32,
+    mat: &'a aiMaterial,
+    data: &'a [u8],
+}
+
 struct FloatPropertyContent<'a> {
     property_info: &'a aiPropertyTypeInfo,
     key: &'a aiString,
@@ -81,10 +90,41 @@ impl<'a> MaterialPropertyCaster for BufferPropertyContent<'a> {
     }
 }
 
+impl<'a> MaterialPropertyCaster for IntegerPropertyContent<'a> {
+    fn can_cast(&self) -> bool {
+        *self.property_info == aiPropertyTypeInfo_aiPTI_Integer
+    }
+
+    fn cast(&self) -> Russult<PropertyTypeInfo> {
+        let data_len = self.data.len();
+        let mut max = data_len as u32 / 4;
+        let result: Vec<i32> = vec![0; max as usize];
+
+        if unsafe {
+            aiGetMaterialIntegerArray(
+                self.mat,
+                self.key.data.as_ptr(),
+                self.c_type,
+                self.index,
+                result.as_ptr() as *mut i32,
+                &mut max,
+            )
+        } == aiReturn_aiReturn_SUCCESS
+        {
+            return Ok(PropertyTypeInfo::IntegerArray(result));
+        }
+
+        let key_string: String = self.key.into();
+        Err(RussimpError::MeterialError(format!(
+            "Error while parsing {} to f32",
+            key_string
+        )))
+    }
+}
+
 impl<'a> MaterialPropertyCaster for FloatPropertyContent<'a> {
     fn can_cast(&self) -> bool {
-        (*self.property_info & aiPropertyTypeInfo_aiPTI_Integer) > 0
-            || (*self.property_info & aiPropertyTypeInfo_aiPTI_Float) > 0
+        (*self.property_info & aiPropertyTypeInfo_aiPTI_Float) > 0
             || (*self.property_info & aiPropertyTypeInfo_aiPTI_Double) > 0
     }
 
@@ -155,6 +195,7 @@ impl<'a> MaterialPropertyCaster for StringPropertyContent<'a> {
 pub enum PropertyTypeInfo {
     // Force32Bit, aiPropertyTypeInfo__aiPTI_Force32Bit Not sure how to handle this
     Buffer(Vec<u8>),
+    IntegerArray(Vec<i32>),
     FloatArray(Vec<f32>),
     String(String),
 }
@@ -204,6 +245,14 @@ impl MaterialProperty {
                 property_info: &property.mType,
             }),
             Box::new(FloatPropertyContent {
+                key: &property.mKey,
+                index: property.mIndex,
+                c_type: property.mSemantic,
+                mat: &material,
+                property_info: &property.mType,
+                data,
+            }),
+            Box::new(IntegerPropertyContent {
                 key: &property.mKey,
                 index: property.mIndex,
                 c_type: property.mSemantic,
@@ -268,6 +317,7 @@ fn material_for_box() {
 
     let ans_value = match &scene.materials[0].0[40].data {
         PropertyTypeInfo::Buffer(_) => 0.0,
+        PropertyTypeInfo::IntegerArray(_) => 0.0,
         PropertyTypeInfo::FloatArray(x) => x[0],
         PropertyTypeInfo::String(_) => 0.0,
     };
