@@ -136,9 +136,8 @@ impl TextureComponent {
 
         let mut vec = Vec::new();
 
-        for mut index in 0..unsafe { aiGetMaterialTextureCount(material, texture_type_raw) } {
+        for index in 0..unsafe { aiGetMaterialTextureCount(material, texture_type_raw) } {
             if let Ok(res) = Self::get_texture(material, texture_type_raw, index) {
-                index += 1;
                 vec.push(res);
             }
         }
