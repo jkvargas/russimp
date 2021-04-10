@@ -1,6 +1,7 @@
+use crate::material::MaterialFactory;
 use crate::{
     animation::Animation, camera::Camera, light::Light, material::Material, mesh::Mesh,
-    metadata::MetaData, node::Node, sys::*, texture::Texture, *,
+    metadata::MetaData, node::Node, sys::*, *,
 };
 use derivative::Derivative;
 use std::{
@@ -19,7 +20,6 @@ pub struct Scene {
     pub cameras: Vec<Camera>,
     pub lights: Vec<Light>,
     pub root: Option<Rc<RefCell<Node>>>,
-    pub textures: Vec<Texture>,
     pub flags: u32,
 }
 
@@ -407,14 +407,13 @@ impl From<&aiScene> for Scene {
         let root = unsafe { scene.mRootNode.as_ref() };
 
         Self {
-            materials: utils::get_vec_from_raw(scene.mMaterials, scene.mNumMaterials),
+            materials: MaterialFactory::new(scene).unwrap().create_materials(),
             meshes: utils::get_vec_from_raw(scene.mMeshes, scene.mNumMeshes),
             metadata: utils::get_raw(scene.mMetaData),
             animations: utils::get_vec_from_raw(scene.mAnimations, scene.mNumAnimations),
             cameras: utils::get_vec_from_raw(scene.mCameras, scene.mNumCameras),
             lights: utils::get_vec_from_raw(scene.mLights, scene.mNumLights),
             root: root.map(|f| Node::new(f)),
-            textures: utils::get_vec_from_raw(scene.mTextures, scene.mNumTextures),
             flags: scene.mFlags,
         }
     }

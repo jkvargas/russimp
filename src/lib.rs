@@ -40,6 +40,9 @@ pub enum RussimpError {
     MetadataError(String),
     MeterialError(String),
     Primitive(String),
+    TextureNotFound,
+    UnwrappingTexturesError,
+    UnwrappingMaterialsError,
 }
 
 impl Display for RussimpError {
