@@ -11,8 +11,8 @@ pub(crate) struct MaterialFactory<'a> {
 
 impl<'a> MaterialFactory<'a> {
     pub(crate) fn new(scene: &aiScene) -> Russult<Self> {
-        let textures = utils::get_ref_from_raw(scene.mTextures, scene.mNumTextures)?;
-        let materials = utils::get_ref_from_raw(scene.mMaterials, scene.mNumMaterials)?;
+        let textures = utils::get_ref_from_raw(scene.mTextures, scene.mNumTextures, RussimpError::UnwrappingTextures)?;
+        let materials = utils::get_ref_from_raw(scene.mMaterials, scene.mNumMaterials, RussimpError::UnwrappingMaterials)?;
 
         Ok(Self {
             textures,
@@ -49,7 +49,7 @@ impl Material {
     }
 
     fn get_properties(material: &aiMaterial) -> Vec<MaterialProperty> {
-        let properties = get_ref_from_raw(material.mProperties, material.mNumProperties);
+        let properties = get_ref_from_raw(material.mProperties, material.mNumProperties, RussimpError::UnwrappingProperties);
         let mut result = Vec::new();
 
         if properties.is_ok() {
