@@ -213,6 +213,17 @@ pub type Russult<T> = Result<T, RussimpError>;
 
 mod utils {
     use std::{os::raw::c_uint, ptr::slice_from_raw_parts};
+    use crate::{Russult, RussimpError};
+
+    pub(crate) fn get_ref_from_raw<'a, TRaw: 'a>(data: *mut *mut TRaw, len: u32) -> Russult<&'a [TRaw]>{
+        let slice = slice_from_raw_parts(data as *const TRaw, len as usize);
+        if slice.is_null() {
+            return Ok(&[]);
+        }
+
+        let content = unsafe { slice.as_ref() };
+        content.map_or(Err(RussimpError::UnwrappingTexturesError), |x| Ok(x))
+    }
 
     #[allow(dead_code)]
     pub(crate) fn get_model(relative_path_from_root: &str) -> String {

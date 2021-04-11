@@ -1,7 +1,8 @@
-use crate::{sys::*, texture::Texture, texture::TextureType, RussimpError, Russult};
+use crate::{sys::*, texture::Texture, texture::TextureType, RussimpError, Russult, utils};
 use derivative::Derivative;
 use num_traits::FromPrimitive;
 use std::{collections::HashMap, mem::MaybeUninit, ptr::slice_from_raw_parts};
+use crate::utils::get_ref_from_raw;
 
 pub(crate) struct MaterialFactory<'a> {
     materials: &'a [aiMaterial],
@@ -10,25 +11,8 @@ pub(crate) struct MaterialFactory<'a> {
 
 impl<'a> MaterialFactory<'a> {
     pub(crate) fn new(scene: &aiScene) -> Russult<Self> {
-        let textures_raw = slice_from_raw_parts(
-            scene.mTextures as *const aiTexture,
-            scene.mNumTextures as usize,
-        );
-        let textures = if let Some(textures_con) = unsafe { textures_raw.as_ref() } {
-            textures_con
-        } else {
-            return Err(RussimpError::UnwrappingTexturesError);
-        };
-
-        let materials_raw = slice_from_raw_parts(
-            scene.mMaterials as *const aiMaterial,
-            scene.mNumMaterials as usize,
-        );
-        let materials = if let Some(materials_con) = unsafe { materials_raw.as_ref() } {
-            materials_con
-        } else {
-            return Err(RussimpError::UnwrappingMaterialsError);
-        };
+        let textures = utils::get_ref_from_raw(scene.mTextures, scene.mNumTextures)?;
+        let materials = utils::get_ref_from_raw(scene.mMaterials, scene.mNumMaterials)?;
 
         Ok(Self {
             textures,
@@ -65,18 +49,13 @@ impl Material {
     }
 
     fn get_properties(material: &aiMaterial) -> Vec<MaterialProperty> {
-        let properties =
-            slice_from_raw_parts(material.mProperties, material.mNumProperties as usize);
-        if properties.is_null() {
-            return vec![];
-        }
-
-        let raw = unsafe { properties.as_ref() }.unwrap();
+        let properties = get_ref_from_raw(material.mProperties, material.mNumProperties);
         let mut result = Vec::new();
 
-        for item in raw {
-            let property = unsafe { item.as_ref() }.unwrap();
-            result.push(MaterialProperty::new(material, property));
+        if properties.is_ok() {
+            for item in properties.unwrap() {
+                result.push(MaterialProperty::new(material, item));
+            }
         }
 
         result

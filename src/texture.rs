@@ -4,7 +4,6 @@ use num_enum::TryFromPrimitive;
 use std::{
     collections::HashMap, ffi::CStr, mem::MaybeUninit, ptr::slice_from_raw_parts, str::from_utf8,
 };
-use sys::aiMaterial;
 
 #[derive(Derivative, FromPrimitive, PartialEq, TryFromPrimitive, Clone, Eq, Hash)]
 #[derivative(Debug)]
@@ -132,7 +131,7 @@ impl TextureComponent {
         material: &aiMaterial,
         texture_type: TextureType,
     ) -> Vec<TextureComponent> {
-        let texture_type_raw : aiTextureType = texture_type as u32;
+        let texture_type_raw: aiTextureType = texture_type as u32;
 
         let mut vec = Vec::new();
 
@@ -220,7 +219,7 @@ impl Texture {
                 components
                     .iter()
                     .map(|x| Texture::new(x, textures))
-                    .collect()
+                    .collect(),
             );
         }
 
@@ -234,7 +233,7 @@ impl Texture {
 
     fn new(texture_component: &TextureComponent, textures: &[aiTexture]) -> Self {
         let slice = &texture_component.path[Self::get_embedded_prefix().len()..];
-        let texture_index : usize = std::str::FromStr::from_str(slice).unwrap();
+        let texture_index: usize = std::str::FromStr::from_str(slice).unwrap();
         let texture = textures[texture_index];
         let content = unsafe { CStr::from_ptr(texture.achFormatHint.as_ptr()) };
         let ach_format_hint = content.to_str().unwrap().to_string();
@@ -262,10 +261,7 @@ impl Texture {
     ) -> (Vec<Texel>, Vec<u8>) {
         if Self::is_file_embedded(&texture_component.path) {
             if Self::is_embedded_file_compressed(texture) {
-                (
-                    vec![],
-                    Self::load_embedded_file(texture),
-                )
+                (vec![], Self::load_embedded_file(texture))
             } else {
                 (Self::load_texels(texture), vec![])
             }
@@ -300,15 +296,17 @@ impl Texture {
 fn debug_texture() {
     use crate::scene::{PostProcess, Scene};
 
-    let current_directory_buf = utils::get_model("models/GLTF2/BoxTextured.gltf");
+    let current_directory_buf = utils::get_model("/home/vargasj/dev/russimp/models/GLTF2/BoxTextured.gltf");
 
-    let scene = Scene::from_file(current_directory_buf.as_str(),
-                                 vec![
-                                     PostProcess::Triangulate,
-                                     PostProcess::FlipUVs,
-                                     PostProcess::EmbedTextures
-                                 ]
-    ).unwrap();
+    let scene = Scene::from_file(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcess::Triangulate,
+            PostProcess::FlipUVs,
+            PostProcess::EmbedTextures,
+        ],
+    )
+    .unwrap();
 
     dbg!(&scene.materials);
 }
