@@ -1,6 +1,6 @@
 use crate::{
-    animation::Animation, camera::Camera, light::Light, material::Material, mesh::Mesh,
-    metadata::MetaData, node::Node, sys::*, texture::Texture, *,
+    animation::Animation, camera::Camera, light::Light, material::{Material, MaterialFactory}, mesh::Mesh,
+    metadata::MetaData, node::Node, sys::*, *,
 };
 use derivative::Derivative;
 use std::{
@@ -19,7 +19,6 @@ pub struct Scene {
     pub cameras: Vec<Camera>,
     pub lights: Vec<Light>,
     pub root: Option<Rc<RefCell<Node>>>,
-    pub textures: Vec<Texture>,
     pub flags: u32,
 }
 
@@ -402,31 +401,33 @@ pub enum PostProcess {
 
 pub type PostProcessSteps = Vec<PostProcess>;
 
-impl From<&aiScene> for Scene {
-    fn from(scene: &aiScene) -> Self {
+impl Scene {
+    fn new(scene: &aiScene) -> Russult<Self> {
         let root = unsafe { scene.mRootNode.as_ref() };
+        let materials = MaterialFactory::new(scene)?.create_materials();
 
-        Self {
-            materials: utils::get_vec_from_raw(scene.mMaterials, scene.mNumMaterials),
+        Ok(Self {
+            materials,
             meshes: utils::get_vec_from_raw(scene.mMeshes, scene.mNumMeshes),
             metadata: utils::get_raw(scene.mMetaData),
             animations: utils::get_vec_from_raw(scene.mAnimations, scene.mNumAnimations),
             cameras: utils::get_vec_from_raw(scene.mCameras, scene.mNumCameras),
             lights: utils::get_vec_from_raw(scene.mLights, scene.mNumLights),
             root: root.map(|f| Node::new(f)),
-            textures: utils::get_vec_from_raw(scene.mTextures, scene.mNumTextures),
             flags: scene.mFlags,
-        }
+        })
     }
-}
 
-impl Scene {
     pub fn from_file(file_path: &str, flags: PostProcessSteps) -> Russult<Scene> {
         let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
         let file_path = CString::new(file_path).unwrap();
 
         let raw_scene = Scene::get_scene_from_file(file_path, bitwise_flag);
-        let result = raw_scene.map_or(Err(Scene::get_error()), |scene| Ok(scene.into()));
+        if raw_scene.is_none() {
+            return Err(Scene::get_error());
+        }
+
+        let result = Scene::new(raw_scene.unwrap());
         Scene::drop_scene(raw_scene);
 
         result
@@ -483,7 +484,7 @@ fn importing_valid_file_returns_scene() {
             PostProcess::SortByPrimitiveType,
         ],
     )
-    .unwrap();
+        .unwrap();
 
     assert_eq!(8, scene.flags);
 }
@@ -501,7 +502,7 @@ fn debug_scene() {
             PostProcess::SortByPrimitiveType,
         ],
     )
-    .unwrap();
+        .unwrap();
 
     dbg!(&scene);
 }

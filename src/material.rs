@@ -1,43 +1,68 @@
-use crate::{sys::*, RussimpError, Russult};
+use crate::utils::get_base_type_vec_from_raw;
+use crate::{sys::*, texture::Texture, texture::TextureType, utils, RussimpError, Russult};
 use derivative::Derivative;
-use num_enum::TryFromPrimitive;
 use num_traits::FromPrimitive;
-use std::{mem::MaybeUninit, ptr::slice_from_raw_parts};
+use std::{collections::HashMap, mem::MaybeUninit, ptr::slice_from_raw_parts};
+
+pub(crate) struct MaterialFactory<'a> {
+    materials: Vec<&'a aiMaterial>,
+    textures: Vec<&'a aiTexture>,
+}
+
+impl<'a> MaterialFactory<'a> {
+    pub(crate) fn new(scene: &aiScene) -> Russult<Self> {
+        let textures = utils::get_base_type_vec_from_raw(scene.mTextures, scene.mNumTextures);
+        let materials = utils::get_base_type_vec_from_raw(scene.mMaterials, scene.mNumMaterials);
+
+        Ok(Self {
+            textures,
+            materials,
+        })
+    }
+
+    pub(crate) fn create_materials(&self) -> Vec<Material> {
+        let mut vec = Vec::new();
+
+        for mat in &self.materials {
+            let textures = Texture::get_textures_from_material(*mat, &self.textures);
+            let material = Material::new(*mat, textures);
+            vec.push(material);
+        }
+
+        vec
+    }
+}
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct Material(pub Vec<MaterialProperty>);
+pub struct Material {
+    pub properties: Vec<MaterialProperty>,
+    pub textures: HashMap<TextureType, Vec<Texture>>,
+}
 
 impl Material {
-    fn get_properties(material: &aiMaterial) -> Vec<MaterialProperty> {
-        let properties =
-            slice_from_raw_parts(material.mProperties, material.mNumProperties as usize);
-        if properties.is_null() {
-            return vec![];
+    fn new(material: &aiMaterial, textures: HashMap<TextureType, Vec<Texture>>) -> Self {
+        Self {
+            properties: Self::get_properties(material),
+            textures,
         }
+    }
 
-        let raw = unsafe { properties.as_ref() }.unwrap();
+    fn get_properties(material: &aiMaterial) -> Vec<MaterialProperty> {
+        let properties = get_base_type_vec_from_raw(material.mProperties, material.mNumProperties);
         let mut result = Vec::new();
 
-        for item in raw {
-            let property = unsafe { item.as_ref() }.unwrap();
-            result.push(MaterialProperty::new(material, property));
+        for item in properties {
+            result.push(MaterialProperty::new(material, item));
         }
 
         result
     }
 }
 
-impl From<&aiMaterial> for Material {
-    fn from(material: &aiMaterial) -> Self {
-        Material(Self::get_properties(material))
-    }
-}
-
 #[derive(Derivative)]
 #[derivative(Debug)]
 pub struct MaterialProperty {
-    //
     pub key: String,
     pub data: PropertyTypeInfo,
     pub index: usize,
@@ -200,33 +225,6 @@ pub enum PropertyTypeInfo {
     String(String),
 }
 
-#[derive(Derivative, FromPrimitive, PartialEq, TryFromPrimitive)]
-#[derivative(Debug)]
-#[repr(u32)]
-pub enum TextureType {
-    #[num_enum(default)]
-    None = aiTextureType_aiTextureType_NONE,
-    Diffuse = aiTextureType_aiTextureType_DIFFUSE,
-    Specular = aiTextureType_aiTextureType_SPECULAR,
-    Ambient = aiTextureType_aiTextureType_AMBIENT,
-    Emissive = aiTextureType_aiTextureType_EMISSIVE,
-    Height = aiTextureType_aiTextureType_HEIGHT,
-    Normals = aiTextureType_aiTextureType_NORMALS,
-    Shininess = aiTextureType_aiTextureType_SHININESS,
-    Opacity = aiTextureType_aiTextureType_OPACITY,
-    Displacement = aiTextureType_aiTextureType_DISPLACEMENT,
-    LightMap = aiTextureType_aiTextureType_LIGHTMAP,
-    Reflection = aiTextureType_aiTextureType_REFLECTION,
-    BaseColor = aiTextureType_aiTextureType_BASE_COLOR,
-    NormalCamera = aiTextureType_aiTextureType_NORMAL_CAMERA,
-    EmissionColor = aiTextureType_aiTextureType_EMISSION_COLOR,
-    Metalness = aiTextureType_aiTextureType_METALNESS,
-    Roughness = aiTextureType_aiTextureType_DIFFUSE_ROUGHNESS,
-    AmbientOcclusion = aiTextureType_aiTextureType_AMBIENT_OCCLUSION,
-    Unknown = aiTextureType_aiTextureType_UNKNOWN,
-    Force32bit = aiTextureType__aiTextureType_Force32Bit,
-}
-
 impl MaterialProperty {
     fn try_get_data_from_property(
         material: &aiMaterial,
@@ -299,23 +297,20 @@ fn material_for_box() {
     let scene = Scene::from_file(
         box_file_path.as_str(),
         vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
+            PostProcess::ValidateDataStructure,
         ],
     )
     .unwrap();
 
     assert_eq!(1, scene.materials.len());
-    assert_eq!(41, scene.materials[0].0.len());
+    assert_eq!(41, scene.materials[0].properties.len());
     assert_eq!(
         "$mat.blend.mirror.glossAnisotropic",
-        scene.materials[0].0[40].key.as_str()
+        scene.materials[0].properties[40].key.as_str()
     );
-    assert_eq!(0, scene.materials[0].0[40].index);
+    assert_eq!(0, scene.materials[0].properties[40].index);
 
-    let ans_value = match &scene.materials[0].0[40].data {
+    let ans_value = match &scene.materials[0].properties[40].data {
         PropertyTypeInfo::Buffer(_) => 0.0,
         PropertyTypeInfo::IntegerArray(_) => 0.0,
         PropertyTypeInfo::FloatArray(x) => x[0],
@@ -323,12 +318,15 @@ fn material_for_box() {
     };
 
     assert_eq!(1.0, ans_value);
-    assert_eq!(TextureType::None, scene.materials[0].0[40].semantic);
+    assert_eq!(TextureType::None, scene.materials[0].properties[40].semantic);
 }
 
 #[test]
 fn debug_material() {
-    use crate::{scene::{PostProcess, Scene}, utils};
+    use crate::{
+        scene::{PostProcess, Scene},
+        utils,
+    };
 
     let box_file_path = utils::get_model("models/BLEND/box.blend");
 

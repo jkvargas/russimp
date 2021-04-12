@@ -7,6 +7,8 @@ Rust bindings for Assimp (https://github.com/assimp/assimp)
 Russimp is a library for talking to the assimp library which enables you to read 3d models in different formats to a common structure.
 These bindings are based on assimp v5.0.1.
 
+This is an ongoing work. I am working on it when I have time to spare.
+
 ## Helping
 
 You are very welcome to help with development, adding a feature, fixing a problem or just refactoring.
