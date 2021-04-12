@@ -1,8 +1,7 @@
 use crate::{sys::*, *};
 use derivative::Derivative;
 use num_enum::TryFromPrimitive;
-use std::{collections::HashMap, ffi::CStr, mem::MaybeUninit, ptr::slice_from_raw_parts};
-use std::ops::BitAnd;
+use std::{collections::HashMap, ffi::CStr, mem::MaybeUninit, ptr::slice_from_raw_parts, ops::BitAnd};
 use num_traits::ToPrimitive;
 
 const EMBEDDED_TEXNAME_PREFIX: &str = "*";
@@ -335,7 +334,7 @@ fn debug_texture() {
     use crate::scene::{PostProcess, Scene};
 
     let current_directory_buf =
-        utils::get_model("models/GLTF2/BoxTextured.gltf");
+        utils::get_model("models/GLTF2/BoxTextured-GLTF-Embedded/BoxTextured.gltf");
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
@@ -346,6 +345,27 @@ fn debug_texture() {
         .unwrap();
 
     dbg!(&scene.materials);
+}
+
+#[test]
+fn amount_of_textures() {
+    use crate::{scene::{PostProcess, Scene}, texture::TextureType::Diffuse};
+
+    let current_directory_buf =
+        utils::get_model("models/GLTF2/BoxTextured-GLTF-Embedded/BoxTextured.gltf");
+
+    let scene = Scene::from_file(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcess::ValidateDataStructure
+        ],
+    )
+        .unwrap();
+
+    let textures = scene.materials[0].textures.get(&Diffuse).unwrap();
+    assert_eq!(2, textures.len());
+    assert!(textures[0].data.len() > 0);
+    assert!(textures[1].data.len() > 0);
 }
 
 #[test]
