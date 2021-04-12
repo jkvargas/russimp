@@ -1,6 +1,5 @@
-use crate::material::MaterialFactory;
 use crate::{
-    animation::Animation, camera::Camera, light::Light, material::Material, mesh::Mesh,
+    animation::Animation, camera::Camera, light::Light, material::{Material, MaterialFactory}, mesh::Mesh,
     metadata::MetaData, node::Node, sys::*, *,
 };
 use derivative::Derivative;
@@ -485,7 +484,7 @@ fn importing_valid_file_returns_scene() {
             PostProcess::SortByPrimitiveType,
         ],
     )
-    .unwrap();
+        .unwrap();
 
     assert_eq!(8, scene.flags);
 }
@@ -503,7 +502,7 @@ fn debug_scene() {
             PostProcess::SortByPrimitiveType,
         ],
     )
-    .unwrap();
+        .unwrap();
 
     dbg!(&scene);
 }

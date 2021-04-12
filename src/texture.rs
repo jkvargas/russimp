@@ -2,6 +2,8 @@ use crate::{sys::*, *};
 use derivative::Derivative;
 use num_enum::TryFromPrimitive;
 use std::{collections::HashMap, ffi::CStr, mem::MaybeUninit, ptr::slice_from_raw_parts};
+use std::ops::BitAnd;
+use num_traits::ToPrimitive;
 
 const EMBEDDED_TEXNAME_PREFIX: &str = "*";
 
@@ -61,7 +63,7 @@ pub struct Texture {
     pub uv_index: u32,
     pub blend: f32,
     pub op: u32,
-    pub map_mode: u32,
+    pub map_mode: Vec<u32>,
     pub flags: u32,
     pub height: u32,
     pub width: u32,
@@ -77,7 +79,7 @@ struct TextureComponent {
     uv_index: u32,
     blend: f32,
     op: u32,
-    map_mode: u32,
+    map_mode: Vec<u32>,
     flags: u32,
 }
 
@@ -92,7 +94,8 @@ impl TextureComponent {
         let mut uv_index = MaybeUninit::uninit();
         let mut blend = MaybeUninit::uninit();
         let mut op = MaybeUninit::uninit();
-        let mut map_mode = MaybeUninit::uninit();
+        let mut map_mode: [u32; 2] = [0, 0];
+
         let mut flags = MaybeUninit::uninit();
 
         if unsafe {
@@ -118,7 +121,7 @@ impl TextureComponent {
                 unsafe { uv_index.assume_init() },
                 unsafe { blend.assume_init() },
                 unsafe { op.assume_init() },
-                unsafe { map_mode.assume_init() },
+                map_mode.to_vec(),
                 unsafe { flags.assume_init() },
             );
 
@@ -191,7 +194,7 @@ impl TextureComponent {
         uv_index: u32,
         blend: f32,
         op: u32,
-        map_mode: u32,
+        map_mode: Vec<u32>,
         flags: u32,
     ) -> TextureComponent {
         Self {
@@ -203,6 +206,40 @@ impl TextureComponent {
             map_mode,
             flags,
         }
+    }
+}
+
+#[derive(Derivative, FromPrimitive, PartialEq, TryFromPrimitive, Clone, Eq, Hash, ToPrimitive)]
+#[derivative(Debug)]
+#[repr(u32)]
+pub enum TextureMapMode {
+    Clamp = aiTextureMapMode_aiTextureMapMode_Clamp,
+    Decal = aiTextureMapMode_aiTextureMapMode_Decal,
+    Mirror = aiTextureMapMode_aiTextureMapMode_Mirror,
+    Wrap = aiTextureMapMode_aiTextureMapMode_Wrap,
+}
+
+impl BitAnd<TextureMapMode> for TextureMapMode {
+    type Output = u32;
+
+    fn bitand(self, rhs: TextureMapMode) -> Self::Output {
+        ToPrimitive::to_u32(&self).unwrap() & ToPrimitive::to_u32(&rhs).unwrap()
+    }
+}
+
+impl BitAnd<TextureMapMode> for u32 {
+    type Output = u32;
+
+    fn bitand(self, rhs: TextureMapMode) -> Self::Output {
+        self & ToPrimitive::to_u32(&rhs).unwrap()
+    }
+}
+
+impl BitAnd<u32> for TextureMapMode {
+    type Output = u32;
+
+    fn bitand(self, rhs: u32) -> Self::Output {
+        ToPrimitive::to_u32(&self).unwrap() & rhs
     }
 }
 
@@ -228,41 +265,46 @@ impl Texture {
     }
 
     fn new(texture_component: &TextureComponent, textures: &Vec<&aiTexture>) -> Self {
-        let slice = &texture_component.path[EMBEDDED_TEXNAME_PREFIX.len()..];
-        let texture_index: usize = std::str::FromStr::from_str(slice).unwrap();
-        let texture = textures[texture_index];
-        let content = unsafe { CStr::from_ptr(texture.achFormatHint.as_ptr()) };
-        let ach_format_hint = content.to_str().unwrap().to_string();
-        let (texel, data) = Self::get_texels_and_buffer(texture_component, &texture);
-
-        Self {
+        let mut result = Self {
             path: texture_component.path.clone(),
             flags: texture_component.flags,
-            map_mode: texture_component.map_mode,
+            // the clone is just for two elements
+            map_mode: texture_component.map_mode.clone(),
             uv_index: texture_component.uv_index,
             texture_mapping: texture_component.texture_mapping,
             blend: texture_component.blend,
             op: texture_component.op,
-            width: texture.mWidth,
-            height: texture.mHeight,
-            data,
-            texel,
-            ach_format_hint,
+            width: 0,
+            height: 0,
+            data: vec![],
+            texel: vec![],
+            ach_format_hint: String::new(),
+        };
+
+        if Self::is_file_embedded(&texture_component.path) {
+            let slice = &texture_component.path[EMBEDDED_TEXNAME_PREFIX.len()..];
+            let texture_index: usize = std::str::FromStr::from_str(slice).unwrap();
+            let texture = textures[texture_index];
+            let content = unsafe { CStr::from_ptr(texture.achFormatHint.as_ptr()) };
+            let ach_format_hint = content.to_str().unwrap().to_string();
+            let (texel, data) = Self::get_texels_and_buffer_from_embedded_file(&texture);
+
+            result.data = data;
+            result.texel = texel;
+            result.width = texture.mWidth;
+            result.height = texture.mHeight;
+            result.ach_format_hint = ach_format_hint;
         }
+
+        result
     }
 
-    fn get_texels_and_buffer(
-        texture_component: &TextureComponent,
-        texture: &aiTexture,
+    fn get_texels_and_buffer_from_embedded_file(texture: &aiTexture,
     ) -> (Vec<Texel>, Vec<u8>) {
-        if Self::is_file_embedded(&texture_component.path) {
-            if Self::is_embedded_file_compressed(texture) {
-                (vec![], Self::load_embedded_file(texture))
-            } else {
-                (Self::load_texels(texture), vec![])
-            }
+        if Self::is_embedded_file_compressed(texture) {
+            (vec![], Self::load_embedded_file(texture))
         } else {
-            (vec![], vec![])
+            (Self::load_texels(texture), vec![])
         }
     }
 
@@ -293,19 +335,36 @@ fn debug_texture() {
     use crate::scene::{PostProcess, Scene};
 
     let current_directory_buf =
-        utils::get_model("/home/vargasj/dev/russimp/models/GLTF2/BoxTextured.gltf");
+        utils::get_model("models/GLTF2/BoxTextured.gltf");
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-            PostProcess::EmbedTextures,
+            PostProcess::ValidateDataStructure
         ],
     )
-    .unwrap();
+        .unwrap();
 
     dbg!(&scene.materials);
+}
+
+#[test]
+fn map_modes_are_correct() {
+    use crate::{scene::{PostProcess, Scene}, texture::{TextureType::Diffuse, TextureMapMode::{Mirror, Clamp}}};
+
+    let current_directory_buf =
+        utils::get_model("models/GLTF2/BoxTextured-GLTF/BoxTextured.gltf");
+
+    let scene = Scene::from_file(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcess::ValidateDataStructure
+        ],
+    )
+        .unwrap();
+
+    let texture = &scene.materials[0].textures.get(&Diffuse).unwrap()[0];
+
+    assert_ne!(texture.map_mode[0] & Mirror, 0);
+    assert_ne!(texture.map_mode[1] & Clamp, 0);
 }

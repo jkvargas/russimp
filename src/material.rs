@@ -63,7 +63,6 @@ impl Material {
 #[derive(Derivative)]
 #[derivative(Debug)]
 pub struct MaterialProperty {
-    //
     pub key: String,
     pub data: PropertyTypeInfo,
     pub index: usize,
