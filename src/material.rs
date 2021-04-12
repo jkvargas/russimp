@@ -288,41 +288,38 @@ impl MaterialProperty {
     }
 }
 
-// #[test]
-// fn material_for_box() {
-//     use crate::{scene::{PostProcess, Scene}, utils};
-//
-//     let box_file_path = utils::get_model("models/BLEND/box.blend");
-//
-//     let scene = Scene::from_file(
-//         box_file_path.as_str(),
-//         vec![
-//             PostProcess::CalculateTangentSpace,
-//             PostProcess::Triangulate,
-//             PostProcess::JoinIdenticalVertices,
-//             PostProcess::SortByPrimitiveType,
-//         ],
-//     )
-//     .unwrap();
-//
-//     assert_eq!(1, scene.materials.len());
-//     assert_eq!(41, scene.materials[0].0.len());
-//     assert_eq!(
-//         "$mat.blend.mirror.glossAnisotropic",
-//         scene.materials[0].0[40].key.as_str()
-//     );
-//     assert_eq!(0, scene.materials[0].0[40].index);
-//
-//     let ans_value = match &scene.materials[0].0[40].data {
-//         PropertyTypeInfo::Buffer(_) => 0.0,
-//         PropertyTypeInfo::IntegerArray(_) => 0.0,
-//         PropertyTypeInfo::FloatArray(x) => x[0],
-//         PropertyTypeInfo::String(_) => 0.0,
-//     };
-//
-//     assert_eq!(1.0, ans_value);
-//     assert_eq!(TextureType::None, scene.materials[0].0[40].semantic);
-// }
+#[test]
+fn material_for_box() {
+    use crate::{scene::{PostProcess, Scene}, utils};
+
+    let box_file_path = utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from_file(
+        box_file_path.as_str(),
+        vec![
+            PostProcess::ValidateDataStructure,
+        ],
+    )
+    .unwrap();
+
+    assert_eq!(1, scene.materials.len());
+    assert_eq!(41, scene.materials[0].properties.len());
+    assert_eq!(
+        "$mat.blend.mirror.glossAnisotropic",
+        scene.materials[0].properties[40].key.as_str()
+    );
+    assert_eq!(0, scene.materials[0].properties[40].index);
+
+    let ans_value = match &scene.materials[0].properties[40].data {
+        PropertyTypeInfo::Buffer(_) => 0.0,
+        PropertyTypeInfo::IntegerArray(_) => 0.0,
+        PropertyTypeInfo::FloatArray(x) => x[0],
+        PropertyTypeInfo::String(_) => 0.0,
+    };
+
+    assert_eq!(1.0, ans_value);
+    assert_eq!(TextureType::None, scene.materials[0].properties[40].semantic);
+}
 
 #[test]
 fn debug_material() {

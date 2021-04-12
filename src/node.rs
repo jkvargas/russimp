@@ -1,6 +1,6 @@
 use crate::{metadata::MetaData, sys::aiNode, *};
 use derivative::Derivative;
-use std::{cell::RefCell, ptr::slice_from_raw_parts, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 #[derive(Default, Derivative)]
 #[derivative(Debug)]
@@ -22,18 +22,13 @@ impl Node {
     fn go_through(node: &aiNode, parent: Option<Rc<RefCell<Node>>>) -> Rc<RefCell<Node>> {
         // current simple node
         let res_node = Rc::new(RefCell::new(Self::create_simple_node(node)));
+        let nodes = utils::get_base_type_vec_from_raw(node.mChildren, node.mNumChildren);
 
-        let slice = slice_from_raw_parts(node.mChildren, node.mNumChildren as usize);
-        if !slice.is_null() {
-            let raw = unsafe { slice.as_ref() }.unwrap();
+        for children_ref in nodes {
+            let res_children_node = Self::go_through(children_ref, Some(res_node.clone()));
 
-            for children in raw {
-                let children_ref = unsafe { children.as_ref() }.unwrap();
-                let res_children_node = Self::go_through(children_ref, Some(res_node.clone()));
-
-                let mut result_borrow = res_node.borrow_mut();
-                result_borrow.children.push(res_children_node);
-            }
+            let mut result_borrow = res_node.borrow_mut();
+            result_borrow.children.push(res_children_node);
         }
 
         {
