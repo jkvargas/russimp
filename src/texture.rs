@@ -1,9 +1,9 @@
 use crate::{sys::*, *};
 use derivative::Derivative;
 use num_enum::TryFromPrimitive;
-use std::{
-    collections::HashMap, ffi::CStr, mem::MaybeUninit, ptr::slice_from_raw_parts, str::from_utf8,
-};
+use std::{collections::HashMap, ffi::CStr, mem::MaybeUninit, ptr::slice_from_raw_parts};
+
+const EMBEDDED_TEXNAME_PREFIX: &str = "*";
 
 #[derive(Derivative, FromPrimitive, PartialEq, TryFromPrimitive, Clone, Eq, Hash)]
 #[derivative(Debug)]
@@ -67,6 +67,7 @@ pub struct Texture {
     pub width: u32,
     pub ach_format_hint: String,
     pub texel: Vec<Texel>,
+    #[derivative(Debug = "ignore")]
     pub data: Vec<u8>,
 }
 
@@ -208,7 +209,7 @@ impl TextureComponent {
 impl Texture {
     pub(crate) fn get_textures_from_material(
         material: &aiMaterial,
-        textures: &[aiTexture],
+        textures: &Vec<&aiTexture>,
     ) -> HashMap<TextureType, Vec<Texture>> {
         let texture_components = TextureComponent::get_all_textures(material);
         let mut map: HashMap<TextureType, Vec<Texture>> = HashMap::new();
@@ -226,13 +227,8 @@ impl Texture {
         map
     }
 
-    #[inline]
-    fn get_embedded_prefix<'a>() -> &'a str {
-        from_utf8(AI_EMBEDDED_TEXNAME_PREFIX.as_ref()).unwrap()
-    }
-
-    fn new(texture_component: &TextureComponent, textures: &[aiTexture]) -> Self {
-        let slice = &texture_component.path[Self::get_embedded_prefix().len()..];
+    fn new(texture_component: &TextureComponent, textures: &Vec<&aiTexture>) -> Self {
+        let slice = &texture_component.path[EMBEDDED_TEXNAME_PREFIX.len()..];
         let texture_index: usize = std::str::FromStr::from_str(slice).unwrap();
         let texture = textures[texture_index];
         let content = unsafe { CStr::from_ptr(texture.achFormatHint.as_ptr()) };
@@ -272,7 +268,7 @@ impl Texture {
 
     #[inline]
     fn is_file_embedded(file_path: &String) -> bool {
-        file_path.starts_with(Self::get_embedded_prefix())
+        file_path.starts_with(EMBEDDED_TEXNAME_PREFIX)
     }
 
     #[inline]
@@ -296,13 +292,16 @@ impl Texture {
 fn debug_texture() {
     use crate::scene::{PostProcess, Scene};
 
-    let current_directory_buf = utils::get_model("/home/vargasj/dev/russimp/models/GLTF2/BoxTextured.gltf");
+    let current_directory_buf =
+        utils::get_model("/home/vargasj/dev/russimp/models/GLTF2/BoxTextured.gltf");
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
         vec![
+            PostProcess::CalculateTangentSpace,
             PostProcess::Triangulate,
-            PostProcess::FlipUVs,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
             PostProcess::EmbedTextures,
         ],
     )

@@ -1,18 +1,18 @@
-use crate::{sys::*, texture::Texture, texture::TextureType, RussimpError, Russult, utils};
+use crate::utils::get_base_type_vec_from_raw;
+use crate::{sys::*, texture::Texture, texture::TextureType, utils, RussimpError, Russult};
 use derivative::Derivative;
 use num_traits::FromPrimitive;
 use std::{collections::HashMap, mem::MaybeUninit, ptr::slice_from_raw_parts};
-use crate::utils::get_ref_from_raw;
 
 pub(crate) struct MaterialFactory<'a> {
-    materials: &'a [aiMaterial],
-    textures: &'a [aiTexture],
+    materials: Vec<&'a aiMaterial>,
+    textures: Vec<&'a aiTexture>,
 }
 
 impl<'a> MaterialFactory<'a> {
     pub(crate) fn new(scene: &aiScene) -> Russult<Self> {
-        let textures = utils::get_ref_from_raw(scene.mTextures, scene.mNumTextures, RussimpError::UnwrappingTextures)?;
-        let materials = utils::get_ref_from_raw(scene.mMaterials, scene.mNumMaterials, RussimpError::UnwrappingMaterials)?;
+        let textures = utils::get_base_type_vec_from_raw(scene.mTextures, scene.mNumTextures);
+        let materials = utils::get_base_type_vec_from_raw(scene.mMaterials, scene.mNumMaterials);
 
         Ok(Self {
             textures,
@@ -23,9 +23,9 @@ impl<'a> MaterialFactory<'a> {
     pub(crate) fn create_materials(&self) -> Vec<Material> {
         let mut vec = Vec::new();
 
-        for mat in self.materials {
-            let textures = Texture::get_textures_from_material(mat, self.textures);
-            let material = Material::new(mat, textures);
+        for mat in &self.materials {
+            let textures = Texture::get_textures_from_material(*mat, &self.textures);
+            let material = Material::new(*mat, textures);
             vec.push(material);
         }
 
@@ -49,13 +49,11 @@ impl Material {
     }
 
     fn get_properties(material: &aiMaterial) -> Vec<MaterialProperty> {
-        let properties = get_ref_from_raw(material.mProperties, material.mNumProperties, RussimpError::UnwrappingProperties);
+        let properties = get_base_type_vec_from_raw(material.mProperties, material.mNumProperties);
         let mut result = Vec::new();
 
-        if properties.is_ok() {
-            for item in properties.unwrap() {
-                result.push(MaterialProperty::new(material, item));
-            }
+        for item in properties {
+            result.push(MaterialProperty::new(material, item));
         }
 
         result

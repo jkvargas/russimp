@@ -214,16 +214,18 @@ pub type Russult<T> = Result<T, RussimpError>;
 
 mod utils {
     use std::{os::raw::c_uint, ptr::slice_from_raw_parts};
-    use crate::{Russult, RussimpError};
 
-    pub(crate) fn get_ref_from_raw<'a, TRaw: 'a>(data: *mut *mut TRaw, len: u32, error: RussimpError) -> Russult<&'a [TRaw]>{
-        let slice = slice_from_raw_parts(data as *const TRaw, len as usize);
+    pub(crate) fn get_base_type_vec_from_raw<'a, TRaw: 'a>(
+        data: *mut *mut TRaw,
+        len: u32,
+    ) -> Vec<&'a TRaw> {
+        let slice = slice_from_raw_parts(data, len as usize);
         if slice.is_null() {
-            return Ok(&[]);
+            return vec![];
         }
 
-        let content = unsafe { slice.as_ref() };
-        content.map_or(Err(error), |x| Ok(x))
+        let raw = unsafe { slice.as_ref() }.unwrap();
+        raw.iter().map(|x| unsafe { x.as_ref() }.unwrap()).collect()
     }
 
     #[allow(dead_code)]
