@@ -67,9 +67,13 @@ pub struct Texture {
     pub height: u32,
     pub width: u32,
     pub ach_format_hint: String,
-    pub texel: Vec<Texel>,
     #[derivative(Debug = "ignore")]
-    pub data: Vec<u8>,
+    pub data: Option<DataContent>,
+}
+
+pub enum DataContent {
+    Texel(Vec<Texel>),
+    Bytes(Vec<u8>),
 }
 
 struct TextureComponent {
@@ -275,8 +279,7 @@ impl Texture {
             op: texture_component.op,
             width: 0,
             height: 0,
-            data: vec![],
-            texel: vec![],
+            data: None,
             ach_format_hint: String::new(),
         };
 
@@ -286,10 +289,9 @@ impl Texture {
             let texture = textures[texture_index];
             let content = unsafe { CStr::from_ptr(texture.achFormatHint.as_ptr()) };
             let ach_format_hint = content.to_str().unwrap().to_string();
-            let (texel, data) = Self::get_texels_and_buffer_from_embedded_file(&texture);
+            let data = Self::get_texels_and_buffer_from_embedded_file(&texture);
 
-            result.data = data;
-            result.texel = texel;
+            result.data = Some(data);
             result.width = texture.mWidth;
             result.height = texture.mHeight;
             result.ach_format_hint = ach_format_hint;
@@ -299,11 +301,11 @@ impl Texture {
     }
 
     fn get_texels_and_buffer_from_embedded_file(texture: &aiTexture,
-    ) -> (Vec<Texel>, Vec<u8>) {
+    ) -> DataContent {
         if Self::is_embedded_file_compressed(texture) {
-            (vec![], Self::load_embedded_file(texture))
+            DataContent::Bytes(Self::load_embedded_file(texture))
         } else {
-            (Self::load_texels(texture), vec![])
+            DataContent::Texel(Self::load_texels(texture))
         }
     }
 
@@ -364,8 +366,20 @@ fn amount_of_textures() {
 
     let textures = scene.materials[0].textures.get(&Diffuse).unwrap();
     assert_eq!(2, textures.len());
-    assert!(textures[0].data.len() > 0);
-    assert!(textures[1].data.len() > 0);
+
+    let mut not_texels = true;
+    for i in 0..2 {
+        if let Some(d) = &textures[i].data {
+            match d {
+                DataContent::Texel(_) => { not_texels = false; }
+                DataContent::Bytes(v) => {
+                    assert!(v.len() > 0);
+                }
+            }
+        }
+    }
+
+    assert!(not_texels);
 }
 
 #[test]
