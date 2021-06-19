@@ -2,7 +2,6 @@ use crate::{
     animation::Animation, camera::Camera, light::Light, material::{Material, MaterialFactory}, mesh::Mesh,
     metadata::MetaData, node::Node, sys::*, *,
 };
-use derivative::Derivative;
 use std::{
     cell::RefCell,
     ffi::{CStr, CString},
@@ -433,6 +432,21 @@ impl Scene {
         result
     }
 
+    pub fn from_buffer(buffer: &[u8], flags: PostProcessSteps, hint: &str) -> Russult<Scene> {
+        let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
+        let hint = CString::new(hint).unwrap();
+
+        let raw_scene = Scene::get_scene_from_file_from_memory(buffer, bitwise_flag, hint);
+        if raw_scene.is_none() {
+            return Err(Scene::get_error());
+        }
+
+        let result = Scene::new(raw_scene.unwrap());
+        Scene::drop_scene(raw_scene);
+
+        result
+    }
+
     #[inline]
     fn drop_scene(scene: Option<&aiScene>) {
         if let Some(content) = scene {
@@ -445,6 +459,11 @@ impl Scene {
     #[inline]
     fn get_scene_from_file<'a>(string: CString, flags: u32) -> Option<&'a aiScene> {
         unsafe { aiImportFile(string.as_ptr(), flags).as_ref() }
+    }
+
+    #[inline]
+    fn get_scene_from_file_from_memory<'a>(buffer: &[u8], flags: u32, hint: CString) -> Option<&'a aiScene> {
+        unsafe { aiImportFileFromMemory(buffer.as_ptr() as *const _, buffer.len() as _, flags, hint.as_ptr()).as_ref() }
     }
 
     fn get_error() -> RussimpError {
@@ -501,6 +520,33 @@ fn debug_scene() {
             PostProcess::JoinIdenticalVertices,
             PostProcess::SortByPrimitiveType,
         ],
+    )
+        .unwrap();
+
+    dbg!(&scene);
+}
+
+#[test]
+fn debug_scene_from_memory() {
+    let box_file_path = b"solid foo bar
+    facet normal 0.1 0.2 0.3
+        outer loop
+            vertex 1 2 3
+            vertex 4 5 6e-15
+            vertex 7 8 9.87654321
+        endloop
+    endfacet
+    endsolid foo bar";
+
+    let scene = Scene::from_buffer(
+        box_file_path,
+        vec![
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
+        ],
+        "stl"
     )
         .unwrap();
 
