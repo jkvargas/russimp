@@ -9,7 +9,7 @@ pub struct Mesh {
     pub normals: Vec<Vector3D>,
     pub name: String,
     pub vertices: Vec<Vector3D>,
-    pub texture_coords: Vec<Option<Vector3D>>,
+    pub texture_coords: Vec<Option<Vec<Vector3D>>>,
     pub tangents: Vec<Vector3D>,
     pub bitangents: Vec<Vector3D>,
     pub uv_components: Vec<u32>,
@@ -40,7 +40,11 @@ impl From<&aiMesh> for Mesh {
             normals: utils::get_vec(mesh.mNormals, mesh.mNumVertices),
             name: mesh.mName.into(),
             vertices: utils::get_vec(mesh.mVertices, mesh.mNumVertices),
-            texture_coords: utils::get_vec_from_slice(&mesh.mTextureCoords),
+            texture_coords: mesh.mTextureCoords.iter().map(|head| {
+                unsafe { head.as_mut() }.map(|head| {
+                    utils::get_vec(head, mesh.mNumVertices)
+                })
+            }).collect(),
             tangents: utils::get_vec(mesh.mTangents, mesh.mNumVertices),
             bitangents: utils::get_vec(mesh.mBitangents, mesh.mNumVertices),
             uv_components: mesh.mNumUVComponents.to_vec(),
