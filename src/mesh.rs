@@ -181,3 +181,72 @@ fn debug_mesh() {
 
     dbg!(&scene.meshes);
 }
+
+#[test]
+fn texture_coordinates() {
+    use crate::scene::{PostProcess, Scene};
+
+    let current_directory_buf = utils::get_model("models/OBJ/cube.obj");
+
+    let scene = Scene::from_file(
+        current_directory_buf.as_str(),
+        vec![
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
+        ],
+    )
+    .unwrap();
+
+    // There's only one mesh in this file
+    let mesh = &scene.meshes[0];
+
+    // Assert exactly 8 UV channels were loaded
+    assert_eq!(mesh.texture_coords.len(), 8);
+
+    // Only the first UV channel should be present on this mesh
+    assert!(mesh.texture_coords[0].is_some());
+    assert!(mesh.texture_coords[1..].iter().all(|chan| chan.is_none()));
+
+    let uv_chan = mesh.texture_coords[0].as_ref().unwrap();
+
+    // The number of sets of coords should match the number of vertices
+    assert_eq!(uv_chan.len(), mesh.vertices.len());
+
+    // The z coordinates should always be 0
+    assert!(uv_chan.iter().all(|set| set.z == 0.0));
+
+    // Transform vector of Vector3D to vector of (x,y) tuples
+    let uv_chan: Vec<_> = uv_chan.iter().map(|set| (set.x, set.y)).collect();
+
+    assert_eq!(
+        uv_chan,
+        vec![
+            (0.625, 0.5),
+            (0.875, 0.5),
+            (0.875, 0.75),
+            (0.625, 0.75),
+            (0.375, 0.75),
+            (0.625, 0.75),
+            (0.625, 1.0),
+            (0.375, 1.0),
+            (0.375, 0.0),
+            (0.625, 0.0),
+            (0.625, 0.25),
+            (0.375, 0.25),
+            (0.125, 0.5),
+            (0.375, 0.5),
+            (0.375, 0.75),
+            (0.125, 0.75),
+            (0.375, 0.5),
+            (0.625, 0.5),
+            (0.625, 0.75),
+            (0.375, 0.75),
+            (0.375, 0.25),
+            (0.625, 0.25),
+            (0.625, 0.5),
+            (0.375, 0.5),
+        ]
+    );
+}
