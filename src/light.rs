@@ -36,7 +36,7 @@ impl From<&aiLight> for Light {
             color_diffuse: (&light.mColorDiffuse).into(),
             direction: (&light.mDirection).into(),
             size: (&light.mSize).into(),
-            light_source_type: light.mType.into(),
+            light_source_type: (light.mType as u32).into(),
         }
     }
 }
@@ -45,13 +45,13 @@ impl From<&aiLight> for Light {
 #[derivative(Debug)]
 #[repr(u32)]
 pub enum LightSourceType {
-    Ambient = aiLightSourceType_aiLightSource_AMBIENT,
-    Area = aiLightSourceType_aiLightSource_AREA,
-    Directional = aiLightSourceType_aiLightSource_DIRECTIONAL,
-    Point = aiLightSourceType_aiLightSource_POINT,
-    Spot = aiLightSourceType_aiLightSource_SPOT,
+    Ambient = aiLightSourceType_aiLightSource_AMBIENT as _,
+    Area = aiLightSourceType_aiLightSource_AREA as _,
+    Directional = aiLightSourceType_aiLightSource_DIRECTIONAL as _,
+    Point = aiLightSourceType_aiLightSource_POINT as _,
+    Spot = aiLightSourceType_aiLightSource_SPOT as _,
     #[num_enum(default)]
-    Undefined = aiLightSourceType_aiLightSource_UNDEFINED,
+    Undefined = aiLightSourceType_aiLightSource_UNDEFINED as _,
 }
 
 impl Default for LightSourceType {

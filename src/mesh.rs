@@ -27,11 +27,11 @@ pub struct Mesh {
 #[derivative(Debug)]
 #[repr(u32)]
 pub enum PrimitiveType {
-    Force32Bit = aiPrimitiveType__aiPrimitiveType_Force32Bit,
-    Line = aiPrimitiveType_aiPrimitiveType_LINE,
-    Point = aiPrimitiveType_aiPrimitiveType_POINT,
-    Polygon = aiPrimitiveType_aiPrimitiveType_POLYGON,
-    Triangle = aiPrimitiveType_aiPrimitiveType_TRIANGLE,
+    Force32Bit = aiPrimitiveType__aiPrimitiveType_Force32Bit as _,
+    Line = aiPrimitiveType_aiPrimitiveType_LINE as _,
+    Point = aiPrimitiveType_aiPrimitiveType_POINT as _,
+    Polygon = aiPrimitiveType_aiPrimitiveType_POLYGON as _,
+    Triangle = aiPrimitiveType_aiPrimitiveType_TRIANGLE as _,
 }
 
 impl From<&aiMesh> for Mesh {
