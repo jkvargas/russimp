@@ -11,26 +11,26 @@ const EMBEDDED_TEXNAME_PREFIX: &str = "*";
 #[repr(u32)]
 pub enum TextureType {
     #[num_enum(default)]
-    None = aiTextureType_aiTextureType_NONE,
-    Diffuse = aiTextureType_aiTextureType_DIFFUSE,
-    Specular = aiTextureType_aiTextureType_SPECULAR,
-    Ambient = aiTextureType_aiTextureType_AMBIENT,
-    Emissive = aiTextureType_aiTextureType_EMISSIVE,
-    Height = aiTextureType_aiTextureType_HEIGHT,
-    Normals = aiTextureType_aiTextureType_NORMALS,
-    Shininess = aiTextureType_aiTextureType_SHININESS,
-    Opacity = aiTextureType_aiTextureType_OPACITY,
-    Displacement = aiTextureType_aiTextureType_DISPLACEMENT,
-    LightMap = aiTextureType_aiTextureType_LIGHTMAP,
-    Reflection = aiTextureType_aiTextureType_REFLECTION,
-    BaseColor = aiTextureType_aiTextureType_BASE_COLOR,
-    NormalCamera = aiTextureType_aiTextureType_NORMAL_CAMERA,
-    EmissionColor = aiTextureType_aiTextureType_EMISSION_COLOR,
-    Metalness = aiTextureType_aiTextureType_METALNESS,
-    Roughness = aiTextureType_aiTextureType_DIFFUSE_ROUGHNESS,
-    AmbientOcclusion = aiTextureType_aiTextureType_AMBIENT_OCCLUSION,
-    Unknown = aiTextureType_aiTextureType_UNKNOWN,
-    Force32bit = aiTextureType__aiTextureType_Force32Bit,
+    None = aiTextureType_aiTextureType_NONE as _,
+    Diffuse = aiTextureType_aiTextureType_DIFFUSE as _,
+    Specular = aiTextureType_aiTextureType_SPECULAR as _,
+    Ambient = aiTextureType_aiTextureType_AMBIENT as _,
+    Emissive = aiTextureType_aiTextureType_EMISSIVE as _,
+    Height = aiTextureType_aiTextureType_HEIGHT as _,
+    Normals = aiTextureType_aiTextureType_NORMALS as _,
+    Shininess = aiTextureType_aiTextureType_SHININESS as _,
+    Opacity = aiTextureType_aiTextureType_OPACITY as _,
+    Displacement = aiTextureType_aiTextureType_DISPLACEMENT as _,
+    LightMap = aiTextureType_aiTextureType_LIGHTMAP as _,
+    Reflection = aiTextureType_aiTextureType_REFLECTION as _,
+    BaseColor = aiTextureType_aiTextureType_BASE_COLOR as _,
+    NormalCamera = aiTextureType_aiTextureType_NORMAL_CAMERA as _,
+    EmissionColor = aiTextureType_aiTextureType_EMISSION_COLOR as _,
+    Metalness = aiTextureType_aiTextureType_METALNESS as _,
+    Roughness = aiTextureType_aiTextureType_DIFFUSE_ROUGHNESS as _,
+    AmbientOcclusion = aiTextureType_aiTextureType_AMBIENT_OCCLUSION as _,
+    Unknown = aiTextureType_aiTextureType_UNKNOWN as _,
+    Force32bit = aiTextureType__aiTextureType_Force32Bit as _,
 }
 
 #[repr(C, packed)]
@@ -104,14 +104,14 @@ impl TextureComponent {
         if unsafe {
             aiGetMaterialTexture(
                 material,
-                texture_type,
+                texture_type as _,
                 index,
                 path.as_mut_ptr(),
                 texture_mapping.as_mut_ptr(),
                 uv_index.as_mut_ptr(),
                 blend.as_mut_ptr(),
                 op.as_mut_ptr(),
-                map_mode.as_mut_ptr(),
+                map_mode.as_mut_ptr() as *mut _,
                 flags.as_mut_ptr(),
             )
         } == aiReturn_aiReturn_SUCCESS
@@ -120,10 +120,10 @@ impl TextureComponent {
 
             let comp = TextureComponent::new(
                 filename,
-                unsafe { texture_mapping.assume_init() },
+                unsafe { texture_mapping.assume_init() as _ },
                 unsafe { uv_index.assume_init() },
                 unsafe { blend.assume_init() },
-                unsafe { op.assume_init() },
+                unsafe { op.assume_init() as _ },
                 map_mode.to_vec(),
                 unsafe { flags.assume_init() },
             );
@@ -138,12 +138,12 @@ impl TextureComponent {
         material: &aiMaterial,
         texture_type: TextureType,
     ) -> Vec<TextureComponent> {
-        let texture_type_raw: aiTextureType = texture_type as u32;
+        let texture_type_raw: aiTextureType = texture_type as _;
 
         let mut vec = Vec::new();
 
         for index in 0..unsafe { aiGetMaterialTextureCount(material, texture_type_raw) } {
-            if let Ok(res) = Self::get_texture(material, texture_type_raw, index) {
+            if let Ok(res) = Self::get_texture(material, texture_type_raw as _, index) {
                 vec.push(res);
             }
         }
@@ -216,10 +216,10 @@ impl TextureComponent {
 #[derivative(Debug)]
 #[repr(u32)]
 pub enum TextureMapMode {
-    Clamp = aiTextureMapMode_aiTextureMapMode_Clamp,
-    Decal = aiTextureMapMode_aiTextureMapMode_Decal,
-    Mirror = aiTextureMapMode_aiTextureMapMode_Mirror,
-    Wrap = aiTextureMapMode_aiTextureMapMode_Wrap,
+    Clamp = aiTextureMapMode_aiTextureMapMode_Clamp as _,
+    Decal = aiTextureMapMode_aiTextureMapMode_Decal as _,
+    Mirror = aiTextureMapMode_aiTextureMapMode_Mirror as _,
+    Wrap = aiTextureMapMode_aiTextureMapMode_Wrap as _,
 }
 
 impl BitAnd<TextureMapMode> for TextureMapMode {

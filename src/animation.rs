@@ -109,8 +109,8 @@ impl From<&aiNodeAnim> for NodeAnim {
             position_keys: utils::get_vec(node_anim.mPositionKeys, node_anim.mNumPositionKeys),
             rotation_keys: utils::get_vec(node_anim.mRotationKeys, node_anim.mNumRotationKeys),
             scaling_keys: utils::get_vec(node_anim.mScalingKeys, node_anim.mNumScalingKeys),
-            post_state: node_anim.mPostState,
-            pre_state: node_anim.mPreState,
+            post_state: node_anim.mPostState as _,
+            pre_state: node_anim.mPreState as _,
         }
     }
 }
