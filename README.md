@@ -5,11 +5,15 @@ Rust bindings for Assimp (https://github.com/assimp/assimp)
 # Overview
 
 Russimp is a library for talking to the assimp library which enables you to read 3d models in different formats to a common structure.
-These bindings are based on assimp v5.0.1.
 
-This is an ongoing work. I am working on it when I have time to spare.
+Assimp just released v5.1.0 which is used for the linux build.
 
 ## Helping
+
+Vcpkg only has assimp 5.0.1 only, it might take some time for them to update it.
+
+If you want to help maintaining this package on windows or macos, please let me know.
+For windows support you can check the last PR related to it, https://github.com/jkvargas/russimp/pull/16.
 
 You are very welcome to help with development, adding a feature, fixing a problem or just refactoring.
 Try to do it with tests =)
@@ -17,12 +21,6 @@ Try to do it with tests =)
 We need help to compile it on windows and on mac.
 
 Make sure to run cargo fmt before creating a pull request.
-
-# Requirements
-
-## Rust
-
-You will need rust stable, cmake, C and C++ compiler as well.
 
 # How to use it?
 
@@ -35,3 +33,8 @@ vec![PostProcess::CalcTangentSpace,
      PostProcess::JoinIdenticalVertices,
      PostProcess::SortByPType]).unwrap();
 ```
+
+## Changelog
+
+### 1.0.0
+* Builds based on 5.1.0 release
