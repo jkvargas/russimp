@@ -236,7 +236,16 @@ fn metadata_for_box() {
     )
     .unwrap();
 
-    assert!(scene.metadata.is_none());
+    let metadata = scene.metadata.unwrap();
+
+    assert_eq!(1, metadata.keys.len());
+    assert_eq!(1, metadata.values.len());
+
+    assert_eq!("SourceAsset_Format".to_string(), metadata.keys[0]);
+
+    let metadata_type = (&metadata.values[0]).0.as_ref().unwrap();
+
+    assert!(matches!(metadata_type, MetadataType::Vector3d(_)));
 }
 
 #[test]
