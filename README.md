@@ -11,14 +11,15 @@ Assimp just released v5.1.0 which is used for the linux build.
 ## Helping
 
 Vcpkg only has assimp 5.0.1 only, it might take some time for them to update it.
+Brew does not have a bew version for 5.1.0 yet, will enable pipeline as soon as it gets the new version.
+
+If you need bindings for version 5.0.1 just pickup a release before 1.0.0.
 
 If you want to help maintaining this package on windows or macos, please let me know.
 For windows support you can check the last PR related to it, https://github.com/jkvargas/russimp/pull/16.
 
 You are very welcome to help with development, adding a feature, fixing a problem or just refactoring.
 Try to do it with tests =)
-
-We need help to compile it on windows and on mac.
 
 Make sure to run cargo fmt before creating a pull request.
 
@@ -38,3 +39,4 @@ vec![PostProcess::CalcTangentSpace,
 
 ### 1.0.0
 * Builds based on 5.1.0 release
+* OSX build was suspended till brew gets assimp 5.1.0
