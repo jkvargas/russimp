@@ -290,15 +290,16 @@ impl MaterialProperty {
 
 #[test]
 fn material_for_box() {
-    use crate::{scene::{PostProcess, Scene}, utils};
+    use crate::{
+        scene::{PostProcess, Scene},
+        utils,
+    };
 
     let box_file_path = utils::get_model("models/BLEND/box.blend");
 
     let scene = Scene::from_file(
         box_file_path.as_str(),
-        vec![
-            PostProcess::ValidateDataStructure,
-        ],
+        vec![PostProcess::ValidateDataStructure],
     )
     .unwrap();
 
@@ -318,7 +319,10 @@ fn material_for_box() {
     };
 
     assert_eq!(1.0, ans_value);
-    assert_eq!(TextureType::None, scene.materials[0].properties[40].semantic);
+    assert_eq!(
+        TextureType::None,
+        scene.materials[0].properties[40].semantic
+    );
 }
 
 #[test]

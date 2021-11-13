@@ -9,57 +9,57 @@ jobs:
   lin-build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Checkout submodules
-      run: git submodule update --init --recursive
-    - name: Install assimp
-      run: sudo bash ${GITHUB_WORKSPACE}/install_assimp.bash
-    - name: Install stable
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: stable
-        override: true
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --lib --verbose
+      - uses: actions/checkout@v2
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+      - name: Install assimp
+        run: sudo bash ${GITHUB_WORKSPACE}/install_assimp.bash
+      - name: Install stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Build
+        run: cargo build --verbose
+      - name: Run tests
+        run: cargo test --lib --verbose
 
-#  macos-build:
-#    runs-on: macos-latest
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Install assimp
-#        run: brew install assimp
-#      - name: Install stable
-#        uses: actions-rs/toolchain@v1
-#        with:
-#          profile: minimal
-#          toolchain: stable
-#          override: true
-#      - name: Build
-#        run: cargo build --verbose
-#      - name: Run tests
-#        run: cargo test --lib --verbose
+  macos-build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install assimp
+        run: brew install assimp
+      - name: Install stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Build
+        run: cargo build --verbose
+      - name: Run tests
+        run: cargo test --lib --verbose
 
   cargo-publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    needs: [lin-build]
+    needs: [ lin-build, macos-build ]
     env:
       CRATESIO_TOKEN: ${{ secrets.CRATESIO_TOKEN }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Checkout submodules
-      run: git submodule update --init --recursive
-    - name: Install assimp
-      run: sudo bash ${GITHUB_WORKSPACE}/install_assimp.bash
-    - name: Install stable
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: stable
-        override: true
-    - name: cargo publish
-      continue-on-error: true
-      run: cargo publish --token ${CRATESIO_TOKEN}
+      - uses: actions/checkout@v2
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+      - name: Install assimp
+        run: sudo bash ${GITHUB_WORKSPACE}/install_assimp.bash
+      - name: Install stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: cargo publish
+        continue-on-error: true
+        run: cargo publish --token ${CRATESIO_TOKEN}
