@@ -365,21 +365,9 @@ fn amount_of_textures() {
         .unwrap();
 
     let textures = scene.materials[0].textures.get(&Diffuse).unwrap();
-    assert_eq!(2, textures.len());
+    assert_eq!(1, textures.len());
 
-    let mut not_texels = true;
-    for i in 0..2 {
-        if let Some(d) = &textures[i].data {
-            match d {
-                DataContent::Texel(_) => { not_texels = false; }
-                DataContent::Bytes(v) => {
-                    assert!(v.len() > 0);
-                }
-            }
-        }
-    }
-
-    assert!(not_texels);
+    assert!(matches!(textures[0].data.as_ref().unwrap(), DataContent::Bytes(_)));
 }
 
 #[test]
