@@ -1,7 +1,7 @@
 use crate::{bone::Bone, face::Face, sys::*, *};
 use derivative::Derivative;
 use num_traits::ToPrimitive;
-use std::ops::BitAnd;
+use std::ops::{BitAnd, BitOr};
 
 #[derive(Default, Derivative)]
 #[derivative(Debug)]
@@ -27,7 +27,7 @@ pub struct Mesh {
 #[derivative(Debug)]
 #[repr(u32)]
 pub enum PrimitiveType {
-    Force32Bit = aiPrimitiveType__aiPrimitiveType_Force32Bit as _,
+    NGONEncodingFlag = aiPrimitiveType_aiPrimitiveType_NGONEncodingFlag as _,
     Line = aiPrimitiveType_aiPrimitiveType_LINE as _,
     Point = aiPrimitiveType_aiPrimitiveType_POINT as _,
     Polygon = aiPrimitiveType_aiPrimitiveType_POLYGON as _,
@@ -36,8 +36,10 @@ pub enum PrimitiveType {
 
 impl From<&aiMesh> for Mesh {
     fn from(mesh: &aiMesh) -> Self {
+        let normals = utils::get_vec(mesh.mNormals, mesh.mNumVertices);
+
         Self {
-            normals: utils::get_vec(mesh.mNormals, mesh.mNumVertices),
+            normals: normals,
             name: mesh.mName.into(),
             vertices: utils::get_vec(mesh.mVertices, mesh.mNumVertices),
             texture_coords: mesh.mTextureCoords.iter().map(|head| {
@@ -78,6 +80,14 @@ impl BitAnd<PrimitiveType> for PrimitiveType {
     }
 }
 
+impl BitOr<PrimitiveType> for PrimitiveType {
+    type Output = u32;
+
+    fn bitor(self, rhs: PrimitiveType) -> Self::Output {
+        ToPrimitive::to_u32(&self).unwrap() | ToPrimitive::to_u32(&rhs).unwrap()
+    }
+}
+
 impl BitAnd<PrimitiveType> for u32 {
     type Output = u32;
 
@@ -109,9 +119,10 @@ fn mesh_available() {
             PostProcess::SortByPrimitiveType,
         ],
     )
-    .unwrap();
+        .unwrap();
 
     assert_eq!(1, scene.meshes.len());
+
     assert_eq!(8, scene.meshes[0].normals.len());
     assert_eq!(8, scene.meshes[0].vertices.len());
     assert!(scene.meshes[0].texture_coords.iter().all(|x| x.is_none()));
@@ -119,7 +130,7 @@ fn mesh_available() {
     assert!(scene.meshes[0].bitangents.is_empty());
     assert_eq!(8, scene.meshes[0].uv_components.len());
     assert_eq!(true, scene.meshes[0].uv_components.iter().all(|x| *x == 0));
-    assert_eq!(4, scene.meshes[0].primitive_types);
+    assert_eq!(20, scene.meshes[0].primitive_types & ( PrimitiveType::NGONEncodingFlag | PrimitiveType::Triangle ));
     assert!(scene.meshes[0].bones.is_empty());
     assert!(scene.meshes[0].anim_meshes.is_empty());
     assert_eq!(12, scene.meshes[0].faces.len());
@@ -150,12 +161,12 @@ fn bitwise_primitive_types() {
             PostProcess::SortByPrimitiveType,
         ],
     )
-    .unwrap();
+        .unwrap();
 
-    assert_eq!(
-        4,
-        scene.meshes[0].primitive_types & PrimitiveType::Force32Bit
-    );
+    // assert_eq!(
+    //     4,
+    //     scene.meshes[0].primitive_types & PrimitiveType::Force32Bit
+    // );
     assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Line);
     assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Point);
     assert_eq!(4, scene.meshes[0].primitive_types & PrimitiveType::Triangle);
@@ -177,7 +188,7 @@ fn debug_mesh() {
             PostProcess::SortByPrimitiveType,
         ],
     )
-    .unwrap();
+        .unwrap();
 
     dbg!(&scene.meshes);
 }
@@ -197,7 +208,7 @@ fn texture_coordinates() {
             PostProcess::SortByPrimitiveType,
         ],
     )
-    .unwrap();
+        .unwrap();
 
     // There's only one mesh in this file
     let mesh = &scene.meshes[0];
