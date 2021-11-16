@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install assimp
-        run: brew install assimp
+        run: brew install assimp@5.1.0
       - name: Install stable
         uses: actions-rs/toolchain@v1
         with:
