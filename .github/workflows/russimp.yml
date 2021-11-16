@@ -29,8 +29,10 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Update assimp
+        run: brew update
       - name: Install assimp
-        run: brew install assimp@5.1.0
+        run: brew install assimp
       - name: Install stable
         uses: actions-rs/toolchain@v1
         with:
