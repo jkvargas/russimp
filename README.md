@@ -7,7 +7,7 @@ Rust bindings for Assimp (https://github.com/assimp/assimp)
 Russimp is a library for talking to the assimp library which enables you to read 3d models in different formats to a common structure.
 
 * OSX: You will need to update Brew and install assimp with it.
-* Linux: You will need to install assimp 5.1.0. I guess that ubuntu still have 5.0.1 on their repos. If that is the case then you can take a look at install_assimp.bash on how to install it manually.
+* Linux: You will need to install assimp 5.1.0. I guess that ubuntu still has 5.0.1 on their repos. If that is the case then you can take a look at install_assimp.bash on how to install it manually.
 * Windows: Still not supported since vcpkg still only offers assimp 5.0.1.
 
 If you need bindings for version 5.0.1 just pickup a release before 1.0.0.
