@@ -1,6 +1,13 @@
 use crate::{
-    animation::Animation, camera::Camera, light::Light, material::{Material, MaterialFactory}, mesh::Mesh,
-    metadata::MetaData, node::Node, sys::*, *,
+    animation::Animation,
+    camera::Camera,
+    light::Light,
+    material::{Material, MaterialFactory},
+    mesh::Mesh,
+    metadata::MetaData,
+    node::Node,
+    sys::*,
+    *,
 };
 use std::{
     cell::RefCell,
@@ -462,8 +469,20 @@ impl Scene {
     }
 
     #[inline]
-    fn get_scene_from_file_from_memory<'a>(buffer: &[u8], flags: u32, hint: CString) -> Option<&'a aiScene> {
-        unsafe { aiImportFileFromMemory(buffer.as_ptr() as *const _, buffer.len() as _, flags, hint.as_ptr()).as_ref() }
+    fn get_scene_from_file_from_memory<'a>(
+        buffer: &[u8],
+        flags: u32,
+        hint: CString,
+    ) -> Option<&'a aiScene> {
+        unsafe {
+            aiImportFileFromMemory(
+                buffer.as_ptr() as *const _,
+                buffer.len() as _,
+                flags,
+                hint.as_ptr(),
+            )
+            .as_ref()
+        }
     }
 
     fn get_error() -> RussimpError {
@@ -503,7 +522,7 @@ fn importing_valid_file_returns_scene() {
             PostProcess::SortByPrimitiveType,
         ],
     )
-        .unwrap();
+    .unwrap();
 
     assert_eq!(8, scene.flags);
 }
@@ -521,7 +540,7 @@ fn debug_scene() {
             PostProcess::SortByPrimitiveType,
         ],
     )
-        .unwrap();
+    .unwrap();
 
     dbg!(&scene);
 }
@@ -546,9 +565,9 @@ fn debug_scene_from_memory() {
             PostProcess::JoinIdenticalVertices,
             PostProcess::SortByPrimitiveType,
         ],
-        "stl"
+        "stl",
     )
-        .unwrap();
+    .unwrap();
 
     dbg!(&scene);
 }

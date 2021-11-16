@@ -39,14 +39,16 @@ impl From<&aiMesh> for Mesh {
         let normals = utils::get_vec(mesh.mNormals, mesh.mNumVertices);
 
         Self {
-            normals: normals,
+            normals,
             name: mesh.mName.into(),
             vertices: utils::get_vec(mesh.mVertices, mesh.mNumVertices),
-            texture_coords: mesh.mTextureCoords.iter().map(|head| {
-                unsafe { head.as_mut() }.map(|head| {
-                    utils::get_vec(head, mesh.mNumVertices)
+            texture_coords: mesh
+                .mTextureCoords
+                .iter()
+                .map(|head| {
+                    unsafe { head.as_mut() }.map(|head| utils::get_vec(head, mesh.mNumVertices))
                 })
-            }).collect(),
+                .collect(),
             tangents: utils::get_vec(mesh.mTangents, mesh.mNumVertices),
             bitangents: utils::get_vec(mesh.mBitangents, mesh.mNumVertices),
             uv_components: mesh.mNumUVComponents.to_vec(),
@@ -119,7 +121,7 @@ fn mesh_available() {
             PostProcess::SortByPrimitiveType,
         ],
     )
-        .unwrap();
+    .unwrap();
 
     assert_eq!(1, scene.meshes.len());
 
@@ -130,7 +132,11 @@ fn mesh_available() {
     assert!(scene.meshes[0].bitangents.is_empty());
     assert_eq!(8, scene.meshes[0].uv_components.len());
     assert_eq!(true, scene.meshes[0].uv_components.iter().all(|x| *x == 0));
-    assert_eq!(20, scene.meshes[0].primitive_types & ( PrimitiveType::NGONEncodingFlag | PrimitiveType::Triangle ));
+    assert_eq!(
+        20,
+        scene.meshes[0].primitive_types
+            & (PrimitiveType::NGONEncodingFlag | PrimitiveType::Triangle)
+    );
     assert!(scene.meshes[0].bones.is_empty());
     assert!(scene.meshes[0].anim_meshes.is_empty());
     assert_eq!(12, scene.meshes[0].faces.len());
@@ -161,7 +167,7 @@ fn bitwise_primitive_types() {
             PostProcess::SortByPrimitiveType,
         ],
     )
-        .unwrap();
+    .unwrap();
 
     // assert_eq!(
     //     4,
@@ -188,7 +194,7 @@ fn debug_mesh() {
             PostProcess::SortByPrimitiveType,
         ],
     )
-        .unwrap();
+    .unwrap();
 
     dbg!(&scene.meshes);
 }
@@ -208,7 +214,7 @@ fn texture_coordinates() {
             PostProcess::SortByPrimitiveType,
         ],
     )
-        .unwrap();
+    .unwrap();
 
     // There's only one mesh in this file
     let mesh = &scene.meshes[0];
