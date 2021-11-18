@@ -36,6 +36,8 @@ vec![PostProcess::CalcTangentSpace,
 
 ## Changelog
 
+### 1.0.1
+* PostProcessing typo, GenenerateUVCoords was changed to GenerateUVCoords.
+
 ### 1.0.0
 * Builds based on 5.1.0 release
-* OSX build was suspended till brew gets assimp 5.1.0
