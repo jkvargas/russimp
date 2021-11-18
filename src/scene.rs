@@ -299,7 +299,7 @@ pub enum PostProcess {
     /// > If this step is not requested, you’ll need to process the
     /// `AI_MATKEY_MAPPING` material property in order to display all assets
     /// properly.
-    GenenerateUVCoords = aiPostProcessSteps_aiProcess_GenUVCoords as _,
+    GenerateUVCoords = aiPostProcessSteps_aiProcess_GenUVCoords as _,
     /// Applies per-texture UV transformations and bakes them into
     /// stand-alone vtexture coordinate channels.
     ///
