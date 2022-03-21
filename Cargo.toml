@@ -30,3 +30,6 @@ prebuilt=["russimp-sys/prebuilt"]
 static-link=["russimp-sys/static-link"]
 nozlib = ["russimp-sys/nozlib"]
 nolibcxx = ["russimp-sys/nolibcxx"]
+
+[package.metadata.docs.rs]
+features = ["prebuilt"]
