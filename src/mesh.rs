@@ -42,7 +42,7 @@ impl From<&aiMesh> for Mesh {
             normals,
             name: mesh.mName.into(),
             vertices: utils::get_vec(mesh.mVertices, mesh.mNumVertices),
-            texture_coords: utils::get_vec_of_vecs_of_raw(mesh.mTextureCoords, mesh.mNumVertices),
+            texture_coords: utils::get_vec_of_vecs_from_raw(mesh.mTextureCoords, mesh.mNumVertices),
             tangents: utils::get_vec(mesh.mTangents, mesh.mNumVertices),
             bitangents: utils::get_vec(mesh.mBitangents, mesh.mNumVertices),
             uv_components: mesh.mNumUVComponents.to_vec(),
@@ -52,7 +52,7 @@ impl From<&aiMesh> for Mesh {
             method: mesh.mMethod,
             anim_meshes: utils::get_vec_from_raw(mesh.mAnimMeshes, mesh.mNumAnimMeshes),
             faces: utils::get_vec(mesh.mFaces, mesh.mNumFaces),
-            colors: utils::get_vec_of_vecs_of_raw(mesh.mColors, mesh.mNumVertices),
+            colors: utils::get_vec_of_vecs_from_raw(mesh.mColors, mesh.mNumVertices),
             aabb: (&mesh.mAABB).into(),
         }
     }

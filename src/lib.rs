@@ -284,7 +284,7 @@ mod utils {
             .collect()
     }
 
-    pub(crate) fn get_vec_of_vecs_of_raw<'a, TRaw: 'a, TComponent: From<&'a TRaw>>(
+    pub(crate) fn get_vec_of_vecs_from_raw<'a, TRaw: 'a, TComponent: From<&'a TRaw>>(
         raw: [*mut TRaw; 8usize], len: c_uint
     ) -> Vec<Option<Vec<TComponent>>> {
         raw
