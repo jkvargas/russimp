@@ -284,11 +284,15 @@ mod utils {
             .collect()
     }
 
-    pub(crate) fn get_vec_from_slice<'a, TRaw: 'a, TComponent: From<&'a TRaw>>(
-        raw: &[*mut TRaw],
-    ) -> Vec<Option<TComponent>> {
-        raw.iter()
-            .map(|x| unsafe { x.as_ref() }.map(|x| x.into()))
+    pub(crate) fn get_vec_of_vecs_of_raw<'a, TRaw: 'a, TComponent: From<&'a TRaw>>(
+        raw: [*mut TRaw; 8usize], len: c_uint
+    ) -> Vec<Option<Vec<TComponent>>> {
+        raw
+            .iter()
+            .map(|head| {
+                unsafe { head.as_mut() }
+                    .map(|head| get_vec(head, len))
+            })
             .collect()
     }
 }
