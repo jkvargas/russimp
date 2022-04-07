@@ -19,7 +19,7 @@ pub struct Mesh {
     pub method: u32,
     pub anim_meshes: Vec<AnimMesh>,
     pub faces: Vec<Face>,
-    pub colors: Vec<Option<Color4D>>,
+    pub colors: Vec<Option<Vec<Color4D>>>,
     pub aabb: AABB,
 }
 
@@ -42,13 +42,7 @@ impl From<&aiMesh> for Mesh {
             normals,
             name: mesh.mName.into(),
             vertices: utils::get_vec(mesh.mVertices, mesh.mNumVertices),
-            texture_coords: mesh
-                .mTextureCoords
-                .iter()
-                .map(|head| {
-                    unsafe { head.as_mut() }.map(|head| utils::get_vec(head, mesh.mNumVertices))
-                })
-                .collect(),
+            texture_coords: utils::get_vec_of_vecs_from_raw(mesh.mTextureCoords, mesh.mNumVertices),
             tangents: utils::get_vec(mesh.mTangents, mesh.mNumVertices),
             bitangents: utils::get_vec(mesh.mBitangents, mesh.mNumVertices),
             uv_components: mesh.mNumUVComponents.to_vec(),
@@ -58,7 +52,7 @@ impl From<&aiMesh> for Mesh {
             method: mesh.mMethod,
             anim_meshes: utils::get_vec_from_raw(mesh.mAnimMeshes, mesh.mNumAnimMeshes),
             faces: utils::get_vec(mesh.mFaces, mesh.mNumFaces),
-            colors: utils::get_vec_from_slice(&mesh.mColors),
+            colors: utils::get_vec_of_vecs_from_raw(mesh.mColors, mesh.mNumVertices),
             aabb: (&mesh.mAABB).into(),
         }
     }

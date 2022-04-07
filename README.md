@@ -68,6 +68,9 @@ vec![PostProcess::CalcTangentSpace,
 
 ## Changelog
 
+### 1.0.3
+* colors vector inside the mesh turned into Vec<Option<Vec<Color4d>>>
+
 ### 1.0.2
 * Expose `prebuilt` and other new Cargo features from [russimp-sys](https://github.com/jkvargas/russimp-sys)
 
