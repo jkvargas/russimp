@@ -39,6 +39,10 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - name: install cargo-vcpkg
+        run: cargo install cargo-vcpkg
+      - name: vcpkg build
+        run: cargo vcpkg build
       - name: Build
         run: cargo build --verbose
       - name: Run tests
