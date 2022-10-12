@@ -8,11 +8,9 @@ Russimp is a library for talking to the assimp library which enables you to read
 
 By default, russimp looks for the `assimp` library on your computer.  To install it:
 
-* OSX: You will need to update Brew and install assimp with it.
-* Linux: You will need to install assimp 5.1.0. I guess that ubuntu still has 5.0.1 on their repos. If that is the case then you can take a look at install_assimp.bash on how to install it manually.
-* Windows: Still not supported since vcpkg still only offers assimp 5.0.1.
-
-If you need bindings for version 5.0.1 just pickup a release before 1.0.0.
+* OSX: You will need to update brew and install assimp with it.
+* Linux: You will need to install assimp through your package manager of choice.
+* Windows: You can use [vcpkg](https://vcpkg.io/en/index.html), check russimp.yml on how to use it on windows, or use a prebuilt version of assimp.
 
 Alternately, you may prefer to use prebuilt assimp binaries or compile it yourself; in either case russimp will statically link assimp into your binary.  Russimp exposes the following Cargo features to manage the assimp dependency (this documentation is reproduced from [russimp-sys](https://github.com/jkvargas/russimp-sys)):
 
@@ -46,8 +44,6 @@ By default `russimp-sys` links to `libstdc++` in linux and `libc++` in macos, tu
 
 # Helping
 
-If you want to help maintaining this package on windows or macos, please let me know.
-For windows support you can check the last PR related to it, https://github.com/jkvargas/russimp/pull/16.
 
 You are very welcome to help with development, adding a feature, fixing a problem or just refactoring.
 Try to do it with tests =)
@@ -67,6 +63,9 @@ vec![PostProcess::CalcTangentSpace,
 ```
 
 ## Changelog
+
+### 1.0.4
+* Builds based on assimp v5.2.5
 
 ### 1.0.3
 * colors vector inside the mesh turned into Vec<Option<Vec<Color4d>>>
