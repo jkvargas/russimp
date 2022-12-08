@@ -33,7 +33,7 @@ impl<'a> MaterialFactory<'a> {
     }
 }
 
-#[derive(Derivative)]
+#[derive(Derivative, Clone)]
 #[derivative(Debug)]
 pub struct Material {
     pub properties: Vec<MaterialProperty>,
@@ -60,7 +60,7 @@ impl Material {
     }
 }
 
-#[derive(Derivative)]
+#[derive(Derivative, Clone)]
 #[derivative(Debug)]
 pub struct MaterialProperty {
     pub key: String,
@@ -214,7 +214,7 @@ impl<'a> MaterialPropertyCaster for StringPropertyContent<'a> {
     }
 }
 
-#[derive(Derivative, PartialEq)]
+#[derive(Derivative, PartialEq, Clone)]
 #[derivative(Debug)]
 #[repr(u32)]
 pub enum PropertyTypeInfo {

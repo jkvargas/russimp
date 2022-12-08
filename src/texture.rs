@@ -56,7 +56,7 @@ impl From<&aiTexel> for Texel {
     }
 }
 
-#[derive(Default, Derivative)]
+#[derive(Default, Derivative, Clone)]
 #[derivative(Debug)]
 pub struct Texture {
     pub path: String,
@@ -73,6 +73,7 @@ pub struct Texture {
     pub data: Option<DataContent>,
 }
 
+#[derive(Clone)]
 pub enum DataContent {
     Texel(Vec<Texel>),
     Bytes(Vec<u8>),
