@@ -25,28 +25,29 @@ jobs:
       - name: Run tests
         run: cargo test --lib --verbose
 
-  win-build:
-    runs-on: windows-latest
-    steps:
-      - name: Set up Visual Studio shell
-        uses: egor-tensin/vs-shell@v2
-      - name: Set up LIBCLANG_PATH
-        run: echo "LIBCLANG_PATH=$env:VCINSTALLDIR\Tools\Llvm\x64\bin" >> $env:GITHUB_ENV
-      - uses: actions/checkout@v2
-      - name: Install stable
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - name: install cargo-vcpkg
-        run: cargo install cargo-vcpkg
-      - name: vcpkg build
-        run: cargo vcpkg build
-      - name: Build
-        run: cargo build --verbose
-      - name: Run tests
-        run: cargo test --lib --verbose
+# disabling windows build for now. If anyone is interested on giving support to it. Please, let me know.
+#  win-build:
+#    runs-on: windows-latest
+#    steps:
+#      - name: Set up Visual Studio shell
+#        uses: egor-tensin/vs-shell@v2
+#      - name: Set up LIBCLANG_PATH
+#        run: echo "LIBCLANG_PATH=$env:VCINSTALLDIR\Tools\Llvm\x64\bin" >> $env:GITHUB_ENV
+#      - uses: actions/checkout@v2
+#      - name: Install stable
+#        uses: actions-rs/toolchain@v1
+#        with:
+#          profile: minimal
+#          toolchain: stable
+#          override: true
+#      - name: install cargo-vcpkg
+#        run: cargo install cargo-vcpkg
+#      - name: vcpkg build
+#        run: cargo vcpkg build
+#      - name: Build
+#        run: cargo build --verbose
+#      - name: Run tests
+#        run: cargo test --lib --verbose
 
   macos-build:
     runs-on: macos-latest
@@ -69,7 +70,7 @@ jobs:
 
   cargo-publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    needs: [ lin-build, macos-build, win-build ]
+    needs: [ lin-build, macos-build ]
     env:
       CRATESIO_TOKEN: ${{ secrets.CRATESIO_TOKEN }}
     runs-on: ubuntu-latest
