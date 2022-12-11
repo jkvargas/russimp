@@ -21,7 +21,6 @@ russimp-sys = "1.0.3"
 num-derive = "0.3.3"
 num-traits = "0.2.15"
 num_enum = "0.5.7"
-vcpkg = "0.2.15"
 derivative = "2.2.0"
 mint = { version = "0.5.9", optional = true }
 

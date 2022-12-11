@@ -285,14 +285,11 @@ mod utils {
     }
 
     pub(crate) fn get_vec_of_vecs_from_raw<'a, TRaw: 'a, TComponent: From<&'a TRaw>>(
-        raw: [*mut TRaw; 8usize], len: c_uint
+        raw: [*mut TRaw; 8usize],
+        len: c_uint,
     ) -> Vec<Option<Vec<TComponent>>> {
-        raw
-            .iter()
-            .map(|head| {
-                unsafe { head.as_mut() }
-                    .map(|head| get_vec(head, len))
-            })
+        raw.iter()
+            .map(|head| unsafe { head.as_mut() }.map(|head| get_vec(head, len)))
             .collect()
     }
 }
