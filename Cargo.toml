@@ -1,6 +1,6 @@
 [package]
 name = "russimp"
-version = "1.0.4"
+version = "1.0.5"
 authors = ["Jhonny Knaak de Vargas"]
 edition = "2018"
 license-file = "LICENSE"
@@ -21,7 +21,6 @@ russimp-sys = "1.0.3"
 num-derive = "0.3.3"
 num-traits = "0.2.15"
 num_enum = "0.5.7"
-vcpkg = "0.2.15"
 derivative = "2.2.0"
 mint = { version = "0.5.9", optional = true }
 
@@ -34,11 +33,3 @@ nolibcxx = ["russimp-sys/nolibcxx"]
 
 [package.metadata.docs.rs]
 features = ["prebuilt"]
-
-[package.metadata.vcpkg]
-git = "https://github.com/microsoft/vcpkg"
-rev = "7178ff9"
-
-[package.metadata.vcpkg.target]
-x86_64-pc-windows-msvc = { triplet = "x64-windows-static-md", install = ["assimp", "zlib"] }
-x86-pc-windows-msvc = { triplet = "x86-windows-static-md", install = ["assimp", "zlib"] }
