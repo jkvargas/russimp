@@ -10,7 +10,7 @@ By default, russimp looks for the `assimp` library on your computer.  To install
 
 * OSX: You will need to update brew and install assimp with it.
 * Linux: You will need to install assimp through your package manager of choice.
-* Windows: You can use [vcpkg](https://vcpkg.io/en/index.html), check russimp.yml on how to use it on windows, or use a prebuilt version of assimp.
+* Windows: You can use the prebuilt version ```russimp = { version = "1.0.5", features = ["prebuilt"] }```
 
 Alternately, you may prefer to use prebuilt assimp binaries or compile it yourself; in either case russimp will statically link assimp into your binary.  Russimp exposes the following Cargo features to manage the assimp dependency (this documentation is reproduced from [russimp-sys](https://github.com/jkvargas/russimp-sys)):
 
@@ -56,19 +56,30 @@ Just call Scene::from_file with the filename and the flags you want. From the sc
 
 ```rust
 let scene = Scene::from_file("myfile.blend",
-vec![PostProcess::CalcTangentSpace,
+vec![PostProcess::CalculateTangentSpace,
      PostProcess::Triangulate,
      PostProcess::JoinIdenticalVertices,
-     PostProcess::SortByPType]).unwrap();
+     PostProcess::SortByPrimitiveType]).unwrap();
 ```
 
 ## Changelog
+
+### 1.0.6
+Updating documentation
+
+### 1.0.5
+Added missing texture types:
+* Sheen
+* Clearcoat
+* Transmission
+
+Material, MaterialProperty, Texture and PropertyTypeInfo are now cloneable.
 
 ### 1.0.4
 * Builds based on assimp v5.2.5
 
 ### 1.0.3
-* colors vector inside the mesh turned into Vec<Option<Vec<Color4d>>>
+* colors vector inside the mesh turned into Vec<Option<Vec\<Color4d>>>
 
 ### 1.0.2
 * Expose `prebuilt` and other new Cargo features from [russimp-sys](https://github.com/jkvargas/russimp-sys)
