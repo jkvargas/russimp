@@ -31,6 +31,9 @@ pub enum TextureType {
     Metalness = aiTextureType_aiTextureType_METALNESS as _,
     Roughness = aiTextureType_aiTextureType_DIFFUSE_ROUGHNESS as _,
     AmbientOcclusion = aiTextureType_aiTextureType_AMBIENT_OCCLUSION as _,
+    Sheen = aiTextureType_aiTextureType_SHEEN as _,
+    Clearcoat = aiTextureType_aiTextureType_CLEARCOAT as _,
+    Transmission = aiTextureType_aiTextureType_TRANSMISSION as _,
     Unknown = aiTextureType_aiTextureType_UNKNOWN as _,
     Force32bit = aiTextureType__aiTextureType_Force32Bit as _,
 }
