@@ -31,7 +31,6 @@ pub mod mesh;
 pub mod metadata;
 pub mod node;
 pub mod scene;
-pub mod texture;
 
 #[derive(Derivative)]
 #[derivative(Debug)]

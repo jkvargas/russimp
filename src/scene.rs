@@ -2,7 +2,7 @@ use crate::{
     animation::Animation,
     camera::Camera,
     light::Light,
-    material::{Material, MaterialFactory},
+    material::Material,
     mesh::Mesh,
     metadata::MetaData,
     node::Node,
@@ -14,6 +14,7 @@ use std::{
     ffi::{CStr, CString},
     rc::Rc,
 };
+use crate::material::generate_materials;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
@@ -410,10 +411,9 @@ pub type PostProcessSteps = Vec<PostProcess>;
 impl Scene {
     fn new(scene: &aiScene) -> Russult<Self> {
         let root = unsafe { scene.mRootNode.as_ref() };
-        let materials = MaterialFactory::new(scene)?.create_materials();
 
         Ok(Self {
-            materials,
+            materials: generate_materials(&scene)?,
             meshes: utils::get_vec_from_raw(scene.mMeshes, scene.mNumMeshes),
             metadata: utils::get_raw(scene.mMetaData),
             animations: utils::get_vec_from_raw(scene.mAnimations, scene.mNumAnimations),

@@ -64,6 +64,11 @@ vec![PostProcess::CalculateTangentSpace,
 
 ## Changelog
 
+### 2.0.0
+Fixed issue to load embedded textures.
+
+Both material and texture structures have been modified.
+
 ### 1.0.6
 Updating documentation
 
