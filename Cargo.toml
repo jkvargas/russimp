@@ -1,6 +1,6 @@
 [package]
 name = "russimp"
-version = "2.0.0"
+version = "2.0.1"
 authors = ["Jhonny Knaak de Vargas"]
 edition = "2018"
 license-file = "LICENSE"
@@ -17,8 +17,7 @@ name = "russimp"
 path = "src/lib.rs"
 
 [dependencies]
-#russimp-sys = { path = "../russimp-sys" }
-russimp-sys = { version = "1.0.3", features = ["prebuilt"] }
+russimp-sys = "1.0.3"
 num-derive = "0.3.3"
 num-traits = "0.2.15"
 num_enum = "0.5.7"
