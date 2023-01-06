@@ -128,7 +128,7 @@ fn get_textures_of_type_from_material(
 
 fn get_texture_filename(
     material: &aiMaterial,
-    texture_type: u32,
+    texture_type: aiTextureType,
     index: u32,
 ) -> Russult<String> {
     let mut path = MaybeUninit::uninit();
@@ -143,7 +143,7 @@ fn get_texture_filename(
     if unsafe {
         aiGetMaterialTexture(
             material,
-            texture_type as _,
+            texture_type,
             index,
             path.as_mut_ptr(),
             texture_mapping.as_mut_ptr(),
