@@ -93,7 +93,7 @@ impl From<&aiColor4D> for Color4D {
     }
 }
 
-#[derive(Clone, Copy, Default, Derivative)]
+#[derive(PartialEq, Clone, Copy, Default, Derivative)]
 #[derivative(Debug)]
 #[repr(C)]
 pub struct Color3D {

@@ -27,7 +27,7 @@ strum_macros = "0.24.3"
 mint = { version = "0.5.9", optional = true }
 
 [features]
-default = []
+default = ["prebuilt"]
 prebuilt = ["russimp-sys/prebuilt"]
 static-link = ["russimp-sys/static-link"]
 nozlib = ["russimp-sys/nozlib"]
