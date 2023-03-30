@@ -46,7 +46,7 @@ fn debug_bones() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
+        &[
             PostProcess::CalculateTangentSpace,
             PostProcess::Triangulate,
             PostProcess::JoinIdenticalVertices,

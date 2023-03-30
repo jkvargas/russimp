@@ -693,7 +693,7 @@ fn material_for_box() {
 
     let scene = Scene::from_file(
         box_file_path.as_str(),
-        vec![PostProcess::ValidateDataStructure],
+        &[PostProcess::ValidateDataStructure],
     )
     .unwrap();
 
@@ -715,7 +715,7 @@ fn debug_material() {
 
     let scene = Scene::from_file(
         box_file_path.as_str(),
-        vec![PostProcess::ValidateDataStructure],
+        &[PostProcess::ValidateDataStructure],
     )
     .unwrap();
 
@@ -730,7 +730,7 @@ fn filenames_available_for_textures() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![PostProcess::ValidateDataStructure],
+        &[PostProcess::ValidateDataStructure],
     )
     .unwrap();
 
@@ -771,7 +771,7 @@ fn read_embedded_texture_works_as_expected() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![PostProcess::ValidateDataStructure],
+        &[PostProcess::ValidateDataStructure],
     )
     .unwrap();
 

@@ -185,7 +185,7 @@ fn camera_roll_animation_read() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
+        &[
             PostProcess::CalculateTangentSpace,
             PostProcess::Triangulate,
             PostProcess::JoinIdenticalVertices,
@@ -270,7 +270,7 @@ fn debug_animations() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
+        &[
             PostProcess::CalculateTangentSpace,
             PostProcess::Triangulate,
             PostProcess::JoinIdenticalVertices,

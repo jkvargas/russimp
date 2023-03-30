@@ -108,7 +108,7 @@ fn mesh_available() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
+        &[
             PostProcess::CalculateTangentSpace,
             PostProcess::Triangulate,
             PostProcess::JoinIdenticalVertices,
@@ -154,7 +154,7 @@ fn bitwise_primitive_types() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
+        &[
             PostProcess::CalculateTangentSpace,
             PostProcess::Triangulate,
             PostProcess::JoinIdenticalVertices,
@@ -181,7 +181,7 @@ fn debug_mesh() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
+        &[
             PostProcess::CalculateTangentSpace,
             PostProcess::Triangulate,
             PostProcess::JoinIdenticalVertices,
@@ -201,7 +201,7 @@ fn texture_coordinates() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
+        &[
             PostProcess::CalculateTangentSpace,
             PostProcess::Triangulate,
             PostProcess::JoinIdenticalVertices,

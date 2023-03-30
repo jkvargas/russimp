@@ -59,7 +59,7 @@ fn checking_nodes() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
+        &[
             PostProcess::CalculateTangentSpace,
             PostProcess::Triangulate,
             PostProcess::JoinIdenticalVertices,
@@ -98,7 +98,7 @@ fn childs_parent_name_matches() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
+        &[
             PostProcess::CalculateTangentSpace,
             PostProcess::Triangulate,
             PostProcess::JoinIdenticalVertices,
@@ -126,7 +126,7 @@ fn debug_root() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
+        &[
             PostProcess::CalculateTangentSpace,
             PostProcess::Triangulate,
             PostProcess::JoinIdenticalVertices,

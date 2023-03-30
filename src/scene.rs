@@ -29,7 +29,7 @@ pub struct Scene {
     pub flags: u32,
 }
 
-#[derive(Derivative)]
+#[derive(Derivative, Clone, Copy)]
 #[derivative(Debug)]
 #[repr(u32)]
 pub enum PostProcess {
@@ -406,7 +406,7 @@ pub enum PostProcess {
     GenerateBoundingBoxes = aiPostProcessSteps_aiProcess_GenBoundingBoxes as _,
 }
 
-pub type PostProcessSteps = Vec<PostProcess>;
+pub type PostProcessSteps<'a> = &'a [PostProcess];
 
 impl Scene {
     fn new(scene: &aiScene) -> Russult<Self> {
@@ -425,7 +425,7 @@ impl Scene {
     }
 
     pub fn from_file(file_path: &str, flags: PostProcessSteps) -> Russult<Scene> {
-        let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
+        let bitwise_flag = flags.iter().fold(0, |acc, x| acc | (*x as u32));
         let file_path = CString::new(file_path).unwrap();
 
         let raw_scene = Scene::get_scene_from_file(file_path, bitwise_flag);
@@ -440,7 +440,7 @@ impl Scene {
     }
 
     pub fn from_buffer(buffer: &[u8], flags: PostProcessSteps, hint: &str) -> Russult<Scene> {
-        let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
+        let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (*x as u32));
         let hint = CString::new(hint).unwrap();
 
         let raw_scene = Scene::get_scene_from_file_from_memory(buffer, bitwise_flag, hint);
@@ -498,7 +498,7 @@ fn importing_invalid_file_returns_error() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
+        &[
             PostProcess::CalculateTangentSpace,
             PostProcess::Triangulate,
             PostProcess::JoinIdenticalVertices,
@@ -515,7 +515,7 @@ fn importing_valid_file_returns_scene() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
+        &[
             PostProcess::CalculateTangentSpace,
             PostProcess::Triangulate,
             PostProcess::JoinIdenticalVertices,
@@ -533,7 +533,7 @@ fn debug_scene() {
 
     let scene = Scene::from_file(
         box_file_path.as_str(),
-        vec![
+        &[
             PostProcess::CalculateTangentSpace,
             PostProcess::Triangulate,
             PostProcess::JoinIdenticalVertices,
@@ -559,7 +559,7 @@ fn debug_scene_from_memory() {
 
     let scene = Scene::from_buffer(
         box_file_path,
-        vec![
+        &[
             PostProcess::CalculateTangentSpace,
             PostProcess::Triangulate,
             PostProcess::JoinIdenticalVertices,
