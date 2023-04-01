@@ -115,7 +115,6 @@ impl<'a> MetaDataEntryCast for MetaDataEntryString<'a> {
                 "Cant convert to string".to_string(),
             ))
         }
-        
     }
 }
 
