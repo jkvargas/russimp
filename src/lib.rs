@@ -175,7 +175,7 @@ impl From<&aiVector2D> for Vector2D {
 
 impl Error for RussimpError {}
 
-#[derive(Clone, Copy, Default, Derivative)]
+#[derive(Clone, Copy, Default, Derivative, PartialEq)]
 #[derivative(Debug)]
 #[repr(C)]
 pub struct Vector3D {

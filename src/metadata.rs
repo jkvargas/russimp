@@ -104,11 +104,18 @@ impl<'a> MetaDataEntryCast for MetaDataEntryFloat<'a> {
 
 impl<'a> MetaDataEntryCast for MetaDataEntryString<'a> {
     fn cast(&self) -> Russult<MetadataType> {
-        let cstr = unsafe { CStr::from_ptr(self.data.mData as *const c_char) };
-        cstr.to_str().map_or_else(
-            |e| Err(e.into()),
-            |r| Ok(MetadataType::String(r.to_string())),
-        )
+        let raw = self.data.mData as *const aiString;
+        
+        if let Some(result) = unsafe { raw.as_ref() } {
+            Ok(MetadataType::String(result.into()))
+        }
+        else
+        {
+            Err(RussimpError::MetadataError(
+                "Cant convert to string".to_string(),
+            ))
+        }
+        
     }
 }
 
@@ -143,7 +150,7 @@ impl From<&aiMetadata> for MetaData {
     }
 }
 
-#[derive(Derivative)]
+#[derive(Derivative, PartialEq)]
 #[derivative(Debug)]
 #[repr(u32)]
 pub enum MetadataType {
@@ -209,10 +216,7 @@ fn metadata_for_box() {
     assert_eq!(1, metadata.values.len());
 
     assert_eq!("SourceAsset_Format".to_string(), metadata.keys[0]);
-
-    let metadata_type = (&metadata.values[0]).0.as_ref().unwrap();
-
-    assert!(matches!(metadata_type, MetadataType::String(_)));
+    assert_eq!((&metadata.values[0]).0.as_ref().unwrap(), &MetadataType::String("Blender 3D Importer (http://www.blender3d.org)".to_string()));
 }
 
 #[test]
