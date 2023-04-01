@@ -166,7 +166,7 @@ pub enum MetadataType {
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct MetaDataEntry(Russult<MetadataType>);
+pub struct MetaDataEntry(pub Russult<MetadataType>);
 
 impl MetaDataEntry {
     fn cast_data(data: &aiMetadataEntry) -> Russult<MetadataType> {
