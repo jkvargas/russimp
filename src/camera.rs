@@ -12,6 +12,7 @@ pub struct Camera {
     pub look_at: Vector3D,
     pub position: Vector3D,
     pub up: Vector3D,
+    pub orthographic_width: f32
 }
 
 impl From<&aiCamera> for Camera {
@@ -25,6 +26,7 @@ impl From<&aiCamera> for Camera {
             look_at: (&camera.mLookAt).into(),
             position: (&camera.mPosition).into(),
             up: (&camera.mUp).into(),
+            orthographic_width: camera.mOrthographicWidth
         }
     }
 }
