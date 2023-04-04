@@ -28,7 +28,7 @@ bitflags = "2.0.2"
 mint = { version = "0.5.9", optional = true }
 
 [features]
-default = ["prebuilt"]
+default = []
 prebuilt = ["russimp-sys/prebuilt"]
 static-link = ["russimp-sys/static-link"]
 nozlib = ["russimp-sys/nozlib"]
