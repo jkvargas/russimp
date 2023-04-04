@@ -46,12 +46,10 @@ fn debug_bones() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        &[
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 

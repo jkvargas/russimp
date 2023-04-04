@@ -1,6 +1,9 @@
 use crate::{metadata::MetaData, sys::aiNode, *};
 use derivative::Derivative;
-use std::{cell::RefCell, rc::{Rc, Weak}};
+use std::{
+    cell::RefCell,
+    rc::{Rc, Weak},
+};
 
 #[derive(Default, Derivative)]
 #[derivative(Debug)]
@@ -11,7 +14,7 @@ pub struct Node {
     pub metadata: Option<MetaData>,
     pub transformation: Matrix4x4,
     #[derivative(Debug = "ignore")]
-    pub parent: RefCell<Weak<Node>>,
+    pub parent: Weak<Node>,
 }
 
 impl Node {
@@ -22,12 +25,12 @@ impl Node {
     fn allocate(node: &aiNode, parent: Option<&Rc<Node>>) -> Rc<Node> {
         // current simple node
         let res_node = Rc::new(Self::create_simple_node(node, parent));
-        let nodes = utils::get_base_type_vec_from_raw(node.mChildren, node.mNumChildren);
 
-        for children_ref in nodes {
-            let child_node = Self::allocate(children_ref, Some(&res_node));
-            res_node.children.borrow_mut().push(child_node);
-        }
+        *res_node.children.borrow_mut() =
+            utils::get_base_type_vec_from_raw(node.mChildren, node.mNumChildren)
+                .into_iter()
+                .map(|child| Self::allocate(child, Some(&res_node)))
+                .collect::<Vec<_>>();
 
         res_node
     }
@@ -39,7 +42,7 @@ impl Node {
             meshes: utils::get_raw_vec(node.mMeshes, node.mNumMeshes),
             metadata: utils::get_raw(node.mMetaData),
             transformation: (&node.mTransformation).into(),
-            parent: RefCell::new(parent.map(Rc::downgrade).unwrap_or_else(|| Weak::new()))
+            parent: parent.map(Rc::downgrade).unwrap_or_else(|| Weak::new()),
         }
     }
 }
@@ -52,12 +55,10 @@ fn checking_nodes() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        &[
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 
@@ -92,21 +93,19 @@ fn childs_parent_name_matches() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        &[
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 
     let root = scene.root.as_ref().unwrap().as_ref();
-    assert!(root.parent.borrow().upgrade().is_none());
+    assert!(root.parent.upgrade().is_none());
 
     let children = root.children.borrow();
     let first_son = &(*children)[0];
-    let first_son_parent = first_son.parent.borrow().upgrade().unwrap();
+    let first_son_parent = first_son.parent.upgrade().unwrap();
 
     assert_eq!(root.name, first_son_parent.name);
 }
@@ -119,12 +118,10 @@ fn debug_root() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        &[
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 

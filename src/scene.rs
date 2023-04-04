@@ -1,19 +1,13 @@
+use crate::material::generate_materials;
 use crate::{
-    animation::Animation,
-    camera::Camera,
-    light::Light,
-    material::Material,
-    mesh::Mesh,
-    metadata::MetaData,
-    node::Node,
-    sys::*,
-    *,
+    animation::Animation, camera::Camera, light::Light, material::Material, mesh::Mesh,
+    metadata::MetaData, node::Node, sys::*, *,
 };
+use bitflags::bitflags;
 use std::{
     ffi::{CStr, CString},
     rc::Rc,
 };
-use crate::material::generate_materials;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
@@ -28,10 +22,9 @@ pub struct Scene {
     pub flags: u32,
 }
 
-#[derive(Derivative, Clone, Copy)]
-#[derivative(Debug)]
-#[repr(u32)]
-pub enum PostProcess {
+bitflags! {
+#[derive(Debug, Clone, Copy)]
+pub struct PostProcess: u32 {
     /// Calculates the tangents and bitangents for the imported meshes.
     ///
     /// Does nothing if a mesh does not have normals. You might want this post
@@ -40,7 +33,7 @@ pub enum PostProcess {
     /// a config setting, `AI_CONFIG_PP_CT_MAX_SMOOTHING_ANGLE`, which
     /// allows you to specify a maximum smoothing angle for the algorithm.
     /// However, usually you’ll want to leave it at the default value.
-    CalculateTangentSpace = aiPostProcessSteps_aiProcess_CalcTangentSpace as _,
+    const CalculateTangentSpace = aiPostProcessSteps_aiProcess_CalcTangentSpace as _;
     /// Identifies and joins identical vertex data sets within all imported
     /// meshes.
     ///
@@ -51,7 +44,7 @@ pub enum PostProcess {
     ///
     /// **If this flag is *not* specified, no vertices are referenced by more
     /// than one face and no index buffer is required for rendering.**
-    JoinIdenticalVertices = aiPostProcessSteps_aiProcess_JoinIdenticalVertices as _,
+    const JoinIdenticalVertices = aiPostProcessSteps_aiProcess_JoinIdenticalVertices as _;
     /// Converts all the imported data to a left-handed coordinate space.
     ///
     /// By default the data is returned in a right-handed coordinate space
@@ -65,7 +58,7 @@ pub enum PostProcess {
     /// [`ConvertToLeftHanded`](PostProcess::ConvertToLeftHanded) flag
     /// supersedes this setting and bundles all conversions typically
     /// required for D3D-based applications.
-    MakeLeftHanded = aiPostProcessSteps_aiProcess_MakeLeftHanded as _,
+    const MakeLeftHanded = aiPostProcessSteps_aiProcess_MakeLeftHanded as _;
     /// Triangulates all faces of all meshes.
     ///
     /// By default the imported mesh data might contain faces with more than
@@ -78,7 +71,7 @@ pub enum PostProcess {
     /// * Specify both [`Triangulate`](PostProcess::Triangulate) and
     ///   [`SortByPrimitiveType`](PostProcess::SortByPrimitiveType)
     /// * Ignore all point and line meshes when you process assimp's output
-    Triangulate = aiPostProcessSteps_aiProcess_Triangulate as _,
+    const Triangulate = aiPostProcessSteps_aiProcess_Triangulate as _;
     /// Removes some parts of the data structure (animations, materials, light
     /// sources, cameras, textures, vertex components).
     ///
@@ -101,7 +94,7 @@ pub enum PostProcess {
     /// Most apps don't even process them, so it’s all for nothing. By using
     /// this step, unneeded components are excluded as early as possible thus
     /// opening more room for internal optimizations.
-    RemoveComponent = aiPostProcessSteps_aiProcess_RemoveComponent as _,
+    const RemoveComponent = aiPostProcessSteps_aiProcess_RemoveComponent as _;
     /// Generates normals for all faces of all meshes.
     ///
     /// This is ignored if normals are already there at the time this flag is
@@ -114,7 +107,7 @@ pub enum PostProcess {
     ///
     /// This flag may *not* be specified together with
     /// [`GenerateSmoothNormals`](PostProcess::GenerateSmoothNormals).
-    GenerateNormals = aiPostProcessSteps_aiProcess_GenNormals as _,
+    const GenerateNormals = aiPostProcessSteps_aiProcess_GenNormals as _;
     /// Generates smooth normals for all vertices in the mesh.
     ///
     /// This is ignored if normals are already there at the time this flag is
@@ -129,7 +122,7 @@ pub enum PostProcess {
     /// algorithm. Normals exceeding this limit are not smoothed, resulting in a
     /// ’hard’ seam between two faces. Using a decent angle here (e.g. 80
     /// degrees) results in very good visual appearance.
-    GenerateSmoothNormals = aiPostProcessSteps_aiProcess_GenSmoothNormals as _,
+    const GenerateSmoothNormals = aiPostProcessSteps_aiProcess_GenSmoothNormals as _;
     /// Splits large meshes into smaller sub-meshes.
     ///
     /// This is quite useful for real-time rendering, where the number of
@@ -146,7 +139,7 @@ pub enum PostProcess {
     /// Note that splitting is generally a time-consuming task, but only if
     /// there’s something to split. The use of this step is recommended for most
     /// users.
-    SplitLargeMeshes = aiPostProcessSteps_aiProcess_SplitLargeMeshes as _,
+    const SplitLargeMeshes = aiPostProcessSteps_aiProcess_SplitLargeMeshes as _;
     /// Removes the node graph and pre-transforms all vertices with the local
     /// transformation matrices of their nodes.
     ///
@@ -163,7 +156,7 @@ pub enum PostProcess {
     ///
     /// > The `AI_CONFIG_PP_PTV_NORMALIZE` configuration property can be
     /// set to normalize the scene’s spatial dimension to the -1...1 range.
-    PreTransformVertices = aiPostProcessSteps_aiProcess_PreTransformVertices as _,
+    const PreTransformVertices = aiPostProcessSteps_aiProcess_PreTransformVertices as _;
     /// Limits the number of bones simultaneously affecting a single vertex to a
     /// maximum value.
     ///
@@ -176,7 +169,7 @@ pub enum PostProcess {
     ///
     /// If you intend to perform the skinning in hardware, this post processing
     /// step might be of interest to you.
-    LimitBoneWeights = aiPostProcessSteps_aiProcess_LimitBoneWeights as _,
+    const LimitBoneWeights = aiPostProcessSteps_aiProcess_LimitBoneWeights as _;
     /// Validates the imported scene data structure. This makes sure that all
     /// indices are valid, all animations and bones are linked correctly, all
     /// material references are correct, etc.
@@ -197,7 +190,7 @@ pub enum PostProcess {
     ///
     /// This post-processing step is not time-consuming. Its use is not
     /// compulsory, but recommended.
-    ValidateDataStructure = aiPostProcessSteps_aiProcess_ValidateDataStructure as _,
+    const ValidateDataStructure = aiPostProcessSteps_aiProcess_ValidateDataStructure as _;
     /// Reorders triangles for better vertex cache locality.
     ///
     /// The step tries to improve the ACMR (average post-transform vertex cache
@@ -208,7 +201,7 @@ pub enum PostProcess {
     /// If you intend to render huge models in hardware, this step might be of
     /// interest to you. The `AI_CONFIG_PP_ICL_PTCACHE_SIZE` config setting can
     /// be used to fine-tune the cache optimization.
-    ImproveCacheLocality = aiPostProcessSteps_aiProcess_ImproveCacheLocality as _,
+    const ImproveCacheLocality = aiPostProcessSteps_aiProcess_ImproveCacheLocality as _;
     /// Searches for redundant/unreferenced materials and removes them.
     ///
     /// This is especially useful in combination with the
@@ -227,7 +220,7 @@ pub enum PostProcess {
     /// (probably using *magic* material names), don’t specify this flag.
     /// Alternatively take a look at the `AI_CONFIG_PP_RRM_EXCLUDE_LIST`
     /// setting.
-    RemoveRedundantMaterials = aiPostProcessSteps_aiProcess_RemoveRedundantMaterials as _,
+    const RemoveRedundantMaterials = aiPostProcessSteps_aiProcess_RemoveRedundantMaterials as _;
     /// Tries to determine which meshes have normal vectors that are
     /// facing inwards and inverts them.
     ///
@@ -238,7 +231,7 @@ pub enum PostProcess {
     /// filter such cases. The step inverts all in-facing normals. Generally it
     /// is recommended to enable this step, although the result is not always
     /// correct.
-    FixInfacingNormals = aiPostProcessSteps_aiProcess_FixInfacingNormals as _,
+    const FixInfacingNormals = aiPostProcessSteps_aiProcess_FixInfacingNormals as _;
     /// Splits meshes with more than one primitive type in homogeneous
     /// sub-meshes.
     ///
@@ -249,7 +242,7 @@ pub enum PostProcess {
     /// AI_CONFIG_PP_SBP_REMOVE option to specify which primitive types you
     /// need. This can be used to easily exclude lines and points, which are
     /// rarely used, from the import.
-    SortByPrimitiveType = aiPostProcessSteps_aiProcess_SortByPType as _,
+    const SortByPrimitiveType = aiPostProcessSteps_aiProcess_SortByPType as _;
     /// Searches all meshes for degenerate primitives and converts
     /// them to proper lines or points.
     ///
@@ -273,7 +266,7 @@ pub enum PostProcess {
     /// not removed by default. There are several file formats which don't
     /// support lines or points, and some exporters bypass the format
     /// specification and write them as degenerate triangles instead.
-    FindDegenerates = aiPostProcessSteps_aiProcess_FindDegenerates as _,
+    const FindDegenerates = aiPostProcessSteps_aiProcess_FindDegenerates as _;
     /// Searches all meshes for invalid data, such as zeroed normal
     /// vectors or invalid UV coords and removes/fixes them. This is intended to
     /// get rid of some common exporter errors.
@@ -285,7 +278,7 @@ pub enum PostProcess {
     /// of hundreds if redundant keys to a single key. The
     /// `AI_CONFIG_PP_FID_ANIM_ACCURACY` config property decides the accuracy of
     /// the check for duplicate animation tracks.
-    FixOrRemoveInvalidData = aiPostProcessSteps_aiProcess_FindInvalidData as _,
+    const FixOrRemoveInvalidData = aiPostProcessSteps_aiProcess_FindInvalidData as _;
     /// Converts non-UV mappings (such as spherical or cylindrical
     /// mapping) to proper texture coordinate channels.
     ///
@@ -299,7 +292,7 @@ pub enum PostProcess {
     /// > If this step is not requested, you’ll need to process the
     /// `AI_MATKEY_MAPPING` material property in order to display all assets
     /// properly.
-    GenerateUVCoords = aiPostProcessSteps_aiProcess_GenUVCoords as _,
+    const GenerateUVCoords = aiPostProcessSteps_aiProcess_GenUVCoords as _;
     /// Applies per-texture UV transformations and bakes them into
     /// stand-alone vtexture coordinate channels.
     ///
@@ -313,7 +306,7 @@ pub enum PostProcess {
     /// > UV transformations are usually implemented in real-time apps by
     /// transforming texture coordinates at vertex shader stage with a 3x3
     /// (homogenous) transformation matrix.
-    TransformUVCoords = aiPostProcessSteps_aiProcess_TransformUVCoords as _,
+    const TransformUVCoords = aiPostProcessSteps_aiProcess_TransformUVCoords as _;
     /// This step searches for duplicate meshes and replaces them with
     /// references to the first mesh.
     ///
@@ -324,7 +317,7 @@ pub enum PostProcess {
     /// currently support per-node material assignment to meshes, which means
     /// that identical meshes with different materials are currently not joined,
     /// although this is planned for future versions.
-    FindInstances = aiPostProcessSteps_aiProcess_FindInstances as _,
+    const FindInstances = aiPostProcessSteps_aiProcess_FindInstances as _;
     /// Reduces the number of meshes.
     ///
     /// This will, in fact, reduce the number of draw calls.
@@ -334,7 +327,7 @@ pub enum PostProcess {
     /// possible. The flag is fully compatible with both
     /// [`SplitLargeMeshes`](PostProcess::SplitLargeMeshes) and
     /// [`SortByPrimitiveType`](PostProcess::SortByPrimitiveType).
-    OptimizeMeshes = aiPostProcessSteps_aiProcess_OptimizeMeshes as _,
+    const OptimizeMeshes = aiPostProcessSteps_aiProcess_OptimizeMeshes as _;
     /// Optimizes the scene hierarchy.
     ///
     /// Nodes without animations, bones, lights or cameras assigned are
@@ -361,7 +354,7 @@ pub enum PostProcess {
     /// [`OptimizeMeshes`](PostProcess::OptimizeMeshes) in combination with
     /// [`OptimizeGraph`](PostProcess::OptimizeGraph) usually fixes
     /// them all and makes them renderable.
-    OptimizeGraph = aiPostProcessSteps_aiProcess_OptimizeGraph as _,
+    const OptimizeGraph = aiPostProcessSteps_aiProcess_OptimizeGraph as _;
     /// This step flips all UV coordinates along the y-axis and adjusts material
     /// settings and bitangents accordingly.
     ///
@@ -370,14 +363,14 @@ pub enum PostProcess {
     /// [`ConvertToLeftHanded`](PostProcess::ConvertToLeftHanded) flag
     /// supersedes this setting and bundles all conversions typically
     /// required for Direct3D-based applications.
-    FlipUVs = aiPostProcessSteps_aiProcess_FlipUVs as _,
+    const FlipUVs = aiPostProcessSteps_aiProcess_FlipUVs as _;
     /// Adjusts the output face winding order to be clockwise (CW).
     ///
     /// The default face winding order is counter clockwise (CCW).
-    FlipWindingOrder = aiPostProcessSteps_aiProcess_FlipWindingOrder as _,
+    const FlipWindingOrder = aiPostProcessSteps_aiProcess_FlipWindingOrder as _;
     /// Splits meshes with many bones into sub-meshes so that each su-bmesh has
     /// fewer or as many bones as a given limit.
-    SplitByBoneCount = aiPostProcessSteps_aiProcess_SplitByBoneCount as _,
+    const SplitByBoneCount = aiPostProcessSteps_aiProcess_SplitByBoneCount as _;
     /// This step removes bones losslessly or according to some threshold.
     ///
     /// In some cases (i.e. formats that require it) exporters are forced to
@@ -389,23 +382,22 @@ pub enum PostProcess {
     /// Use `AI_CONFIG_PP_DB_THRESHOLD` to control this.
     /// Use `AI_CONFIG_PP_DB_ALL_OR_NONE` if you want bones removed if and only
     /// if all bones within the scene qualify for removal.
-    Debone = aiPostProcessSteps_aiProcess_Debone as _,
-    GlobalScale = aiPostProcessSteps_aiProcess_GlobalScale as _,
+    const Debone = aiPostProcessSteps_aiProcess_Debone as _;
+    const GlobalScale = aiPostProcessSteps_aiProcess_GlobalScale as _;
     /// Force embedding of textures (using the `path = "*1"` convention).
     ///
     /// If a texture’s file does not exist at the specified path (due, for
     /// instance, to an absolute path generated on another system),  it will
     /// check if a file with the same name exists at the root folder of the
     /// imported model. And if so, it uses that.
-    EmbedTextures = aiPostProcessSteps_aiProcess_EmbedTextures as _,
-    ForceGenerateNormals = aiPostProcessSteps_aiProcess_ForceGenNormals as _,
-    DropNormals = aiPostProcessSteps_aiProcess_DropNormals as _,
+    const EmbedTextures = aiPostProcessSteps_aiProcess_EmbedTextures as _;
+    const ForceGenerateNormals = aiPostProcessSteps_aiProcess_ForceGenNormals as _;
+    const DropNormals = aiPostProcessSteps_aiProcess_DropNormals as _;
     /// Calculate [axis-aligned bounding boxes](crate::AABB) for all meshes in
     /// a scene.
-    GenerateBoundingBoxes = aiPostProcessSteps_aiProcess_GenBoundingBoxes as _,
+    const GenerateBoundingBoxes = aiPostProcessSteps_aiProcess_GenBoundingBoxes as _;
 }
-
-pub type PostProcessSteps<'a> = &'a [PostProcess];
+}
 
 impl Scene {
     fn new(scene: &aiScene) -> Russult<Self> {
@@ -423,11 +415,10 @@ impl Scene {
         })
     }
 
-    pub fn from_file(file_path: &str, flags: PostProcessSteps) -> Russult<Scene> {
-        let bitwise_flag = flags.iter().fold(0, |acc, x| acc | (*x as u32));
+    pub fn from_file(file_path: &str, flags: PostProcess) -> Russult<Scene> {
         let file_path = CString::new(file_path).unwrap();
 
-        let raw_scene = Scene::get_scene_from_file(file_path, bitwise_flag);
+        let raw_scene = Scene::get_scene_from_file(file_path, flags.bits());
         if raw_scene.is_none() {
             return Err(Scene::get_error());
         }
@@ -438,11 +429,10 @@ impl Scene {
         result
     }
 
-    pub fn from_buffer(buffer: &[u8], flags: PostProcessSteps, hint: &str) -> Russult<Scene> {
-        let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (*x as u32));
+    pub fn from_buffer(buffer: &[u8], flags: PostProcess, hint: &str) -> Russult<Scene> {
         let hint = CString::new(hint).unwrap();
 
-        let raw_scene = Scene::get_scene_from_file_from_memory(buffer, bitwise_flag, hint);
+        let raw_scene = Scene::get_scene_from_file_from_memory(buffer, flags.bits(), hint);
         if raw_scene.is_none() {
             return Err(Scene::get_error());
         }
@@ -497,12 +487,10 @@ fn importing_invalid_file_returns_error() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        &[
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     );
 
     assert!(scene.is_err())
@@ -514,12 +502,10 @@ fn importing_valid_file_returns_scene() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        &[
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 
@@ -532,12 +518,10 @@ fn debug_scene() {
 
     let scene = Scene::from_file(
         box_file_path.as_str(),
-        &[
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 
@@ -558,12 +542,10 @@ fn debug_scene_from_memory() {
 
     let scene = Scene::from_buffer(
         box_file_path,
-        &[
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
         "stl",
     )
     .unwrap();

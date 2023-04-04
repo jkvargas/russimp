@@ -104,12 +104,10 @@ impl<'a> MetaDataEntryCast for MetaDataEntryFloat<'a> {
 impl<'a> MetaDataEntryCast for MetaDataEntryString<'a> {
     fn cast(&self) -> Russult<MetadataType> {
         let raw = self.data.mData as *const aiString;
-        
+
         if let Some(result) = unsafe { raw.as_ref() } {
             Ok(MetadataType::String(result.into()))
-        }
-        else
-        {
+        } else {
             Err(RussimpError::MetadataError(
                 "Cant convert to string".to_string(),
             ))
@@ -179,8 +177,7 @@ impl MetaDataEntry {
             aiMetadataType_AI_UINT64 => MetaDataEntryULong { data }.cast(),
             _ => Err(RussimpError::MetadataError(
                 "could not find caster for metadata type".to_string(),
-            ))
-
+            )),
         }
     }
 }
@@ -199,12 +196,10 @@ fn metadata_for_box() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        &[
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 
@@ -214,7 +209,10 @@ fn metadata_for_box() {
     assert_eq!(1, metadata.values.len());
 
     assert_eq!("SourceAsset_Format".to_string(), metadata.keys[0]);
-    assert_eq!((&metadata.values[0]).0.as_ref().unwrap(), &MetadataType::String("Blender 3D Importer (http://www.blender3d.org)".to_string()));
+    assert_eq!(
+        (&metadata.values[0]).0.as_ref().unwrap(),
+        &MetadataType::String("Blender 3D Importer (http://www.blender3d.org)".to_string())
+    );
 }
 
 #[test]
@@ -225,12 +223,10 @@ fn debug_metadata() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        &[
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 
