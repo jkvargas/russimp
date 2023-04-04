@@ -25,7 +25,7 @@ pub struct Scene {
     pub animations: Vec<Animation>,
     pub cameras: Vec<Camera>,
     pub lights: Vec<Light>,
-    pub root: Option<Rc<RefCell<Node>>>,
+    pub root: Option<Rc<Node>>,
     pub flags: u32,
 }
 
