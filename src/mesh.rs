@@ -177,10 +177,10 @@ fn debug_mesh() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-            PostProcess::CalculateTangentSpace |
-            PostProcess::Triangulate |
-            PostProcess::JoinIdenticalVertices |
-            PostProcess::SortByPrimitiveType
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 
@@ -195,10 +195,10 @@ fn texture_coordinates() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-            PostProcess::CalculateTangentSpace |
-            PostProcess::Triangulate |
-            PostProcess::JoinIdenticalVertices |
-            PostProcess::SortByPrimitiveType
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 
