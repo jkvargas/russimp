@@ -72,7 +72,7 @@ impl From<&aiAABB> for AABB {
     }
 }
 
-#[derive(Clone, Copy, Default, Derivative)]
+#[derive(PartialEq, Clone, Copy, Default, Derivative)]
 #[derivative(Debug)]
 #[repr(C)]
 pub struct Color4D {

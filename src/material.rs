@@ -306,32 +306,32 @@ impl Material {
         self.try_lookup(&MaterialPropertyKey::from("?mat.name"))
     }
 
-    pub fn color_diffuse(&self) -> Color3D
+    pub fn color_diffuse(&self) -> Color4D
     {
         self.try_lookup_default(&MaterialPropertyKey::from("$clr.diffuse"))
     }
 
-    pub fn color_ambient(&self) -> Color3D
+    pub fn color_ambient(&self) -> Color4D
     {
         self.try_lookup_default(&MaterialPropertyKey::from("$clr.ambient"))
     }
 
-    pub fn color_specular(&self) -> Color3D
+    pub fn color_specular(&self) -> Color4D
     {
         self.try_lookup_default(&MaterialPropertyKey::from("$clr.specular"))
     }
 
-    pub fn color_emissive(&self) -> Color3D
+    pub fn color_emissive(&self) -> Color4D
     {
         self.try_lookup_default(&MaterialPropertyKey::from("$clr.emissive"))
     }
 
-    pub fn color_transparent(&self) -> Color3D
+    pub fn color_transparent(&self) -> Color4D
     {
         self.try_lookup_default(&MaterialPropertyKey::from("$clr.transparent"))
     }
 
-    pub fn color_reflective(&self) -> Color3D
+    pub fn color_reflective(&self) -> Color4D
     {
         self.try_lookup_default(&MaterialPropertyKey::from("$clr.reflective"))
     }
@@ -363,7 +363,7 @@ impl Material {
         self.try_lookup_default(&MaterialPropertyKey::from("$mat.useColorMap"))
     }
 
-    pub fn base_color(&self) -> Color3D
+    pub fn base_color(&self) -> Color4D
     {
         self.try_lookup_default(&MaterialPropertyKey::from("$clr.base"))
     }
@@ -619,6 +619,7 @@ impl From<&MaterialPropertyData> for Option<Color4D>
     fn from(value: &MaterialPropertyData) -> Self {
         match value
         {
+            MaterialPropertyData::FloatArray(buff) if buff.len() == 3 => Some(Color4D { r: buff[0], g: buff[1], b: buff[2], a: 1.0 }),
             MaterialPropertyData::FloatArray(buff) if buff.len() == 4 => Some(Color4D { r: buff[0], g: buff[1], b: buff[2], a: buff[3] }),
             _ => None
         }
@@ -700,7 +701,7 @@ fn material_for_box() {
     assert_eq!(1, scene.materials.len());
     assert_eq!(41, scene.materials[0].properties.len());
     assert_eq!(Some(1.0), scene.materials[0].try_lookup(&MaterialPropertyKey::from("$mat.blend.mirror.glossAnisotropic")));
-    assert_eq!(Color3D{ r: 0.8, g: 0.8, b: 0.8  }, scene.materials[0].color_diffuse());
+    assert_eq!(Color4D{ r: 0.8, g: 0.8, b: 0.8, a: 1.0  }, scene.materials[0].color_diffuse());
     assert_eq!(Some(1), scene.materials[0].try_lookup(&MaterialPropertyKey::from("$mat.blend.transparency.method")));
 }
 
