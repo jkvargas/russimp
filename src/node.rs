@@ -21,12 +21,12 @@ impl Node {
 
     fn allocate(node: &aiNode, parent: Option<&Rc<Node>>) -> Rc<Node> {
         // current simple node
-        let mut res_node = Rc::new(Self::create_simple_node(node, parent));
+        let res_node = Rc::new(Self::create_simple_node(node, parent));
         let nodes = utils::get_base_type_vec_from_raw(node.mChildren, node.mNumChildren);
 
         for children_ref in nodes {
             let child_node = Self::allocate(children_ref, Some(&res_node));
-            res_node.borrow_mut().children.borrow_mut().deref_mut().push(child_node);
+            res_node.children.borrow_mut().push(child_node);
         }
 
         res_node
