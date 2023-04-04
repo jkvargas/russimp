@@ -1,9 +1,9 @@
+#![allow(non_upper_case_globals)]
+
 use crate::{sys::*, *};
 use derivative::Derivative;
-use std::{ffi::CStr, os::raw::c_char};
 
 trait MetaDataEntryCast {
-    fn can_cast(&self) -> bool;
     fn cast(&self) -> Russult<MetadataType>;
 }
 
@@ -32,10 +32,6 @@ struct MetaDataEntryULong<'a> {
 }
 
 impl<'a> MetaDataEntryCast for MetaDataEntryULong<'a> {
-    fn can_cast(&self) -> bool {
-        (self.data.mType & aiMetadataType_AI_UINT64) != 0
-    }
-
     fn cast(&self) -> Russult<MetadataType> {
         let raw = self.data.mData as *mut u64;
 
@@ -50,10 +46,6 @@ impl<'a> MetaDataEntryCast for MetaDataEntryULong<'a> {
 }
 
 impl<'a> MetaDataEntryCast for MetaDataEntryInteger<'a> {
-    fn can_cast(&self) -> bool {
-        (self.data.mType & aiMetadataType_AI_INT32) != 0
-    }
-
     fn cast(&self) -> Russult<MetadataType> {
         let raw = self.data.mData as *mut i32;
 
@@ -68,10 +60,6 @@ impl<'a> MetaDataEntryCast for MetaDataEntryInteger<'a> {
 }
 
 impl<'a> MetaDataEntryCast for MetaDataEntryBool<'a> {
-    fn can_cast(&self) -> bool {
-        (self.data.mType & aiMetadataType_AI_BOOL) != 0
-    }
-
     fn cast(&self) -> Russult<MetadataType> {
         let raw = self.data.mData as *mut bool;
 
@@ -86,10 +74,6 @@ impl<'a> MetaDataEntryCast for MetaDataEntryBool<'a> {
 }
 
 impl<'a> MetaDataEntryCast for MetaDataEntryDouble<'a> {
-    fn can_cast(&self) -> bool {
-        (self.data.mType & aiMetadataType_AI_DOUBLE) != 0
-    }
-
     fn cast(&self) -> Russult<MetadataType> {
         let raw = self.data.mData as *mut f64;
 
@@ -104,10 +88,6 @@ impl<'a> MetaDataEntryCast for MetaDataEntryDouble<'a> {
 }
 
 impl<'a> MetaDataEntryCast for MetaDataEntryFloat<'a> {
-    fn can_cast(&self) -> bool {
-        (self.data.mType & aiMetadataType_AI_FLOAT) != 0
-    }
-
     fn cast(&self) -> Russult<MetadataType> {
         let raw = self.data.mData as *mut f32;
 
@@ -122,16 +102,16 @@ impl<'a> MetaDataEntryCast for MetaDataEntryFloat<'a> {
 }
 
 impl<'a> MetaDataEntryCast for MetaDataEntryString<'a> {
-    fn can_cast(&self) -> bool {
-        (self.data.mType & aiMetadataType_AI_AISTRING) != 0
-    }
-
     fn cast(&self) -> Russult<MetadataType> {
-        let cstr = unsafe { CStr::from_ptr(self.data.mData as *const c_char) };
-        cstr.to_str().map_or_else(
-            |e| Err(e.into()),
-            |r| Ok(MetadataType::String(r.to_string())),
-        )
+        let raw = self.data.mData as *const aiString;
+
+        if let Some(result) = unsafe { raw.as_ref() } {
+            Ok(MetadataType::String(result.into()))
+        } else {
+            Err(RussimpError::MetadataError(
+                "Cant convert to string".to_string(),
+            ))
+        }
     }
 }
 
@@ -140,10 +120,6 @@ struct MetaDataVector3d<'a> {
 }
 
 impl<'a> MetaDataEntryCast for MetaDataVector3d<'a> {
-    fn can_cast(&self) -> bool {
-        (self.data.mType & aiMetadataType_AI_AIVECTOR3D) != 0
-    }
-
     fn cast(&self) -> Russult<MetadataType> {
         let vec: *const aiVector3D = self.data.mData as *const aiVector3D;
         if let Some(content) = unsafe { vec.as_ref() } {
@@ -170,7 +146,7 @@ impl From<&aiMetadata> for MetaData {
     }
 }
 
-#[derive(Derivative)]
+#[derive(Derivative, PartialEq)]
 #[derivative(Debug)]
 #[repr(u32)]
 pub enum MetadataType {
@@ -187,29 +163,22 @@ pub enum MetadataType {
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct MetaDataEntry(Russult<MetadataType>);
+pub struct MetaDataEntry(pub Russult<MetadataType>);
 
 impl MetaDataEntry {
     fn cast_data(data: &aiMetadataEntry) -> Russult<MetadataType> {
-        let casters: Vec<Box<dyn MetaDataEntryCast>> = vec![
-            Box::new(MetaDataVector3d { data }),
-            Box::new(MetaDataEntryString { data }),
-            Box::new(MetaDataEntryBool { data }),
-            Box::new(MetaDataEntryFloat { data }),
-            Box::new(MetaDataEntryDouble { data }),
-            Box::new(MetaDataEntryInteger { data }),
-            Box::new(MetaDataEntryULong { data }),
-        ];
-
-        for caster in casters {
-            if caster.can_cast() {
-                return caster.cast();
-            }
+        match data.mType {
+            aiMetadataType_AI_AIVECTOR3D => MetaDataVector3d { data }.cast(),
+            aiMetadataType_AI_AISTRING => MetaDataEntryString { data }.cast(),
+            aiMetadataType_AI_BOOL => MetaDataEntryBool { data }.cast(),
+            aiMetadataType_AI_FLOAT => MetaDataEntryFloat { data }.cast(),
+            aiMetadataType_AI_DOUBLE => MetaDataEntryDouble { data }.cast(),
+            aiMetadataType_AI_INT32 => MetaDataEntryInteger { data }.cast(),
+            aiMetadataType_AI_UINT64 => MetaDataEntryULong { data }.cast(),
+            _ => Err(RussimpError::MetadataError(
+                "could not find caster for metadata type".to_string(),
+            )),
         }
-
-        Err(RussimpError::MetadataError(
-            "could not find caster for metadata type".to_string(),
-        ))
     }
 }
 
@@ -227,12 +196,10 @@ fn metadata_for_box() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 
@@ -242,10 +209,10 @@ fn metadata_for_box() {
     assert_eq!(1, metadata.values.len());
 
     assert_eq!("SourceAsset_Format".to_string(), metadata.keys[0]);
-
-    let metadata_type = (&metadata.values[0]).0.as_ref().unwrap();
-
-    assert!(matches!(metadata_type, MetadataType::Vector3d(_)));
+    assert_eq!(
+        (&metadata.values[0]).0.as_ref().unwrap(),
+        &MetadataType::String("Blender 3D Importer (http://www.blender3d.org)".to_string())
+    );
 }
 
 #[test]
@@ -256,12 +223,10 @@ fn debug_metadata() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 

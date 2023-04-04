@@ -72,7 +72,7 @@ impl From<&aiAABB> for AABB {
     }
 }
 
-#[derive(Clone, Copy, Default, Derivative)]
+#[derive(PartialEq, Clone, Copy, Default, Derivative)]
 #[derivative(Debug)]
 #[repr(C)]
 pub struct Color4D {
@@ -93,7 +93,7 @@ impl From<&aiColor4D> for Color4D {
     }
 }
 
-#[derive(Clone, Copy, Default, Derivative)]
+#[derive(PartialEq, Clone, Copy, Default, Derivative)]
 #[derivative(Debug)]
 #[repr(C)]
 pub struct Color3D {
@@ -175,7 +175,7 @@ impl From<&aiVector2D> for Vector2D {
 
 impl Error for RussimpError {}
 
-#[derive(Clone, Copy, Default, Derivative)]
+#[derive(Clone, Copy, Default, Derivative, PartialEq)]
 #[derivative(Debug)]
 #[repr(C)]
 pub struct Vector3D {

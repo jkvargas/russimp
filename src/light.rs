@@ -71,12 +71,10 @@ fn light_available() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 
@@ -126,12 +124,10 @@ fn debug_light() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 

@@ -16,7 +16,7 @@ pub struct Mesh {
     pub primitive_types: u32,
     pub bones: Vec<Bone>,
     pub material_index: u32,
-    pub method: u32,
+    pub method: i32,
     pub anim_meshes: Vec<AnimMesh>,
     pub faces: Vec<Face>,
     pub colors: Vec<Option<Vec<Color4D>>>,
@@ -108,12 +108,10 @@ fn mesh_available() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 
@@ -154,12 +152,10 @@ fn bitwise_primitive_types() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 
@@ -181,12 +177,10 @@ fn debug_mesh() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 
@@ -201,12 +195,10 @@ fn texture_coordinates() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
+        PostProcess::CalculateTangentSpace
+            | PostProcess::Triangulate
+            | PostProcess::JoinIdenticalVertices
+            | PostProcess::SortByPrimitiveType,
     )
     .unwrap();
 

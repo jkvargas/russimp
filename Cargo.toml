@@ -24,10 +24,11 @@ num_enum = "0.5.7"
 derivative = "2.2.0"
 strum = "0.24.1"
 strum_macros = "0.24.3"
+bitflags = "2.0.2"
 mint = { version = "0.5.9", optional = true }
 
 [features]
-default = []
+default = ["static-link"]
 prebuilt = ["russimp-sys/prebuilt"]
 static-link = ["russimp-sys/static-link"]
 nozlib = ["russimp-sys/nozlib"]

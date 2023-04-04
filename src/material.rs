@@ -1,8 +1,15 @@
-use crate::{utils::get_base_type_vec_from_raw, sys::*, utils, RussimpError, Russult};
+#![allow(non_upper_case_globals)]
+
+use crate::{Color3D, Color4D};
+use crate::{sys::*, utils, utils::get_base_type_vec_from_raw, RussimpError, Russult};
 use derivative::Derivative;
-use num_traits::FromPrimitive;
-use std::{collections::HashMap, cell::RefCell, mem::MaybeUninit, ptr::slice_from_raw_parts, ffi::CStr, path::Path, rc::Rc};
 use num_enum::TryFromPrimitive;
+use num_traits::FromPrimitive;
+use std::hash::Hash;
+use std::{
+    collections::HashMap, ffi::CStr, mem::MaybeUninit, path::Path,
+    ptr::slice_from_raw_parts, rc::Rc,
+};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
@@ -11,7 +18,9 @@ const EMBEDDED_TEXNAME_PREFIX: &str = "*";
 
 pub(crate) type Filename = String;
 
-#[derive(Derivative, FromPrimitive, PartialEq, TryFromPrimitive, Clone, Eq, Hash, EnumIter, Copy)]
+#[derive(
+    Derivative, FromPrimitive, PartialEq, TryFromPrimitive, Clone, Eq, Hash, EnumIter, Copy,
+)]
 #[derivative(Debug)]
 #[repr(u32)]
 pub enum TextureType {
@@ -82,10 +91,10 @@ pub(crate) fn generate_materials(scene: &aiScene) -> Russult<Vec<Material>> {
     let properties = create_material_properties(&materials);
     let mut result = Vec::new();
 
-    let mut converted_textures : HashMap<usize, Rc<RefCell<Texture>>> = HashMap::new();
+    let mut converted_textures: HashMap<usize, Rc<Texture>> = HashMap::new();
 
     for (mat_index, &mat) in materials.iter().enumerate() {
-        let mut material_textures : HashMap<TextureType, Rc<RefCell<Texture>>> = HashMap::new();
+        let mut material_textures: HashMap<TextureType, Rc<Texture>> = HashMap::new();
 
         for tex_type in TextureType::iter() {
             let material_filenames = get_textures_of_type_from_material(mat, tex_type)?;
@@ -98,14 +107,21 @@ pub(crate) fn generate_materials(scene: &aiScene) -> Russult<Vec<Material>> {
                         material_textures.insert(tex_type, tex.clone());
                     } else {
                         let new_texture = create_texture_from(&textures[embedded_texture], true);
-                        converted_textures.insert(embedded_texture, Rc::new(RefCell::new(new_texture)));
-                        material_textures.insert(tex_type, converted_textures.get(&embedded_texture).unwrap().clone());
+                        converted_textures
+                            .insert(embedded_texture, Rc::new(new_texture));
+                        material_textures.insert(
+                            tex_type,
+                            converted_textures.get(&embedded_texture).unwrap().clone(),
+                        );
                     }
                 }
             }
         }
 
-        result.push(Material::new(properties[mat_index].clone(), material_textures));
+        result.push(Material::new(
+            properties[mat_index].iter().map(|property| (property.key.clone(), property.data.clone())).collect(),
+            material_textures,
+        ));
     }
 
     Ok(result)
@@ -155,7 +171,7 @@ fn get_texture_filename(
         )
     } == aiReturn_aiReturn_SUCCESS
     {
-        let filename : String = unsafe { path.assume_init() }.into();
+        let filename: String = unsafe { path.assume_init() }.into();
 
         return Ok(filename);
     }
@@ -164,14 +180,20 @@ fn get_texture_filename(
 }
 
 fn create_texture_from(texture: &aiTexture, is_embedded: bool) -> Texture {
-    let ach_format_hint = unsafe { CStr::from_ptr(texture.achFormatHint.as_ptr()) }.to_str().unwrap().to_string();
+    let ach_format_hint = unsafe { CStr::from_ptr(texture.achFormatHint.as_ptr()) }
+        .to_str()
+        .unwrap()
+        .to_string();
 
     let data = if is_embedded {
         let compressed_bytes =
             slice_from_raw_parts(texture.pcData as *const u8, texture.mWidth as usize);
         DataContent::Bytes(unsafe { compressed_bytes.as_ref() }.unwrap().to_vec())
     } else {
-        DataContent::Texel(utils::get_vec(texture.pcData, texture.mWidth * texture.mHeight))
+        DataContent::Texel(utils::get_vec(
+            texture.pcData,
+            texture.mWidth * texture.mHeight,
+        ))
     };
 
     Texture {
@@ -182,7 +204,6 @@ fn create_texture_from(texture: &aiTexture, is_embedded: bool) -> Texture {
         data,
     }
 }
-
 
 fn get_embedded_texture(file_name: &String, textures: &Vec<&aiTexture>) -> Option<usize> {
     if file_name.starts_with(EMBEDDED_TEXNAME_PREFIX) {
@@ -234,7 +255,7 @@ fn get_properties(material: &aiMaterial) -> Vec<MaterialProperty> {
 
     for item in properties {
         let material_property = MaterialProperty::new(material, item);
-        result.push( material_property);
+        result.push(material_property);
     }
 
     result
@@ -243,15 +264,155 @@ fn get_properties(material: &aiMaterial) -> Vec<MaterialProperty> {
 #[derive(Derivative, Clone)]
 #[derivative(Debug)]
 pub struct Material {
-    pub properties: Vec<MaterialProperty>,
-    pub textures: HashMap<TextureType, Rc<RefCell<Texture>>>,
+    pub properties: HashMap<MaterialPropertyKey, MaterialPropertyData>,
+    pub textures: HashMap<TextureType, Rc<Texture>>,
 }
 
 impl Material {
-    fn new(properties: Vec<MaterialProperty>, textures: HashMap<TextureType, Rc<RefCell<Texture>>>) -> Self {
+    fn new(
+        properties: HashMap<MaterialPropertyKey, MaterialPropertyData>,
+        textures: HashMap<TextureType, Rc<Texture>>,
+    ) -> Self {
         Self {
             properties,
             textures,
+        }
+    }
+
+    pub fn try_lookup<'a, T>(&'a self, key: &MaterialPropertyKey) -> Option<T>
+    where 
+        Option<T>: From<&'a MaterialPropertyData>
+    {
+        self.properties.get(&key).and_then(|data| Option::<T>::from(data))
+    }
+
+    
+    pub fn try_lookup_with_default<'a, T>(&'a self, key: &MaterialPropertyKey, default: T) -> T
+    where 
+    Option<T>: From<&'a MaterialPropertyData>
+    {
+        self.properties.get(&key).and_then(|data| Option::<T>::from(data)).unwrap_or(default)
+    }
+    
+    pub fn try_lookup_default<'a, T: Default>(&'a self, key: &MaterialPropertyKey) -> T
+    where 
+        Option<T>: From<&'a MaterialPropertyData>
+    {
+        self.try_lookup_with_default(&key, T::default())
+    }
+
+    pub fn name(&self) -> Option<String>
+    {
+        self.try_lookup(&MaterialPropertyKey::from("?mat.name"))
+    }
+
+    pub fn color_diffuse(&self) -> Color4D
+    {
+        self.try_lookup_default(&MaterialPropertyKey::from("$clr.diffuse"))
+    }
+
+    pub fn color_ambient(&self) -> Color4D
+    {
+        self.try_lookup_default(&MaterialPropertyKey::from("$clr.ambient"))
+    }
+
+    pub fn color_specular(&self) -> Color4D
+    {
+        self.try_lookup_default(&MaterialPropertyKey::from("$clr.specular"))
+    }
+
+    pub fn color_emissive(&self) -> Color4D
+    {
+        self.try_lookup_default(&MaterialPropertyKey::from("$clr.emissive"))
+    }
+
+    pub fn color_transparent(&self) -> Color4D
+    {
+        self.try_lookup_default(&MaterialPropertyKey::from("$clr.transparent"))
+    }
+
+    pub fn color_reflective(&self) -> Color4D
+    {
+        self.try_lookup_default(&MaterialPropertyKey::from("$clr.reflective"))
+    }
+
+    pub fn is_wireframe(&self) -> bool
+    {
+        self.try_lookup_default(&MaterialPropertyKey::from("$mat.wireframe"))
+    }
+
+    pub fn is_two_sided(&self) -> bool
+    {
+        self.try_lookup_default(&MaterialPropertyKey::from("$mat.twosided"))
+    }
+
+    pub fn shading_mode(&self) -> aiShadingMode
+    {
+        self.try_lookup_with_default(&MaterialPropertyKey::from("$mat.shadingm"), aiShadingMode_aiShadingMode_Gouraud)
+    }
+
+    pub fn blend_func(&self) -> aiBlendMode
+    {
+        self.try_lookup_with_default(&MaterialPropertyKey::from("$mat.blend"), aiBlendMode_aiBlendMode_Default)
+    }
+
+    // PBR Workflow
+
+    pub fn use_color_map(&self) -> bool
+    {
+        self.try_lookup_default(&MaterialPropertyKey::from("$mat.useColorMap"))
+    }
+
+    pub fn base_color(&self) -> Color4D
+    {
+        self.try_lookup_default(&MaterialPropertyKey::from("$clr.base"))
+    }
+
+    pub fn use_metallic_map(&self) -> bool
+    {
+        self.try_lookup_default(&MaterialPropertyKey::from("$mat.useMetallicMap"))
+    }
+
+    pub fn metallic_factor(&self) -> f32
+    {
+        self.try_lookup_default(&MaterialPropertyKey::from("$mat.metallicFactor"))
+    }
+
+    pub fn use_roughness_map(&self) -> bool
+    {
+        self.try_lookup_default(&MaterialPropertyKey::from("$mat.useRoughnessMap"))
+    }
+
+    pub fn roughness_factor(&self) -> f32
+    {
+        self.try_lookup_default(&MaterialPropertyKey::from("$mat.roughnessFactor"))
+    }
+
+    pub fn texture_op(&self, index: usize, semantic: TextureType) -> Option<aiTextureOp>
+    {
+        self.try_lookup(&MaterialPropertyKey {
+            key: "$tex.op".into(),
+            index,
+            semantic
+        })
+    }
+}
+
+#[derive(Derivative, Clone, PartialEq, Eq, Hash)]
+#[derivative(Debug)]
+pub struct MaterialPropertyKey {
+    pub key: String,
+    pub index: usize,
+    pub semantic: TextureType,
+}
+
+impl From<&str> for MaterialPropertyKey
+{
+    fn from(key: &str) -> Self {
+        Self {
+            key: key.into(),
+            index: 0,
+            semantic: TextureType::None
         }
     }
 }
@@ -259,19 +420,15 @@ impl Material {
 #[derive(Derivative, Clone)]
 #[derivative(Debug)]
 pub struct MaterialProperty {
-    pub key: String,
-    pub data: PropertyTypeInfo,
-    pub index: usize,
-    pub semantic: TextureType,
+    pub key: MaterialPropertyKey,
+    pub data: MaterialPropertyData,
 }
 
 trait MaterialPropertyCaster {
-    fn can_cast(&self) -> bool;
-    fn cast(&self) -> Russult<PropertyTypeInfo>;
+    fn cast(&self) -> Russult<MaterialPropertyData>;
 }
 
 struct StringPropertyContent<'a> {
-    property_info: &'a aiPropertyTypeInfo,
     key: &'a aiString,
     c_type: u32,
     index: u32,
@@ -279,7 +436,6 @@ struct StringPropertyContent<'a> {
 }
 
 struct IntegerPropertyContent<'a> {
-    property_info: &'a aiPropertyTypeInfo,
     key: &'a aiString,
     c_type: u32,
     index: u32,
@@ -297,26 +453,17 @@ struct FloatPropertyContent<'a> {
 }
 
 struct BufferPropertyContent<'a> {
-    property_info: &'a aiPropertyTypeInfo,
     data: &'a [u8],
 }
 
 impl<'a> MaterialPropertyCaster for BufferPropertyContent<'a> {
-    fn can_cast(&self) -> bool {
-        *self.property_info == aiPropertyTypeInfo_aiPTI_Buffer
-    }
-
-    fn cast(&self) -> Russult<PropertyTypeInfo> {
-        Ok(PropertyTypeInfo::Buffer(self.data.to_vec()))
+    fn cast(&self) -> Russult<MaterialPropertyData> {
+        Ok(MaterialPropertyData::Buffer(self.data.to_vec()))
     }
 }
 
 impl<'a> MaterialPropertyCaster for IntegerPropertyContent<'a> {
-    fn can_cast(&self) -> bool {
-        *self.property_info == aiPropertyTypeInfo_aiPTI_Integer
-    }
-
-    fn cast(&self) -> Russult<PropertyTypeInfo> {
+    fn cast(&self) -> Russult<MaterialPropertyData> {
         let data_len = self.data.len();
         let mut max = data_len as u32 / 4;
         let result: Vec<i32> = vec![0; max as usize];
@@ -332,7 +479,7 @@ impl<'a> MaterialPropertyCaster for IntegerPropertyContent<'a> {
             )
         } == aiReturn_aiReturn_SUCCESS
         {
-            return Ok(PropertyTypeInfo::IntegerArray(result));
+            return Ok(MaterialPropertyData::IntegerArray(result));
         }
 
         let key_string: String = self.key.into();
@@ -344,19 +491,14 @@ impl<'a> MaterialPropertyCaster for IntegerPropertyContent<'a> {
 }
 
 impl<'a> MaterialPropertyCaster for FloatPropertyContent<'a> {
-    fn can_cast(&self) -> bool {
-        (*self.property_info & aiPropertyTypeInfo_aiPTI_Float) > 0
-            || (*self.property_info & aiPropertyTypeInfo_aiPTI_Double) > 0
-    }
-
-    fn cast(&self) -> Russult<PropertyTypeInfo> {
+    fn cast(&self) -> Russult<MaterialPropertyData> {
         let data_len = self.data.len();
         let mut max = data_len as u32
             / if *self.property_info & aiPropertyTypeInfo_aiPTI_Double > 0 {
-            8
-        } else {
-            4
-        };
+                8
+            } else {
+                4
+            };
         let result: Vec<f32> = vec![0.0; max as usize];
 
         if unsafe {
@@ -370,7 +512,7 @@ impl<'a> MaterialPropertyCaster for FloatPropertyContent<'a> {
             )
         } == aiReturn_aiReturn_SUCCESS
         {
-            return Ok(PropertyTypeInfo::FloatArray(result));
+            return Ok(MaterialPropertyData::FloatArray(result));
         }
 
         let key_string: String = self.key.into();
@@ -382,11 +524,7 @@ impl<'a> MaterialPropertyCaster for FloatPropertyContent<'a> {
 }
 
 impl<'a> MaterialPropertyCaster for StringPropertyContent<'a> {
-    fn can_cast(&self) -> bool {
-        *self.property_info == aiPropertyTypeInfo_aiPTI_String
-    }
-
-    fn cast(&self) -> Russult<PropertyTypeInfo> {
+    fn cast(&self) -> Russult<MaterialPropertyData> {
         let mut content = MaybeUninit::uninit();
         if unsafe {
             aiGetMaterialString(
@@ -399,7 +537,7 @@ impl<'a> MaterialPropertyCaster for StringPropertyContent<'a> {
         } == aiReturn_aiReturn_SUCCESS
         {
             let ans = unsafe { content.assume_init() };
-            return Ok(PropertyTypeInfo::String(ans.into()));
+            return Ok(MaterialPropertyData::String(ans.into()));
         }
 
         let key_string: String = self.key.into();
@@ -413,7 +551,7 @@ impl<'a> MaterialPropertyCaster for StringPropertyContent<'a> {
 #[derive(Derivative, PartialEq, Clone)]
 #[derivative(Debug)]
 #[repr(u32)]
-pub enum PropertyTypeInfo {
+pub enum MaterialPropertyData {
     // Force32Bit, aiPropertyTypeInfo__aiPTI_Force32Bit Not sure how to handle this
     Buffer(Vec<u8>),
     IntegerArray(Vec<i32>),
@@ -421,65 +559,126 @@ pub enum PropertyTypeInfo {
     String(String),
 }
 
+impl From<&MaterialPropertyData> for Option<String>
+{
+    fn from(value: &MaterialPropertyData) -> Self {
+        match value
+        {
+            MaterialPropertyData::String(value) => Some(value.clone()),
+            _ => None
+        }
+    }
+}
+
+impl From<&MaterialPropertyData> for Option<bool>
+{
+    fn from(value: &MaterialPropertyData) -> Self {
+        match value
+        {
+            MaterialPropertyData::Buffer(buff) if !buff.is_empty() => Some(buff[0] != 0),
+            _ => None
+        }
+    }
+}
+
+impl From<&MaterialPropertyData> for Option<i32>
+{
+    fn from(value: &MaterialPropertyData) -> Self {
+        match value
+        {
+            MaterialPropertyData::IntegerArray(buff) if !buff.is_empty() => Some(buff[0]),
+            _ => None
+        }
+    }
+}
+
+impl From<&MaterialPropertyData> for Option<f32>
+{
+    fn from(value: &MaterialPropertyData) -> Self {
+        match value
+        {
+            MaterialPropertyData::FloatArray(buff) if !buff.is_empty() => Some(buff[0]),
+            _ => None
+        }
+    }
+}
+
+impl From<&MaterialPropertyData> for Option<Color3D>
+{
+    fn from(value: &MaterialPropertyData) -> Self {
+        match value
+        {
+            MaterialPropertyData::FloatArray(buff) if buff.len() == 3 => Some(Color3D { r: buff[0], g: buff[1], b: buff[2] }),
+            _ => None
+        }
+    }
+}
+
+impl From<&MaterialPropertyData> for Option<Color4D>
+{
+    fn from(value: &MaterialPropertyData) -> Self {
+        match value
+        {
+            MaterialPropertyData::FloatArray(buff) if buff.len() == 3 => Some(Color4D { r: buff[0], g: buff[1], b: buff[2], a: 1.0 }),
+            MaterialPropertyData::FloatArray(buff) if buff.len() == 4 => Some(Color4D { r: buff[0], g: buff[1], b: buff[2], a: buff[3] }),
+            _ => None
+        }
+    }
+}
+
 impl MaterialProperty {
     fn try_get_data_from_property(
         material: &aiMaterial,
         property: &aiMaterialProperty,
-    ) -> Russult<PropertyTypeInfo> {
+    ) -> Russult<MaterialPropertyData> {
         let slice =
             slice_from_raw_parts(property.mData as *const u8, property.mDataLength as usize);
         let data = unsafe { slice.as_ref() }.unwrap();
 
-        let casters: Vec<Box<dyn MaterialPropertyCaster>> = vec![
-            Box::new(StringPropertyContent {
-                key: &property.mKey,
-                index: property.mIndex,
-                c_type: property.mSemantic,
-                mat: &material,
-                property_info: &property.mType,
-            }),
-            Box::new(FloatPropertyContent {
-                key: &property.mKey,
-                index: property.mIndex,
-                c_type: property.mSemantic,
-                mat: &material,
-                property_info: &property.mType,
-                data,
-            }),
-            Box::new(IntegerPropertyContent {
-                key: &property.mKey,
-                index: property.mIndex,
-                c_type: property.mSemantic,
-                mat: &material,
-                property_info: &property.mType,
-                data,
-            }),
-            Box::new(BufferPropertyContent {
-                data,
-                property_info: &property.mType,
-            }),
-        ];
-
-        for caster in casters {
-            if caster.can_cast() {
-                let data = caster.cast()?;
-                return Ok(data);
+        match property.mType {
+            aiPropertyTypeInfo_aiPTI_Float | aiPropertyTypeInfo_aiPTI_Double => {
+                FloatPropertyContent {
+                    key: &property.mKey,
+                    index: property.mIndex,
+                    c_type: property.mSemantic,
+                    mat: &material,
+                    property_info: &property.mType,
+                    data,
+                }
+                .cast()
             }
+            aiPropertyTypeInfo_aiPTI_String => StringPropertyContent {
+                key: &property.mKey,
+                index: property.mIndex,
+                c_type: property.mSemantic,
+                mat: &material,
+            }
+            .cast(),
+            aiPropertyTypeInfo_aiPTI_Integer => IntegerPropertyContent {
+                key: &property.mKey,
+                index: property.mIndex,
+                c_type: property.mSemantic,
+                mat: &material,
+                data,
+            }
+            .cast(),
+            aiPropertyTypeInfo_aiPTI_Buffer => BufferPropertyContent { data }.cast(),
+            _ => Err(RussimpError::MeterialError(
+                "could not find caster for property type".to_string(),
+            )),
         }
-
-        Err(RussimpError::MeterialError(
-            "could not find caster for property type".to_string(),
-        ))
     }
 
     pub fn new(material: &aiMaterial, property: &aiMaterialProperty) -> MaterialProperty {
         let data = Self::try_get_data_from_property(material, property).unwrap();
 
         MaterialProperty {
-            key: property.mKey.into(),
+            key: MaterialPropertyKey {
+                key: property.mKey.into(),
+                index: property.mIndex as usize,
+                semantic: FromPrimitive::from_u32(property.mSemantic as u32).unwrap(),
+            },
             data,
-            index: property.mIndex as usize,
-            semantic: FromPrimitive::from_u32(property.mSemantic as u32).unwrap(),
         }
     }
 }
@@ -495,30 +694,15 @@ fn material_for_box() {
 
     let scene = Scene::from_file(
         box_file_path.as_str(),
-        vec![PostProcess::ValidateDataStructure],
+        PostProcess::ValidateDataStructure,
     )
-        .unwrap();
+    .unwrap();
 
     assert_eq!(1, scene.materials.len());
     assert_eq!(41, scene.materials[0].properties.len());
-    assert_eq!(
-        "$mat.blend.mirror.glossAnisotropic",
-        scene.materials[0].properties[40].key.as_str()
-    );
-    assert_eq!(0, scene.materials[0].properties[40].index);
-
-    let ans_value = match &scene.materials[0].properties[40].data {
-        PropertyTypeInfo::Buffer(_) => 0.0,
-        PropertyTypeInfo::IntegerArray(_) => 0.0,
-        PropertyTypeInfo::FloatArray(x) => x[0],
-        PropertyTypeInfo::String(_) => 0.0,
-    };
-
-    assert_eq!(1.0, ans_value);
-    assert_eq!(
-        TextureType::None,
-        scene.materials[0].properties[40].semantic
-    );
+    assert_eq!(Some(1.0), scene.materials[0].try_lookup(&MaterialPropertyKey::from("$mat.blend.mirror.glossAnisotropic")));
+    assert_eq!(Color4D{ r: 0.8, g: 0.8, b: 0.8, a: 1.0  }, scene.materials[0].color_diffuse());
+    assert_eq!(Some(1), scene.materials[0].try_lookup(&MaterialPropertyKey::from("$mat.blend.transparency.method")));
 }
 
 #[test]
@@ -532,46 +716,55 @@ fn debug_material() {
 
     let scene = Scene::from_file(
         box_file_path.as_str(),
-        vec![
-            PostProcess::ValidateDataStructure,
-        ],
+        PostProcess::ValidateDataStructure,
     )
-        .unwrap();
+    .unwrap();
 
     dbg!(&scene.materials);
 }
 
 #[test]
 fn filenames_available_for_textures() {
-    use crate::{
-        scene::{PostProcess, Scene},
-    };
+    use crate::scene::{PostProcess, Scene};
 
-    let current_directory_buf =
-        utils::get_model("models/GLTF2/BoxTextured-GLTF/BoxTextured.gltf");
+    let current_directory_buf = utils::get_model("models/GLTF2/BoxTextured-GLTF/BoxTextured.gltf");
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![PostProcess::ValidateDataStructure],
+        PostProcess::ValidateDataStructure,
     )
-        .unwrap();
+    .unwrap();
 
     assert_eq!(0, scene.materials[0].textures.len());
     assert_eq!(0, scene.materials[1].textures.len());
 
-    let properties_first_material : Vec<&MaterialProperty> = scene.materials[0].properties.iter().filter(|x| x.key.eq(&FILENAME_PROPERTY.to_string())).collect();
-    let properties_second_material : Vec<&MaterialProperty> = scene.materials[1].properties.iter().filter(|x| x.key.eq(&FILENAME_PROPERTY.to_string())).collect();
+    let properties_first_material: Vec<&MaterialPropertyKey> = scene.materials[0]
+        .properties
+        .iter()
+        .map(|x| x.0)
+        .filter(|x| x.key.eq(&FILENAME_PROPERTY.to_string()))
+        .collect();
+    let properties_second_material: Vec<&MaterialPropertyKey> = scene.materials[1]
+        .properties
+        .iter()
+        .map(|x| x.0)
+        .filter(|x| x.key.eq(&FILENAME_PROPERTY.to_string()))
+        .collect();
 
-    assert!(properties_first_material.iter().any(|&x| x.semantic == TextureType::Diffuse));
-    assert!(properties_first_material.iter().any(|&x| x.semantic == TextureType::BaseColor));
+    assert!(properties_first_material
+        .iter()
+        .any(|&x| x.semantic == TextureType::Diffuse));
+    assert!(properties_first_material
+        .iter()
+        .any(|&x| x.semantic == TextureType::BaseColor));
     assert_eq!(0, properties_second_material.len())
 }
 
 #[test]
 fn read_embedded_texture_works_as_expected() {
     use crate::{
-        scene::{PostProcess, Scene},
         material::TextureType::*,
+        scene::{PostProcess, Scene},
     };
 
     let current_directory_buf =
@@ -579,16 +772,14 @@ fn read_embedded_texture_works_as_expected() {
 
     let scene = Scene::from_file(
         current_directory_buf.as_str(),
-        vec![PostProcess::ValidateDataStructure],
+        PostProcess::ValidateDataStructure,
     )
     .unwrap();
 
     let texture = scene.materials[0].textures.get(&Diffuse).unwrap();
 
-    let temp = texture.borrow();
-
     assert!(matches!(
-        &temp.data,
+        &texture.data,
         DataContent::Bytes(x) if x.len() > 0
     ));
 }
