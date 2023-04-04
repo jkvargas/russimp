@@ -1,6 +1,6 @@
 use crate::{metadata::MetaData, sys::aiNode, *};
 use derivative::Derivative;
-use std::{cell::RefCell, rc::{Rc, Weak}, borrow::{BorrowMut, Borrow}, ops::{DerefMut, Deref}};
+use std::{cell::RefCell, rc::{Rc, Weak}};
 
 #[derive(Default, Derivative)]
 #[derivative(Debug)]
@@ -104,9 +104,8 @@ fn childs_parent_name_matches() {
     let root = scene.root.as_ref().unwrap().as_ref();
     assert!(root.parent.borrow().upgrade().is_none());
 
-    let borrow = root.children.borrow();
-    let children = borrow.deref();
-    let first_son = &children[0];
+    let children = root.children.borrow();
+    let first_son = &(*children)[0];
     let first_son_parent = first_son.parent.borrow().upgrade().unwrap();
 
     assert_eq!(root.name, first_son_parent.name);

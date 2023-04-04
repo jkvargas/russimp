@@ -1,13 +1,13 @@
 #![allow(non_upper_case_globals)]
 
-use crate::{Vector3D, Color3D, Color4D};
+use crate::{Color3D, Color4D};
 use crate::{sys::*, utils, utils::get_base_type_vec_from_raw, RussimpError, Russult};
 use derivative::Derivative;
 use num_enum::TryFromPrimitive;
 use num_traits::FromPrimitive;
 use std::hash::Hash;
 use std::{
-    cell::RefCell, collections::HashMap, ffi::CStr, hash::Hasher, mem::MaybeUninit, path::Path,
+    cell::RefCell, collections::HashMap, ffi::CStr, mem::MaybeUninit, path::Path,
     ptr::slice_from_raw_parts, rc::Rc,
 };
 use strum::IntoEnumIterator;
