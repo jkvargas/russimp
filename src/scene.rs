@@ -571,3 +571,25 @@ fn debug_scene_from_memory() {
 
     dbg!(&scene);
 }
+
+#[test]
+fn memory_leak_test() {
+    let box_file_path = utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from_file(
+        box_file_path.as_str(),
+        vec![
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
+        ],
+    )
+    .unwrap();
+
+    let root = scene.root.as_ref().unwrap().clone();
+    drop(scene);
+
+    // Strong refcount must be 1 here, otherwise we leak memory
+    assert_eq!(Rc::strong_count(&root), 1);
+}
