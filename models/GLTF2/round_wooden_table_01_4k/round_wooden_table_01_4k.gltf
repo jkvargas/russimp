@@ -1,0 +1,228 @@
+{
+  "asset": {
+    "generator": "Khronos glTF Blender I/O v1.6.16",
+    "version": "2.0"
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Scene",
+      "nodes": [
+        0,
+        1
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "round_wooden_table_01"
+    },
+    {
+      "mesh": 1,
+      "name": "round_wooden_table_01_bolts"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "round_wooden_table_01",
+      "normalTexture": {
+        "index": 0
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 1
+        },
+        "metallicRoughnessTexture": {
+          "index": 2
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Cylinder",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "name": "Cylinder.007",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 4,
+            "NORMAL": 5,
+            "TEXCOORD_0": 6
+          },
+          "indices": 7,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    }
+  ],
+  "images": [
+    {
+      "mimeType": "image/jpeg",
+      "name": "round_wooden_table_01_nor_gl",
+      "uri": "textures/round_wooden_table_01_nor_gl_4k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "round_wooden_table_01_diff",
+      "uri": "textures/round_wooden_table_01_diff_4k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "round_wooden_table_01_metal-round_wooden_table_01_rough",
+      "uri": "textures/round_wooden_table_01_arm_4k.jpg"
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 5148,
+      "max": [
+        0.6996744871139526,
+        1.003702998161316,
+        0.6996744871139526
+      ],
+      "min": [
+        -0.6996744871139526,
+        -0.0013183951377868652,
+        -0.6996744275093079
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 5148,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 5148,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5123,
+      "count": 23784,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 816,
+      "max": [
+        0.1680731177330017,
+        0.9358263611793518,
+        0.13143043220043182
+      ],
+      "min": [
+        -0.13578639924526215,
+        0.9201406836509705,
+        -0.1460239589214325
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5126,
+      "count": 816,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5126,
+      "count": 816,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 7,
+      "componentType": 5123,
+      "count": 2136,
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 61776,
+      "byteOffset": 0
+    },
+    {
+      "buffer": 0,
+      "byteLength": 61776,
+      "byteOffset": 61776
+    },
+    {
+      "buffer": 0,
+      "byteLength": 41184,
+      "byteOffset": 123552
+    },
+    {
+      "buffer": 0,
+      "byteLength": 47568,
+      "byteOffset": 164736
+    },
+    {
+      "buffer": 0,
+      "byteLength": 9792,
+      "byteOffset": 212304
+    },
+    {
+      "buffer": 0,
+      "byteLength": 9792,
+      "byteOffset": 222096
+    },
+    {
+      "buffer": 0,
+      "byteLength": 6528,
+      "byteOffset": 231888
+    },
+    {
+      "buffer": 0,
+      "byteLength": 4272,
+      "byteOffset": 238416
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 242688,
+      "uri": "round_wooden_table_01.bin"
+    }
+  ]
+}
