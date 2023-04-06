@@ -345,14 +345,14 @@ impl<'a> MaterialPropertyCaster for IntegerPropertyContent<'a> {
 
 impl<'a> MaterialPropertyCaster for FloatPropertyContent<'a> {
     fn can_cast(&self) -> bool {
-        (*self.property_info & aiPropertyTypeInfo_aiPTI_Float) > 0
-            || (*self.property_info & aiPropertyTypeInfo_aiPTI_Double) > 0
+        *self.property_info == aiPropertyTypeInfo_aiPTI_Float
+            || *self.property_info == aiPropertyTypeInfo_aiPTI_Double
     }
 
     fn cast(&self) -> Russult<PropertyTypeInfo> {
         let data_len = self.data.len();
         let mut max = data_len as u32
-            / if *self.property_info & aiPropertyTypeInfo_aiPTI_Double > 0 {
+            / if *self.property_info == aiPropertyTypeInfo_aiPTI_Double {
             8
         } else {
             4

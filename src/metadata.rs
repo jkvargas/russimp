@@ -1,6 +1,5 @@
 use crate::{sys::*, *};
 use derivative::Derivative;
-use std::{ffi::CStr, os::raw::c_char};
 
 trait MetaDataEntryCast {
     fn can_cast(&self) -> bool;
