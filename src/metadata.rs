@@ -170,7 +170,7 @@ impl From<&aiMetadata> for MetaData {
     }
 }
 
-#[derive(Derivative)]
+#[derive(Derivative, PartialEq)]
 #[derivative(Debug)]
 #[repr(u32)]
 pub enum MetadataType {
@@ -243,9 +243,10 @@ fn metadata_for_box() {
 
     assert_eq!("SourceAsset_Format".to_string(), metadata.keys[0]);
 
-    let metadata_type = (&metadata.values[0]).0.as_ref().unwrap();
-
-    assert!(matches!(metadata_type, MetadataType::Vector3d(_)));
+    assert_eq!(
+        (&metadata.values[0]).0.as_ref().unwrap(),
+        &MetadataType::String("Blender 3D Importer (http://www.blender3d.org)".to_string())
+    );
 }
 
 #[test]
