@@ -10,7 +10,6 @@ use crate::{
     *,
 };
 use std::{
-    cell::RefCell,
     ffi::{CStr, CString},
     rc::Rc,
 };
@@ -25,7 +24,7 @@ pub struct Scene {
     pub animations: Vec<Animation>,
     pub cameras: Vec<Camera>,
     pub lights: Vec<Light>,
-    pub root: Option<Rc<RefCell<Node>>>,
+    pub root: Option<Rc<Node>>,
     pub flags: u32,
 }
 
