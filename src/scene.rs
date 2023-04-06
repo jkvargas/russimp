@@ -588,6 +588,8 @@ fn memory_leak_test() {
     .unwrap();
 
     let root = scene.root.as_ref().unwrap().clone();
+    assert_eq!(Rc::strong_count(&root), 2);
+
     drop(scene);
 
     // Strong refcount must be 1 here, otherwise we leak memory
