@@ -11,3 +11,6 @@ Cargo.lock
 
 # Jetbrains IDE
 .idea/
+
+# VS Code
+.vscode/
