@@ -64,6 +64,13 @@ vec![PostProcess::CalculateTangentSpace,
 
 ## Changelog
 
+### 2.0.3
+Fixed scene metadata parsing.
+Fixed error where material property was not read correctly.
+Fixed memory leak caused by Rc cycles in the node graph.
+
+The scene structure has been modified.
+
 ### 2.0.0
 Fixed issue to load embedded textures.
 
