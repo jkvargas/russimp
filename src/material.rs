@@ -9,7 +9,6 @@ use std::{
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-const FILENAME_PROPERTY: &str = "$tex.file";
 const EMBEDDED_TEXNAME_PREFIX: &str = "*";
 
 pub(crate) type Filename = String;
@@ -506,9 +505,11 @@ impl MaterialProperty {
 
 #[cfg(test)]
 mod test {
+    const FILENAME_PROPERTY: &str = "$tex.file";
+
     use crate::{
         material::{
-            DataContent, MaterialProperty, PropertyTypeInfo, TextureType, FILENAME_PROPERTY,
+            DataContent, MaterialProperty, PropertyTypeInfo, TextureType,
         },
         utils,
     };
