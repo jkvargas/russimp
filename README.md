@@ -64,6 +64,9 @@ vec![PostProcess::CalculateTangentSpace,
 
 ## Changelog
 
+### 2.0.4
+Updating edition from 2018 to 2021.
+
 ### 2.0.3
 Fixed scene metadata parsing.
 Fixed error where material property was not read correctly.

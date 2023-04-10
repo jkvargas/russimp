@@ -29,65 +29,68 @@ impl From<&aiCamera> for Camera {
     }
 }
 
-#[test]
-fn camera_available() {
-    use crate::{
-        scene::{PostProcess, Scene},
-        utils,
-    };
+#[cfg(test)]
+mod test {
+    #[test]
+    fn camera_available() {
+        use crate::{
+            scene::{PostProcess, Scene},
+            utils,
+        };
 
-    let current_directory_buf = utils::get_model("models/3DS/CameraRollAnim.3ds");
+        let current_directory_buf = utils::get_model("models/3DS/CameraRollAnim.3ds");
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+            .unwrap();
 
-    assert_eq!(1, scene.cameras.len());
+        assert_eq!(1, scene.cameras.len());
 
-    assert_eq!(-153.0771, scene.cameras[0].position.x);
-    assert_eq!(3.272005, scene.cameras[0].position.y);
-    assert_eq!(22.777624, scene.cameras[0].position.z);
+        assert_eq!(-153.0771, scene.cameras[0].position.x);
+        assert_eq!(3.272005, scene.cameras[0].position.y);
+        assert_eq!(22.777624, scene.cameras[0].position.z);
 
-    assert_eq!(0.0, scene.cameras[0].look_at.x);
-    assert_eq!(0.0, scene.cameras[0].look_at.y);
-    assert_eq!(1.0, scene.cameras[0].look_at.z);
+        assert_eq!(0.0, scene.cameras[0].look_at.x);
+        assert_eq!(0.0, scene.cameras[0].look_at.y);
+        assert_eq!(1.0, scene.cameras[0].look_at.z);
 
-    assert_eq!(0.0, scene.cameras[0].up.x);
-    assert_eq!(1.0, scene.cameras[0].up.y);
-    assert_eq!(0.0, scene.cameras[0].up.z);
+        assert_eq!(0.0, scene.cameras[0].up.x);
+        assert_eq!(1.0, scene.cameras[0].up.y);
+        assert_eq!(0.0, scene.cameras[0].up.z);
 
-    assert_eq!(0.9308422, scene.cameras[0].horizontal_fov);
-    assert_eq!(0.0, scene.cameras[0].clip_plane_near);
-    assert_eq!(1000.0, scene.cameras[0].clip_plane_far);
-    assert_eq!("Camera01".to_string(), scene.cameras[0].name);
-}
+        assert_eq!(0.9308422, scene.cameras[0].horizontal_fov);
+        assert_eq!(0.0, scene.cameras[0].clip_plane_near);
+        assert_eq!(1000.0, scene.cameras[0].clip_plane_far);
+        assert_eq!("Camera01".to_string(), scene.cameras[0].name);
+    }
 
-#[test]
-fn debug_camera() {
-    use crate::{
-        scene::{PostProcess, Scene},
-        utils,
-    };
+    #[test]
+    fn debug_camera() {
+        use crate::{
+            scene::{PostProcess, Scene},
+            utils,
+        };
 
-    let current_directory_buf = utils::get_model("models/3DS/CameraRollAnim.3ds");
+        let current_directory_buf = utils::get_model("models/3DS/CameraRollAnim.3ds");
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+            .unwrap();
 
-    dbg!(&scene.cameras);
+        dbg!(&scene.cameras);
+    }
 }

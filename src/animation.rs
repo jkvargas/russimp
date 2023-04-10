@@ -177,107 +177,112 @@ impl From<&aiAnimation> for Animation {
     }
 }
 
-#[test]
-fn camera_roll_animation_read() {
-    use crate::scene::{PostProcess, Scene};
+#[cfg(test)]
+mod test {
+    use crate::utils;
 
-    let current_directory_buf = utils::get_model("models/3DS/CameraRollAnim.3ds");
+    #[test]
+    fn camera_roll_animation_read() {
+        use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let current_directory_buf = utils::get_model("models/3DS/CameraRollAnim.3ds");
 
-    assert_eq!(1, scene.animations.len());
-    assert_eq!("3DSMasterAnim".to_string(), scene.animations[0].name);
-    assert_eq!(1, scene.animations[0].channels.len());
-    assert_eq!("Camera01".to_string(), scene.animations[0].channels[0].name);
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+            .unwrap();
 
-    assert_eq!(0, scene.animations[0].channels[0].pre_state);
-    assert_eq!(0, scene.animations[0].channels[0].post_state);
-    assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[0].time);
-    assert_eq!(
-        0.9999999,
-        scene.animations[0].channels[0].rotation_keys[0].value.w
-    );
-    assert_eq!(
-        -0.00046456736,
-        scene.animations[0].channels[0].rotation_keys[0].value.x
-    );
-    assert_eq!(
-        0.0,
-        scene.animations[0].channels[0].rotation_keys[0].value.y
-    );
-    assert_eq!(
-        0.0,
-        scene.animations[0].channels[0].rotation_keys[0].value.z
-    );
+        assert_eq!(1, scene.animations.len());
+        assert_eq!("3DSMasterAnim".to_string(), scene.animations[0].name);
+        assert_eq!(1, scene.animations[0].channels.len());
+        assert_eq!("Camera01".to_string(), scene.animations[0].channels[0].name);
 
-    assert_eq!(120.0, scene.animations[0].channels[0].rotation_keys[1].time);
-    assert_eq!(
-        0.7806558,
-        scene.animations[0].channels[0].rotation_keys[1].value.w
-    );
-    assert_eq!(
-        -0.6249612,
-        scene.animations[0].channels[0].rotation_keys[1].value.x
-    );
-    assert_eq!(
-        0.0,
-        scene.animations[0].channels[0].rotation_keys[1].value.y
-    );
-    assert_eq!(
-        0.0,
-        scene.animations[0].channels[0].rotation_keys[1].value.z
-    );
+        assert_eq!(0, scene.animations[0].channels[0].pre_state);
+        assert_eq!(0, scene.animations[0].channels[0].post_state);
+        assert_eq!(0.0, scene.animations[0].channels[0].rotation_keys[0].time);
+        assert_eq!(
+            0.9999999,
+            scene.animations[0].channels[0].rotation_keys[0].value.w
+        );
+        assert_eq!(
+            -0.00046456736,
+            scene.animations[0].channels[0].rotation_keys[0].value.x
+        );
+        assert_eq!(
+            0.0,
+            scene.animations[0].channels[0].rotation_keys[0].value.y
+        );
+        assert_eq!(
+            0.0,
+            scene.animations[0].channels[0].rotation_keys[0].value.z
+        );
 
-    assert_eq!(0.0, scene.animations[0].channels[0].scaling_keys[0].time);
-    assert_eq!(1.0, scene.animations[0].channels[0].scaling_keys[0].value.x);
-    assert_eq!(1.0, scene.animations[0].channels[0].scaling_keys[0].value.y);
-    assert_eq!(1.0, scene.animations[0].channels[0].scaling_keys[0].value.z);
+        assert_eq!(120.0, scene.animations[0].channels[0].rotation_keys[1].time);
+        assert_eq!(
+            0.7806558,
+            scene.animations[0].channels[0].rotation_keys[1].value.w
+        );
+        assert_eq!(
+            -0.6249612,
+            scene.animations[0].channels[0].rotation_keys[1].value.x
+        );
+        assert_eq!(
+            0.0,
+            scene.animations[0].channels[0].rotation_keys[1].value.y
+        );
+        assert_eq!(
+            0.0,
+            scene.animations[0].channels[0].rotation_keys[1].value.z
+        );
 
-    // position keys
-    assert_eq!(1, scene.animations[0].channels[0].position_keys.len());
-    assert_eq!(0.0, scene.animations[0].channels[0].position_keys[0].time);
-    assert_eq!(
-        -153.0771,
-        scene.animations[0].channels[0].position_keys[0].value.x
-    );
-    assert_eq!(
-        3.272005,
-        scene.animations[0].channels[0].position_keys[0].value.y
-    );
-    assert_eq!(
-        22.777624,
-        scene.animations[0].channels[0].position_keys[0].value.z
-    );
+        assert_eq!(0.0, scene.animations[0].channels[0].scaling_keys[0].time);
+        assert_eq!(1.0, scene.animations[0].channels[0].scaling_keys[0].value.x);
+        assert_eq!(1.0, scene.animations[0].channels[0].scaling_keys[0].value.y);
+        assert_eq!(1.0, scene.animations[0].channels[0].scaling_keys[0].value.z);
 
-    assert_eq!(120.0, scene.animations[0].duration);
-    assert_eq!(0, scene.animations[0].morph_mesh_channels.len());
-}
+        // position keys
+        assert_eq!(1, scene.animations[0].channels[0].position_keys.len());
+        assert_eq!(0.0, scene.animations[0].channels[0].position_keys[0].time);
+        assert_eq!(
+            -153.0771,
+            scene.animations[0].channels[0].position_keys[0].value.x
+        );
+        assert_eq!(
+            3.272005,
+            scene.animations[0].channels[0].position_keys[0].value.y
+        );
+        assert_eq!(
+            22.777624,
+            scene.animations[0].channels[0].position_keys[0].value.z
+        );
 
-#[test]
-fn debug_animations() {
-    use crate::scene::{PostProcess, Scene};
+        assert_eq!(120.0, scene.animations[0].duration);
+        assert_eq!(0, scene.animations[0].morph_mesh_channels.len());
+    }
 
-    let current_directory_buf = utils::get_model("models/3DS/CameraRollAnim.3ds");
+    #[test]
+    fn debug_animations() {
+        use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let current_directory_buf = utils::get_model("models/3DS/CameraRollAnim.3ds");
 
-    dbg!(&scene.animations);
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+            .unwrap();
+
+        dbg!(&scene.animations);
+    }
 }

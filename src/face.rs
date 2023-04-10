@@ -11,22 +11,27 @@ impl From<&aiFace> for Face {
     }
 }
 
-#[test]
-fn debug_face() {
-    use crate::scene::{PostProcess, Scene};
+#[cfg(test)]
+mod test {
+    use crate::utils;
 
-    let current_directory_buf = utils::get_model("models/3DS/CameraRollAnim.3ds");
+    #[test]
+    fn debug_face() {
+        use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let current_directory_buf = utils::get_model("models/3DS/CameraRollAnim.3ds");
 
-    dbg!(&scene.meshes[0].faces);
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+            .unwrap();
+
+        dbg!(&scene.meshes[0].faces);
+    }
 }

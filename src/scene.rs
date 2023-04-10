@@ -491,62 +491,68 @@ impl Scene {
     }
 }
 
-#[test]
-fn importing_invalid_file_returns_error() {
-    let current_directory_buf = utils::get_model("models/box.blend");
+#[cfg(test)]
+mod test {
+    use std::rc::Rc;
+    use crate::scene::{PostProcess, Scene};
+    use crate::utils;
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    );
+    #[test]
+    fn importing_invalid_file_returns_error() {
+        let current_directory_buf = utils::get_model("models/box.blend");
 
-    assert!(scene.is_err())
-}
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        );
 
-#[test]
-fn importing_valid_file_returns_scene() {
-    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+        assert!(scene.is_err())
+    }
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+    #[test]
+    fn importing_valid_file_returns_scene() {
+        let current_directory_buf = utils::get_model("models/BLEND/box.blend");
 
-    assert_eq!(8, scene.flags);
-}
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+            .unwrap();
 
-#[test]
-fn debug_scene() {
-    let box_file_path = utils::get_model("models/BLEND/box.blend");
+        assert_eq!(8, scene.flags);
+    }
 
-    let scene = Scene::from_file(
-        box_file_path.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+    #[test]
+    fn debug_scene() {
+        let box_file_path = utils::get_model("models/BLEND/box.blend");
 
-    dbg!(&scene);
-}
+        let scene = Scene::from_file(
+            box_file_path.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+            .unwrap();
 
-#[test]
-fn debug_scene_from_memory() {
-    let box_file_path = b"solid foo bar
+        dbg!(&scene);
+    }
+
+    #[test]
+    fn debug_scene_from_memory() {
+        let box_file_path = b"solid foo bar
     facet normal 0.1 0.2 0.3
         outer loop
             vertex 1 2 3
@@ -556,41 +562,42 @@ fn debug_scene_from_memory() {
     endfacet
     endsolid foo bar";
 
-    let scene = Scene::from_buffer(
-        box_file_path,
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-        "stl",
-    )
-    .unwrap();
+        let scene = Scene::from_buffer(
+            box_file_path,
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+            "stl",
+        )
+            .unwrap();
 
-    dbg!(&scene);
-}
+        dbg!(&scene);
+    }
 
-#[test]
-fn memory_leak_test() {
-    let box_file_path = utils::get_model("models/BLEND/box.blend");
+    #[test]
+    fn memory_leak_test() {
+        let box_file_path = utils::get_model("models/BLEND/box.blend");
 
-    let scene = Scene::from_file(
-        box_file_path.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let scene = Scene::from_file(
+            box_file_path.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+            .unwrap();
 
-    let root = scene.root.as_ref().unwrap().clone();
-    assert_eq!(Rc::strong_count(&root), 2);
+        let root = scene.root.as_ref().unwrap().clone();
+        assert_eq!(Rc::strong_count(&root), 2);
 
-    drop(scene);
+        drop(scene);
 
-    // Strong refcount must be 1 here, otherwise we leak memory
-    assert_eq!(Rc::strong_count(&root), 1);
+        // Strong refcount must be 1 here, otherwise we leak memory
+        assert_eq!(Rc::strong_count(&root), 1);
+    }
 }

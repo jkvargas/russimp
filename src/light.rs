@@ -60,80 +60,85 @@ impl Default for LightSourceType {
     }
 }
 
-#[test]
-fn light_available() {
-    use crate::{
-        scene::{PostProcess, Scene},
-        utils,
-    };
+#[cfg(test)]
+mod test {
+    use crate::light::LightSourceType;
 
-    let current_directory_buf = utils::get_model("models/BLEND/AreaLight_269.blend");
+    #[test]
+    fn light_available() {
+        use crate::{
+            scene::{PostProcess, Scene},
+            utils,
+        };
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let current_directory_buf = utils::get_model("models/BLEND/AreaLight_269.blend");
 
-    assert_eq!(3, scene.lights.len());
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+            .unwrap();
 
-    assert_eq!(0.60381645, scene.lights[0].color_diffuse.r);
-    assert_eq!(0.60381645, scene.lights[0].color_diffuse.g);
-    assert_eq!(0.60381645, scene.lights[0].color_diffuse.b);
+        assert_eq!(3, scene.lights.len());
 
-    assert_eq!(0.60381645, scene.lights[0].color_specular.r);
-    assert_eq!(0.60381645, scene.lights[0].color_specular.g);
-    assert_eq!(0.60381645, scene.lights[0].color_specular.b);
+        assert_eq!(0.60381645, scene.lights[0].color_diffuse.r);
+        assert_eq!(0.60381645, scene.lights[0].color_diffuse.g);
+        assert_eq!(0.60381645, scene.lights[0].color_diffuse.b);
 
-    assert_eq!(0.60381645, scene.lights[0].color_ambient.b);
-    assert_eq!(0.60381645, scene.lights[0].color_ambient.g);
-    assert_eq!(0.60381645, scene.lights[0].color_ambient.r);
+        assert_eq!(0.60381645, scene.lights[0].color_specular.r);
+        assert_eq!(0.60381645, scene.lights[0].color_specular.g);
+        assert_eq!(0.60381645, scene.lights[0].color_specular.b);
 
-    assert_eq!(0.0, scene.lights[0].attenuation_constant);
-    assert_eq!(0.0, scene.lights[0].attenuation_quadratic);
-    assert_eq!(0.0, scene.lights[0].attenuation_linear);
-    assert_eq!(6.2831855, scene.lights[0].angle_outer_cone);
-    assert_eq!(6.2831855, scene.lights[0].angle_inner_cone);
-    assert_eq!("Baz".to_string(), scene.lights[0].name);
-    assert_eq!(0.0, scene.lights[0].up.x);
-    assert_eq!(0.0, scene.lights[0].up.y);
-    assert_eq!(0.0, scene.lights[0].up.z);
-    assert_eq!(0.0, scene.lights[0].direction.x);
-    assert_eq!(0.0, scene.lights[0].direction.y);
-    assert_eq!(0.0, scene.lights[0].direction.z);
+        assert_eq!(0.60381645, scene.lights[0].color_ambient.b);
+        assert_eq!(0.60381645, scene.lights[0].color_ambient.g);
+        assert_eq!(0.60381645, scene.lights[0].color_ambient.r);
 
-    assert_eq!(0.0, scene.lights[0].size.x);
-    assert_eq!(0.0, scene.lights[0].size.x);
+        assert_eq!(0.0, scene.lights[0].attenuation_constant);
+        assert_eq!(0.0, scene.lights[0].attenuation_quadratic);
+        assert_eq!(0.0, scene.lights[0].attenuation_linear);
+        assert_eq!(6.2831855, scene.lights[0].angle_outer_cone);
+        assert_eq!(6.2831855, scene.lights[0].angle_inner_cone);
+        assert_eq!("Baz".to_string(), scene.lights[0].name);
+        assert_eq!(0.0, scene.lights[0].up.x);
+        assert_eq!(0.0, scene.lights[0].up.y);
+        assert_eq!(0.0, scene.lights[0].up.z);
+        assert_eq!(0.0, scene.lights[0].direction.x);
+        assert_eq!(0.0, scene.lights[0].direction.y);
+        assert_eq!(0.0, scene.lights[0].direction.z);
 
-    assert_eq!(LightSourceType::Point, scene.lights[0].light_source_type);
-    assert_eq!(LightSourceType::Area, scene.lights[1].light_source_type);
-    assert_eq!(LightSourceType::Area, scene.lights[2].light_source_type);
-}
+        assert_eq!(0.0, scene.lights[0].size.x);
+        assert_eq!(0.0, scene.lights[0].size.x);
 
-#[test]
-fn debug_light() {
-    use crate::{
-        scene::{PostProcess, Scene},
-        utils,
-    };
+        assert_eq!(LightSourceType::Point, scene.lights[0].light_source_type);
+        assert_eq!(LightSourceType::Area, scene.lights[1].light_source_type);
+        assert_eq!(LightSourceType::Area, scene.lights[2].light_source_type);
+    }
 
-    let current_directory_buf = utils::get_model("models/BLEND/AreaLight_269.blend");
+    #[test]
+    fn debug_light() {
+        use crate::{
+            scene::{PostProcess, Scene},
+            utils,
+        };
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let current_directory_buf = utils::get_model("models/BLEND/AreaLight_269.blend");
 
-    dbg!(&scene.lights);
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+            .unwrap();
+
+        dbg!(&scene.lights);
+    }
 }

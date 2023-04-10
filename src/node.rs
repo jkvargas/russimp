@@ -47,87 +47,92 @@ impl Node {
     }
 }
 
-#[test]
-fn checking_nodes() {
-    use crate::scene::{PostProcess, Scene};
+#[cfg(test)]
+mod test {
+    use crate::utils;
 
-    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+    #[test]
+    fn checking_nodes() {
+        use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let current_directory_buf = utils::get_model("models/BLEND/box.blend");
 
-    let root = scene.root.as_ref().unwrap();
-    let children = root.children.borrow();
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+            .unwrap();
 
-    assert_eq!("<BlenderRoot>".to_string(), root.name);
-    assert_eq!(3, children.len());
+        let root = scene.root.as_ref().unwrap();
+        let children = root.children.borrow();
 
-    let first_son = &children[0];
-    assert_eq!("Cube".to_string(), first_son.name);
+        assert_eq!("<BlenderRoot>".to_string(), root.name);
+        assert_eq!(3, children.len());
 
-    let second_son = &children[1];
-    assert_eq!("Lamp".to_string(), second_son.name);
+        let first_son = &children[0];
+        assert_eq!("Cube".to_string(), first_son.name);
 
-    assert_eq!(0, root.meshes.len());
+        let second_son = &children[1];
+        assert_eq!("Lamp".to_string(), second_son.name);
 
-    assert!(root.metadata.is_none());
+        assert_eq!(0, root.meshes.len());
 
-    assert_eq!(1.0, root.transformation.a1);
-    assert_eq!(1.0, root.transformation.b2);
-    assert_eq!(1.0, root.transformation.c3);
-    assert_eq!(1.0, root.transformation.d4);
-}
+        assert!(root.metadata.is_none());
 
-#[test]
-fn childs_parent_name_matches() {
-    use crate::scene::{PostProcess, Scene};
+        assert_eq!(1.0, root.transformation.a1);
+        assert_eq!(1.0, root.transformation.b2);
+        assert_eq!(1.0, root.transformation.c3);
+        assert_eq!(1.0, root.transformation.d4);
+    }
 
-    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+    #[test]
+    fn childs_parent_name_matches() {
+        use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let current_directory_buf = utils::get_model("models/BLEND/box.blend");
 
-    let root = scene.root.as_ref().unwrap();
-    let children = root.children.borrow();
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+            .unwrap();
 
-    let first_son = &children[0];
-    let dad = first_son.parent.upgrade().unwrap();
+        let root = scene.root.as_ref().unwrap();
+        let children = root.children.borrow();
 
-    assert_eq!(root.name, dad.name);
-}
+        let first_son = &children[0];
+        let dad = first_son.parent.upgrade().unwrap();
 
-#[test]
-fn debug_root() {
-    use crate::scene::{PostProcess, Scene};
+        assert_eq!(root.name, dad.name);
+    }
 
-    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+    #[test]
+    fn debug_root() {
+        use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let current_directory_buf = utils::get_model("models/BLEND/box.blend");
 
-    dbg!(&scene.root);
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+            .unwrap();
+
+        dbg!(&scene.root);
+    }
 }

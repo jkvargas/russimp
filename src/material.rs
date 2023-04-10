@@ -484,133 +484,141 @@ impl MaterialProperty {
     }
 }
 
-#[test]
-fn material_for_box() {
+#[cfg(test)]
+mod test {
     use crate::{
-        scene::{PostProcess, Scene},
-        utils,
+        material::{FILENAME_PROPERTY, MaterialProperty, PropertyTypeInfo, TextureType},
+        utils
     };
 
-    let box_file_path = utils::get_model("models/BLEND/box.blend");
+    #[test]
+    fn material_for_box() {
+        use crate::{
+            scene::{PostProcess, Scene},
+            utils,
+        };
 
-    let scene = Scene::from_file(
-        box_file_path.as_str(),
-        vec![PostProcess::ValidateDataStructure],
-    )
-        .unwrap();
+        let box_file_path = utils::get_model("models/BLEND/box.blend");
 
-    assert_eq!(1, scene.materials.len());
-    assert_eq!(41, scene.materials[0].properties.len());
-    assert_eq!(
-        "$mat.blend.mirror.glossAnisotropic",
-        scene.materials[0].properties[40].key.as_str()
-    );
-    assert_eq!(0, scene.materials[0].properties[40].index);
+        let scene = Scene::from_file(
+            box_file_path.as_str(),
+            vec![PostProcess::ValidateDataStructure],
+        )
+            .unwrap();
 
-    let ans_value = match &scene.materials[0].properties[40].data {
-        PropertyTypeInfo::Buffer(_) => 0.0,
-        PropertyTypeInfo::IntegerArray(_) => 0.0,
-        PropertyTypeInfo::FloatArray(x) => x[0],
-        PropertyTypeInfo::String(_) => 0.0,
-    };
+        assert_eq!(1, scene.materials.len());
+        assert_eq!(41, scene.materials[0].properties.len());
+        assert_eq!(
+            "$mat.blend.mirror.glossAnisotropic",
+            scene.materials[0].properties[40].key.as_str()
+        );
+        assert_eq!(0, scene.materials[0].properties[40].index);
 
-    assert_eq!(1.0, ans_value);
-    assert_eq!(
-        TextureType::None,
-        scene.materials[0].properties[40].semantic
-    );
+        let ans_value = match &scene.materials[0].properties[40].data {
+            PropertyTypeInfo::Buffer(_) => 0.0,
+            PropertyTypeInfo::IntegerArray(_) => 0.0,
+            PropertyTypeInfo::FloatArray(x) => x[0],
+            PropertyTypeInfo::String(_) => 0.0,
+        };
 
-    assert_eq!(&scene.materials[0].properties[0].data, &PropertyTypeInfo::String("Material".into()));
-}
+        assert_eq!(1.0, ans_value);
+        assert_eq!(
+            TextureType::None,
+            scene.materials[0].properties[40].semantic
+        );
 
-#[test]
-fn material_for_wooden_table() {
-    use crate::{
-        scene::{PostProcess, Scene},
-        utils,
-    };
+        assert_eq!(&scene.materials[0].properties[0].data, &PropertyTypeInfo::String("Material".into()));
+    }
 
-    let table_file_path = utils::get_model("models/GLTF2/round_wooden_table_01_4k/round_wooden_table_01_4k.gltf");
+    #[test]
+    fn material_for_wooden_table() {
+        use crate::{
+            scene::{PostProcess, Scene},
+            utils,
+        };
 
-    let scene = Scene::from_file(
-        table_file_path.as_str(),
-        vec![PostProcess::ValidateDataStructure],
-    )
-        .unwrap();
+        let table_file_path = utils::get_model("models/GLTF2/round_wooden_table_01_4k/round_wooden_table_01_4k.gltf");
 
-    assert_eq!(&scene.materials[0].properties[0].data, &PropertyTypeInfo::String("round_wooden_table_01".into()));
-    assert_eq!(&scene.materials[0].properties.iter().find(|prop| prop.key == "$tex.mappingfiltermin").unwrap().data, &PropertyTypeInfo::Buffer(vec![3, 39, 0, 0]));
-    assert_eq!(&scene.materials[0].properties.iter().find(|prop| prop.key == "$mat.shadingm").unwrap().data, &PropertyTypeInfo::Buffer(vec![11, 0, 0, 0]));
-}
+        let scene = Scene::from_file(
+            table_file_path.as_str(),
+            vec![PostProcess::ValidateDataStructure],
+        )
+            .unwrap();
 
-#[test]
-fn debug_material() {
-    use crate::{
-        scene::{PostProcess, Scene},
-        utils,
-    };
+        assert_eq!(&scene.materials[0].properties[0].data, &PropertyTypeInfo::String("round_wooden_table_01".into()));
+        assert_eq!(&scene.materials[0].properties.iter().find(|prop| prop.key == "$tex.mappingfiltermin").unwrap().data, &PropertyTypeInfo::Buffer(vec![3, 39, 0, 0]));
+        assert_eq!(&scene.materials[0].properties.iter().find(|prop| prop.key == "$mat.shadingm").unwrap().data, &PropertyTypeInfo::Buffer(vec![11, 0, 0, 0]));
+    }
 
-    let box_file_path = utils::get_model("models/BLEND/box.blend");
+    #[test]
+    fn debug_material() {
+        use crate::{
+            scene::{PostProcess, Scene},
+            utils,
+        };
 
-    let scene = Scene::from_file(
-        box_file_path.as_str(),
-        vec![
-            PostProcess::ValidateDataStructure,
-        ],
-    )
-        .unwrap();
+        let box_file_path = utils::get_model("models/BLEND/box.blend");
 
-    dbg!(&scene.materials);
-}
+        let scene = Scene::from_file(
+            box_file_path.as_str(),
+            vec![
+                PostProcess::ValidateDataStructure,
+            ],
+        )
+            .unwrap();
 
-#[test]
-fn filenames_available_for_textures() {
-    use crate::{
-        scene::{PostProcess, Scene},
-    };
+        dbg!(&scene.materials);
+    }
 
-    let current_directory_buf =
-        utils::get_model("models/GLTF2/BoxTextured-GLTF/BoxTextured.gltf");
+    #[test]
+    fn filenames_available_for_textures() {
+        use crate::{
+            scene::{PostProcess, Scene},
+        };
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![PostProcess::ValidateDataStructure],
-    )
-        .unwrap();
+        let current_directory_buf =
+            utils::get_model("models/GLTF2/BoxTextured-GLTF/BoxTextured.gltf");
 
-    assert_eq!(0, scene.materials[0].textures.len());
-    assert_eq!(0, scene.materials[1].textures.len());
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![PostProcess::ValidateDataStructure],
+        )
+            .unwrap();
 
-    let properties_first_material : Vec<&MaterialProperty> = scene.materials[0].properties.iter().filter(|x| x.key.eq(&FILENAME_PROPERTY.to_string())).collect();
-    let properties_second_material : Vec<&MaterialProperty> = scene.materials[1].properties.iter().filter(|x| x.key.eq(&FILENAME_PROPERTY.to_string())).collect();
+        assert_eq!(0, scene.materials[0].textures.len());
+        assert_eq!(0, scene.materials[1].textures.len());
 
-    assert!(properties_first_material.iter().any(|&x| x.semantic == TextureType::Diffuse));
-    assert!(properties_first_material.iter().any(|&x| x.semantic == TextureType::BaseColor));
-    assert_eq!(0, properties_second_material.len())
-}
+        let properties_first_material: Vec<&MaterialProperty> = scene.materials[0].properties.iter().filter(|x| x.key.eq(&FILENAME_PROPERTY.to_string())).collect();
+        let properties_second_material: Vec<&MaterialProperty> = scene.materials[1].properties.iter().filter(|x| x.key.eq(&FILENAME_PROPERTY.to_string())).collect();
 
-#[test]
-fn read_embedded_texture_works_as_expected() {
-    use crate::{
-        scene::{PostProcess, Scene},
-        material::TextureType::*,
-    };
+        assert!(properties_first_material.iter().any(|&x| x.semantic == TextureType::Diffuse));
+        assert!(properties_first_material.iter().any(|&x| x.semantic == TextureType::BaseColor));
+        assert_eq!(0, properties_second_material.len())
+    }
 
-    let current_directory_buf =
-        utils::get_model("models/GLTF2/BoxTextured-GLTF-Embedded/BoxTextured.gltf");
+    #[test]
+    fn read_embedded_texture_works_as_expected() {
+        use crate::{
+            scene::{PostProcess, Scene},
+            material::TextureType::*,
+        };
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![PostProcess::ValidateDataStructure],
-    )
-    .unwrap();
+        let current_directory_buf =
+            utils::get_model("models/GLTF2/BoxTextured-GLTF-Embedded/BoxTextured.gltf");
 
-    let texture = scene.materials[0].textures.get(&Diffuse).unwrap();
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![PostProcess::ValidateDataStructure],
+        )
+            .unwrap();
 
-    let temp = texture.borrow();
+        let texture = scene.materials[0].textures.get(&Diffuse).unwrap();
 
-    assert!(matches!(
+        let temp = texture.borrow();
+
+        assert!(matches!(
         &temp.data,
         DataContent::Bytes(x) if x.len() > 0
     ));
+    }
 }
