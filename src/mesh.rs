@@ -100,164 +100,169 @@ impl BitAnd<u32> for PrimitiveType {
     }
 }
 
-#[test]
-fn mesh_available() {
-    use crate::scene::{PostProcess, Scene};
+#[cfg(test)]
+mod test {
+    use crate::{mesh::PrimitiveType, utils};
 
-    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+    #[test]
+    fn mesh_available() {
+        use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let current_directory_buf = utils::get_model("models/BLEND/box.blend");
 
-    assert_eq!(1, scene.meshes.len());
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+        .unwrap();
 
-    assert_eq!(8, scene.meshes[0].normals.len());
-    assert_eq!(8, scene.meshes[0].vertices.len());
-    assert!(scene.meshes[0].texture_coords.iter().all(|x| x.is_none()));
-    assert!(scene.meshes[0].tangents.is_empty());
-    assert!(scene.meshes[0].bitangents.is_empty());
-    assert_eq!(8, scene.meshes[0].uv_components.len());
-    assert_eq!(true, scene.meshes[0].uv_components.iter().all(|x| *x == 0));
-    assert_eq!(
-        20,
-        scene.meshes[0].primitive_types
-            & (PrimitiveType::NGONEncodingFlag | PrimitiveType::Triangle)
-    );
-    assert!(scene.meshes[0].bones.is_empty());
-    assert!(scene.meshes[0].anim_meshes.is_empty());
-    assert_eq!(12, scene.meshes[0].faces.len());
-    assert!(&scene.meshes[0].anim_meshes.is_empty());
-    assert_eq!(0, scene.meshes[0].method);
-    assert_eq!(0, scene.meshes[0].material_index);
-    assert_eq!(0.0, scene.meshes[0].aabb.min.x);
-    assert_eq!(0.0, scene.meshes[0].aabb.min.y);
-    assert_eq!(0.0, scene.meshes[0].aabb.min.z);
-    assert_eq!(0.0, scene.meshes[0].aabb.max.x);
-    assert_eq!(0.0, scene.meshes[0].aabb.max.y);
-    assert_eq!(0.0, scene.meshes[0].aabb.max.z);
-    assert!(scene.meshes[0].colors.iter().all(|x| x.is_none()));
-}
+        assert_eq!(1, scene.meshes.len());
 
-#[test]
-fn bitwise_primitive_types() {
-    use crate::scene::{PostProcess, Scene};
+        assert_eq!(8, scene.meshes[0].normals.len());
+        assert_eq!(8, scene.meshes[0].vertices.len());
+        assert!(scene.meshes[0].texture_coords.iter().all(|x| x.is_none()));
+        assert!(scene.meshes[0].tangents.is_empty());
+        assert!(scene.meshes[0].bitangents.is_empty());
+        assert_eq!(8, scene.meshes[0].uv_components.len());
+        assert_eq!(true, scene.meshes[0].uv_components.iter().all(|x| *x == 0));
+        assert_eq!(
+            20,
+            scene.meshes[0].primitive_types
+                & (PrimitiveType::NGONEncodingFlag | PrimitiveType::Triangle)
+        );
+        assert!(scene.meshes[0].bones.is_empty());
+        assert!(scene.meshes[0].anim_meshes.is_empty());
+        assert_eq!(12, scene.meshes[0].faces.len());
+        assert!(&scene.meshes[0].anim_meshes.is_empty());
+        assert_eq!(0, scene.meshes[0].method);
+        assert_eq!(0, scene.meshes[0].material_index);
+        assert_eq!(0.0, scene.meshes[0].aabb.min.x);
+        assert_eq!(0.0, scene.meshes[0].aabb.min.y);
+        assert_eq!(0.0, scene.meshes[0].aabb.min.z);
+        assert_eq!(0.0, scene.meshes[0].aabb.max.x);
+        assert_eq!(0.0, scene.meshes[0].aabb.max.y);
+        assert_eq!(0.0, scene.meshes[0].aabb.max.z);
+        assert!(scene.meshes[0].colors.iter().all(|x| x.is_none()));
+    }
 
-    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+    #[test]
+    fn bitwise_primitive_types() {
+        use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let current_directory_buf = utils::get_model("models/BLEND/box.blend");
 
-    // assert_eq!(
-    //     4,
-    //     scene.meshes[0].primitive_types & PrimitiveType::Force32Bit
-    // );
-    assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Line);
-    assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Point);
-    assert_eq!(4, scene.meshes[0].primitive_types & PrimitiveType::Triangle);
-    assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Polygon);
-}
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+        .unwrap();
 
-#[test]
-fn debug_mesh() {
-    use crate::scene::{PostProcess, Scene};
+        // assert_eq!(
+        //     4,
+        //     scene.meshes[0].primitive_types & PrimitiveType::Force32Bit
+        // );
+        assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Line);
+        assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Point);
+        assert_eq!(4, scene.meshes[0].primitive_types & PrimitiveType::Triangle);
+        assert_eq!(0, scene.meshes[0].primitive_types & PrimitiveType::Polygon);
+    }
 
-    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+    #[test]
+    fn debug_mesh() {
+        use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let current_directory_buf = utils::get_model("models/BLEND/box.blend");
 
-    dbg!(&scene.meshes);
-}
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+        .unwrap();
 
-#[test]
-fn texture_coordinates() {
-    use crate::scene::{PostProcess, Scene};
+        dbg!(&scene.meshes);
+    }
 
-    let current_directory_buf = utils::get_model("models/OBJ/cube.obj");
+    #[test]
+    fn texture_coordinates() {
+        use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let current_directory_buf = utils::get_model("models/OBJ/cube.obj");
 
-    // There's only one mesh in this file
-    let mesh = &scene.meshes[0];
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+        .unwrap();
 
-    // Assert exactly 8 UV channels were loaded
-    assert_eq!(mesh.texture_coords.len(), 8);
+        // There's only one mesh in this file
+        let mesh = &scene.meshes[0];
 
-    // Only the first UV channel should be present on this mesh
-    assert!(mesh.texture_coords[0].is_some());
-    assert!(mesh.texture_coords[1..].iter().all(|chan| chan.is_none()));
+        // Assert exactly 8 UV channels were loaded
+        assert_eq!(mesh.texture_coords.len(), 8);
 
-    let uv_chan = mesh.texture_coords[0].as_ref().unwrap();
+        // Only the first UV channel should be present on this mesh
+        assert!(mesh.texture_coords[0].is_some());
+        assert!(mesh.texture_coords[1..].iter().all(|chan| chan.is_none()));
 
-    // The number of sets of coords should match the number of vertices
-    assert_eq!(uv_chan.len(), mesh.vertices.len());
+        let uv_chan = mesh.texture_coords[0].as_ref().unwrap();
 
-    // The z coordinates should always be 0
-    assert!(uv_chan.iter().all(|set| set.z == 0.0));
+        // The number of sets of coords should match the number of vertices
+        assert_eq!(uv_chan.len(), mesh.vertices.len());
 
-    // Transform vector of Vector3D to vector of (x,y) tuples
-    let uv_chan: Vec<_> = uv_chan.iter().map(|set| (set.x, set.y)).collect();
+        // The z coordinates should always be 0
+        assert!(uv_chan.iter().all(|set| set.z == 0.0));
 
-    assert_eq!(
-        uv_chan,
-        vec![
-            (0.625, 0.5),
-            (0.875, 0.5),
-            (0.875, 0.75),
-            (0.625, 0.75),
-            (0.375, 0.75),
-            (0.625, 0.75),
-            (0.625, 1.0),
-            (0.375, 1.0),
-            (0.375, 0.0),
-            (0.625, 0.0),
-            (0.625, 0.25),
-            (0.375, 0.25),
-            (0.125, 0.5),
-            (0.375, 0.5),
-            (0.375, 0.75),
-            (0.125, 0.75),
-            (0.375, 0.5),
-            (0.625, 0.5),
-            (0.625, 0.75),
-            (0.375, 0.75),
-            (0.375, 0.25),
-            (0.625, 0.25),
-            (0.625, 0.5),
-            (0.375, 0.5),
-        ]
-    );
+        // Transform vector of Vector3D to vector of (x,y) tuples
+        let uv_chan: Vec<_> = uv_chan.iter().map(|set| (set.x, set.y)).collect();
+
+        assert_eq!(
+            uv_chan,
+            vec![
+                (0.625, 0.5),
+                (0.875, 0.5),
+                (0.875, 0.75),
+                (0.625, 0.75),
+                (0.375, 0.75),
+                (0.625, 0.75),
+                (0.625, 1.0),
+                (0.375, 1.0),
+                (0.375, 0.0),
+                (0.625, 0.0),
+                (0.625, 0.25),
+                (0.375, 0.25),
+                (0.125, 0.5),
+                (0.375, 0.5),
+                (0.375, 0.75),
+                (0.125, 0.75),
+                (0.375, 0.5),
+                (0.625, 0.5),
+                (0.625, 0.75),
+                (0.375, 0.75),
+                (0.375, 0.25),
+                (0.625, 0.25),
+                (0.625, 0.5),
+                (0.375, 0.5),
+            ]
+        );
+    }
 }

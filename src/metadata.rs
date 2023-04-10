@@ -222,52 +222,58 @@ impl From<&aiMetadataEntry> for MetaDataEntry {
     }
 }
 
-#[test]
-fn metadata_for_box() {
-    use crate::scene::{PostProcess, Scene};
+#[cfg(test)]
+mod test {
+    use crate::metadata::MetadataType;
+    use crate::utils;
 
-    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+    #[test]
+    fn metadata_for_box() {
+        use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let current_directory_buf = utils::get_model("models/BLEND/box.blend");
 
-    let metadata = scene.metadata.unwrap();
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+        .unwrap();
 
-    assert_eq!(1, metadata.keys.len());
-    assert_eq!(1, metadata.values.len());
+        let metadata = scene.metadata.unwrap();
 
-    assert_eq!("SourceAsset_Format".to_string(), metadata.keys[0]);
+        assert_eq!(1, metadata.keys.len());
+        assert_eq!(1, metadata.values.len());
 
-    assert_eq!(
-        (&metadata.values[0]).0.as_ref().unwrap(),
-        &MetadataType::String("Blender 3D Importer (http://www.blender3d.org)".to_string())
-    );
-}
+        assert_eq!("SourceAsset_Format".to_string(), metadata.keys[0]);
 
-#[test]
-fn debug_metadata() {
-    use crate::scene::{PostProcess, Scene};
+        assert_eq!(
+            (&metadata.values[0]).0.as_ref().unwrap(),
+            &MetadataType::String("Blender 3D Importer (http://www.blender3d.org)".to_string())
+        );
+    }
 
-    let current_directory_buf = utils::get_model("models/BLEND/box.blend");
+    #[test]
+    fn debug_metadata() {
+        use crate::scene::{PostProcess, Scene};
 
-    let scene = Scene::from_file(
-        current_directory_buf.as_str(),
-        vec![
-            PostProcess::CalculateTangentSpace,
-            PostProcess::Triangulate,
-            PostProcess::JoinIdenticalVertices,
-            PostProcess::SortByPrimitiveType,
-        ],
-    )
-    .unwrap();
+        let current_directory_buf = utils::get_model("models/BLEND/box.blend");
 
-    dbg!(&scene.metadata);
+        let scene = Scene::from_file(
+            current_directory_buf.as_str(),
+            vec![
+                PostProcess::CalculateTangentSpace,
+                PostProcess::Triangulate,
+                PostProcess::JoinIdenticalVertices,
+                PostProcess::SortByPrimitiveType,
+            ],
+        )
+        .unwrap();
+
+        dbg!(&scene.metadata);
+    }
 }
