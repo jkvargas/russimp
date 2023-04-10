@@ -345,14 +345,14 @@ impl<'a> MaterialPropertyCaster for IntegerPropertyContent<'a> {
 
 impl<'a> MaterialPropertyCaster for FloatPropertyContent<'a> {
     fn can_cast(&self) -> bool {
-        (*self.property_info & aiPropertyTypeInfo_aiPTI_Float) > 0
-            || (*self.property_info & aiPropertyTypeInfo_aiPTI_Double) > 0
+        *self.property_info == aiPropertyTypeInfo_aiPTI_Float
+            || *self.property_info == aiPropertyTypeInfo_aiPTI_Double
     }
 
     fn cast(&self) -> Russult<PropertyTypeInfo> {
         let data_len = self.data.len();
         let mut max = data_len as u32
-            / if *self.property_info & aiPropertyTypeInfo_aiPTI_Double > 0 {
+            / if *self.property_info == aiPropertyTypeInfo_aiPTI_Double {
             8
         } else {
             4
@@ -519,6 +519,28 @@ fn material_for_box() {
         TextureType::None,
         scene.materials[0].properties[40].semantic
     );
+
+    assert_eq!(&scene.materials[0].properties[0].data, &PropertyTypeInfo::String("Material".into()));
+}
+
+#[test]
+fn material_for_wooden_table() {
+    use crate::{
+        scene::{PostProcess, Scene},
+        utils,
+    };
+
+    let table_file_path = utils::get_model("models/GLTF2/round_wooden_table_01_4k/round_wooden_table_01_4k.gltf");
+
+    let scene = Scene::from_file(
+        table_file_path.as_str(),
+        vec![PostProcess::ValidateDataStructure],
+    )
+        .unwrap();
+
+    assert_eq!(&scene.materials[0].properties[0].data, &PropertyTypeInfo::String("round_wooden_table_01".into()));
+    assert_eq!(&scene.materials[0].properties.iter().find(|prop| prop.key == "$tex.mappingfiltermin").unwrap().data, &PropertyTypeInfo::Buffer(vec![3, 39, 0, 0]));
+    assert_eq!(&scene.materials[0].properties.iter().find(|prop| prop.key == "$mat.shadingm").unwrap().data, &PropertyTypeInfo::Buffer(vec![11, 0, 0, 0]));
 }
 
 #[test]

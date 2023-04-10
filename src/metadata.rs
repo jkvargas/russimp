@@ -1,6 +1,5 @@
 use crate::{sys::*, *};
 use derivative::Derivative;
-use std::{ffi::CStr, os::raw::c_char};
 
 trait MetaDataEntryCast {
     fn can_cast(&self) -> bool;
@@ -33,7 +32,7 @@ struct MetaDataEntryULong<'a> {
 
 impl<'a> MetaDataEntryCast for MetaDataEntryULong<'a> {
     fn can_cast(&self) -> bool {
-        (self.data.mType & aiMetadataType_AI_UINT64) != 0
+        self.data.mType == aiMetadataType_AI_UINT64
     }
 
     fn cast(&self) -> Russult<MetadataType> {
@@ -51,7 +50,7 @@ impl<'a> MetaDataEntryCast for MetaDataEntryULong<'a> {
 
 impl<'a> MetaDataEntryCast for MetaDataEntryInteger<'a> {
     fn can_cast(&self) -> bool {
-        (self.data.mType & aiMetadataType_AI_INT32) != 0
+        self.data.mType == aiMetadataType_AI_INT32
     }
 
     fn cast(&self) -> Russult<MetadataType> {
@@ -69,7 +68,7 @@ impl<'a> MetaDataEntryCast for MetaDataEntryInteger<'a> {
 
 impl<'a> MetaDataEntryCast for MetaDataEntryBool<'a> {
     fn can_cast(&self) -> bool {
-        (self.data.mType & aiMetadataType_AI_BOOL) != 0
+        self.data.mType == aiMetadataType_AI_BOOL
     }
 
     fn cast(&self) -> Russult<MetadataType> {
@@ -87,7 +86,7 @@ impl<'a> MetaDataEntryCast for MetaDataEntryBool<'a> {
 
 impl<'a> MetaDataEntryCast for MetaDataEntryDouble<'a> {
     fn can_cast(&self) -> bool {
-        (self.data.mType & aiMetadataType_AI_DOUBLE) != 0
+        self.data.mType == aiMetadataType_AI_DOUBLE
     }
 
     fn cast(&self) -> Russult<MetadataType> {
@@ -105,7 +104,7 @@ impl<'a> MetaDataEntryCast for MetaDataEntryDouble<'a> {
 
 impl<'a> MetaDataEntryCast for MetaDataEntryFloat<'a> {
     fn can_cast(&self) -> bool {
-        (self.data.mType & aiMetadataType_AI_FLOAT) != 0
+        self.data.mType == aiMetadataType_AI_FLOAT
     }
 
     fn cast(&self) -> Russult<MetadataType> {
@@ -123,15 +122,19 @@ impl<'a> MetaDataEntryCast for MetaDataEntryFloat<'a> {
 
 impl<'a> MetaDataEntryCast for MetaDataEntryString<'a> {
     fn can_cast(&self) -> bool {
-        (self.data.mType & aiMetadataType_AI_AISTRING) != 0
+        self.data.mType == aiMetadataType_AI_AISTRING
     }
 
     fn cast(&self) -> Russult<MetadataType> {
-        let cstr = unsafe { CStr::from_ptr(self.data.mData as *const c_char) };
-        cstr.to_str().map_or_else(
-            |e| Err(e.into()),
-            |r| Ok(MetadataType::String(r.to_string())),
-        )
+        let raw = self.data.mData as *const aiString;
+
+        if let Some(result) = unsafe { raw.as_ref() } {
+            Ok(MetadataType::String(result.into()))
+        } else {
+            Err(RussimpError::MetadataError(
+                "Cant convert to string".to_string(),
+            ))
+        }
     }
 }
 
@@ -141,7 +144,7 @@ struct MetaDataVector3d<'a> {
 
 impl<'a> MetaDataEntryCast for MetaDataVector3d<'a> {
     fn can_cast(&self) -> bool {
-        (self.data.mType & aiMetadataType_AI_AIVECTOR3D) != 0
+        self.data.mType == aiMetadataType_AI_AIVECTOR3D
     }
 
     fn cast(&self) -> Russult<MetadataType> {
@@ -170,7 +173,7 @@ impl From<&aiMetadata> for MetaData {
     }
 }
 
-#[derive(Derivative)]
+#[derive(Derivative, PartialEq)]
 #[derivative(Debug)]
 #[repr(u32)]
 pub enum MetadataType {
@@ -243,9 +246,10 @@ fn metadata_for_box() {
 
     assert_eq!("SourceAsset_Format".to_string(), metadata.keys[0]);
 
-    let metadata_type = (&metadata.values[0]).0.as_ref().unwrap();
-
-    assert!(matches!(metadata_type, MetadataType::Vector3d(_)));
+    assert_eq!(
+        (&metadata.values[0]).0.as_ref().unwrap(),
+        &MetadataType::String("Blender 3D Importer (http://www.blender3d.org)".to_string())
+    );
 }
 
 #[test]

@@ -10,7 +10,6 @@ use crate::{
     *,
 };
 use std::{
-    cell::RefCell,
     ffi::{CStr, CString},
     rc::Rc,
 };
@@ -25,7 +24,7 @@ pub struct Scene {
     pub animations: Vec<Animation>,
     pub cameras: Vec<Camera>,
     pub lights: Vec<Light>,
-    pub root: Option<Rc<RefCell<Node>>>,
+    pub root: Option<Rc<Node>>,
     pub flags: u32,
 }
 
@@ -570,4 +569,28 @@ fn debug_scene_from_memory() {
     .unwrap();
 
     dbg!(&scene);
+}
+
+#[test]
+fn memory_leak_test() {
+    let box_file_path = utils::get_model("models/BLEND/box.blend");
+
+    let scene = Scene::from_file(
+        box_file_path.as_str(),
+        vec![
+            PostProcess::CalculateTangentSpace,
+            PostProcess::Triangulate,
+            PostProcess::JoinIdenticalVertices,
+            PostProcess::SortByPrimitiveType,
+        ],
+    )
+    .unwrap();
+
+    let root = scene.root.as_ref().unwrap().clone();
+    assert_eq!(Rc::strong_count(&root), 2);
+
+    drop(scene);
+
+    // Strong refcount must be 1 here, otherwise we leak memory
+    assert_eq!(Rc::strong_count(&root), 1);
 }

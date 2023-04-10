@@ -1,52 +1,48 @@
 use crate::{metadata::MetaData, sys::aiNode, *};
 use derivative::Derivative;
-use std::{cell::RefCell, rc::Rc};
+use std::{
+    cell::RefCell,
+    rc::{Rc, Weak},
+};
 
 #[derive(Default, Derivative)]
 #[derivative(Debug)]
 pub struct Node {
     pub name: String,
-    pub children: Vec<Rc<RefCell<Node>>>,
+    pub children: RefCell<Vec<Rc<Node>>>,
     pub meshes: Vec<u32>,
     pub metadata: Option<MetaData>,
     pub transformation: Matrix4x4,
     #[derivative(Debug = "ignore")]
-    pub parent: Option<Rc<RefCell<Node>>>,
+    pub parent: Weak<Node>,
 }
 
 impl Node {
-    pub(crate) fn new(node: &aiNode) -> Rc<RefCell<Node>> {
-        Self::go_through(node, None)
+    pub(crate) fn new(node: &aiNode) -> Rc<Node> {
+        Self::allocate(node, None)
     }
 
-    fn go_through(node: &aiNode, parent: Option<Rc<RefCell<Node>>>) -> Rc<RefCell<Node>> {
+    fn allocate(node: &aiNode, parent: Option<&Rc<Node>>) -> Rc<Node> {
         // current simple node
-        let res_node = Rc::new(RefCell::new(Self::create_simple_node(node)));
-        let nodes = utils::get_base_type_vec_from_raw(node.mChildren, node.mNumChildren);
+        let res_node = Rc::new(Self::create_simple_node(node, parent));
 
-        for children_ref in nodes {
-            let res_children_node = Self::go_through(children_ref, Some(res_node.clone()));
-
-            let mut result_borrow = res_node.borrow_mut();
-            result_borrow.children.push(res_children_node);
-        }
-
-        {
-            let mut borrow_mut = res_node.borrow_mut();
-            borrow_mut.parent = parent;
-        }
+        *res_node.children.borrow_mut() =
+            utils::get_base_type_vec_from_raw(node.mChildren, node.mNumChildren)
+                .into_iter()
+                .map(|child| Self::allocate(child, Some(&res_node)))
+                .collect::<Vec<_>>();
 
         res_node
     }
 
-    fn create_simple_node(node: &aiNode) -> Node {
+    fn create_simple_node(node: &aiNode, parent: Option<&Rc<Node>>) -> Node {
         Node {
             name: node.mName.into(),
-            children: Vec::new(),
+            children: RefCell::new(Vec::new()),
             meshes: utils::get_raw_vec(node.mMeshes, node.mNumMeshes),
             metadata: utils::get_raw(node.mMetaData),
             transformation: (&node.mTransformation).into(),
-            parent: None,
+            parent: parent.map(Rc::downgrade).unwrap_or_else(|| Weak::new()),
         }
     }
 }
@@ -69,25 +65,25 @@ fn checking_nodes() {
     .unwrap();
 
     let root = scene.root.as_ref().unwrap();
-    let borrow = root.borrow();
+    let children = root.children.borrow();
 
-    assert_eq!("<BlenderRoot>".to_string(), borrow.name);
-    assert_eq!(3, borrow.children.len());
+    assert_eq!("<BlenderRoot>".to_string(), root.name);
+    assert_eq!(3, children.len());
 
-    let first_son = borrow.children[0].borrow();
+    let first_son = &children[0];
     assert_eq!("Cube".to_string(), first_son.name);
 
-    let second_son = borrow.children[1].borrow();
+    let second_son = &children[1];
     assert_eq!("Lamp".to_string(), second_son.name);
 
-    assert_eq!(0, borrow.meshes.len());
+    assert_eq!(0, root.meshes.len());
 
-    assert!(borrow.metadata.is_none());
+    assert!(root.metadata.is_none());
 
-    assert_eq!(1.0, borrow.transformation.a1);
-    assert_eq!(1.0, borrow.transformation.b2);
-    assert_eq!(1.0, borrow.transformation.c3);
-    assert_eq!(1.0, borrow.transformation.d4);
+    assert_eq!(1.0, root.transformation.a1);
+    assert_eq!(1.0, root.transformation.b2);
+    assert_eq!(1.0, root.transformation.c3);
+    assert_eq!(1.0, root.transformation.d4);
 }
 
 #[test]
@@ -108,14 +104,12 @@ fn childs_parent_name_matches() {
     .unwrap();
 
     let root = scene.root.as_ref().unwrap();
-    let borrow = root.borrow();
+    let children = root.children.borrow();
 
-    let first_son = borrow.children[0].borrow();
-    let first_son_parent = first_son.parent.as_ref().unwrap();
+    let first_son = &children[0];
+    let dad = first_son.parent.upgrade().unwrap();
 
-    let dad = first_son_parent.borrow();
-
-    assert_eq!(borrow.name, dad.name);
+    assert_eq!(root.name, dad.name);
 }
 
 #[test]
