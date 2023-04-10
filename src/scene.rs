@@ -1,19 +1,12 @@
+use crate::material::generate_materials;
 use crate::{
-    animation::Animation,
-    camera::Camera,
-    light::Light,
-    material::Material,
-    mesh::Mesh,
-    metadata::MetaData,
-    node::Node,
-    sys::*,
-    *,
+    animation::Animation, camera::Camera, light::Light, material::Material, mesh::Mesh,
+    metadata::MetaData, node::Node, sys::*, *,
 };
 use std::{
     ffi::{CStr, CString},
     rc::Rc,
 };
-use crate::material::generate_materials;
 
 #[derive(Derivative)]
 #[derivative(Debug)]
@@ -493,9 +486,9 @@ impl Scene {
 
 #[cfg(test)]
 mod test {
-    use std::rc::Rc;
     use crate::scene::{PostProcess, Scene};
     use crate::utils;
+    use std::rc::Rc;
 
     #[test]
     fn importing_invalid_file_returns_error() {
@@ -527,7 +520,7 @@ mod test {
                 PostProcess::SortByPrimitiveType,
             ],
         )
-            .unwrap();
+        .unwrap();
 
         assert_eq!(8, scene.flags);
     }
@@ -545,7 +538,7 @@ mod test {
                 PostProcess::SortByPrimitiveType,
             ],
         )
-            .unwrap();
+        .unwrap();
 
         dbg!(&scene);
     }
@@ -572,7 +565,7 @@ mod test {
             ],
             "stl",
         )
-            .unwrap();
+        .unwrap();
 
         dbg!(&scene);
     }
@@ -590,7 +583,7 @@ mod test {
                 PostProcess::SortByPrimitiveType,
             ],
         )
-            .unwrap();
+        .unwrap();
 
         let root = scene.root.as_ref().unwrap().clone();
         assert_eq!(Rc::strong_count(&root), 2);

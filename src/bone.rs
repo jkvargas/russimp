@@ -57,7 +57,7 @@ mod test {
                 PostProcess::SortByPrimitiveType,
             ],
         )
-            .unwrap();
+        .unwrap();
 
         dbg!(&scene.meshes[0].bones);
     }

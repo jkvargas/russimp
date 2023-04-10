@@ -66,7 +66,7 @@ mod test {
                 PostProcess::SortByPrimitiveType,
             ],
         )
-            .unwrap();
+        .unwrap();
 
         let root = scene.root.as_ref().unwrap();
         let children = root.children.borrow();
@@ -105,7 +105,7 @@ mod test {
                 PostProcess::SortByPrimitiveType,
             ],
         )
-            .unwrap();
+        .unwrap();
 
         let root = scene.root.as_ref().unwrap();
         let children = root.children.borrow();
@@ -131,7 +131,7 @@ mod test {
                 PostProcess::SortByPrimitiveType,
             ],
         )
-            .unwrap();
+        .unwrap();
 
         dbg!(&scene.root);
     }

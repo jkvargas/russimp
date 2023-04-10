@@ -242,7 +242,7 @@ mod test {
                 PostProcess::SortByPrimitiveType,
             ],
         )
-            .unwrap();
+        .unwrap();
 
         let metadata = scene.metadata.unwrap();
 
@@ -272,7 +272,7 @@ mod test {
                 PostProcess::SortByPrimitiveType,
             ],
         )
-            .unwrap();
+        .unwrap();
 
         dbg!(&scene.metadata);
     }

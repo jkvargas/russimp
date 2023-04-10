@@ -102,10 +102,7 @@ impl BitAnd<u32> for PrimitiveType {
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        mesh::PrimitiveType,
-        utils
-    };
+    use crate::{mesh::PrimitiveType, utils};
 
     #[test]
     fn mesh_available() {
@@ -122,7 +119,7 @@ mod test {
                 PostProcess::SortByPrimitiveType,
             ],
         )
-            .unwrap();
+        .unwrap();
 
         assert_eq!(1, scene.meshes.len());
 
@@ -168,7 +165,7 @@ mod test {
                 PostProcess::SortByPrimitiveType,
             ],
         )
-            .unwrap();
+        .unwrap();
 
         // assert_eq!(
         //     4,
@@ -195,7 +192,7 @@ mod test {
                 PostProcess::SortByPrimitiveType,
             ],
         )
-            .unwrap();
+        .unwrap();
 
         dbg!(&scene.meshes);
     }
@@ -215,7 +212,7 @@ mod test {
                 PostProcess::SortByPrimitiveType,
             ],
         )
-            .unwrap();
+        .unwrap();
 
         // There's only one mesh in this file
         let mesh = &scene.meshes[0];

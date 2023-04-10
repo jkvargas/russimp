@@ -196,7 +196,7 @@ mod test {
                 PostProcess::SortByPrimitiveType,
             ],
         )
-            .unwrap();
+        .unwrap();
 
         assert_eq!(1, scene.animations.len());
         assert_eq!("3DSMasterAnim".to_string(), scene.animations[0].name);
@@ -281,7 +281,7 @@ mod test {
                 PostProcess::SortByPrimitiveType,
             ],
         )
-            .unwrap();
+        .unwrap();
 
         dbg!(&scene.animations);
     }
