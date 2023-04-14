@@ -6,6 +6,7 @@ use derivative::Derivative;
 use num_enum::TryFromPrimitive;
 use num_traits::FromPrimitive;
 use std::hash::Hash;
+use std::sync::Arc;
 use std::{
     collections::HashMap, ffi::CStr, mem::MaybeUninit, path::Path,
     ptr::slice_from_raw_parts, rc::Rc,
@@ -91,10 +92,10 @@ pub(crate) fn generate_materials(scene: &aiScene) -> Russult<Vec<Material>> {
     let properties = create_material_properties(&materials);
     let mut result = Vec::new();
 
-    let mut converted_textures: HashMap<usize, Rc<Texture>> = HashMap::new();
+    let mut converted_textures: HashMap<usize, Arc<Texture>> = HashMap::new();
 
     for (mat_index, &mat) in materials.iter().enumerate() {
-        let mut material_textures: HashMap<TextureType, Rc<Texture>> = HashMap::new();
+        let mut material_textures: HashMap<TextureType, Arc<Texture>> = HashMap::new();
 
         for tex_type in TextureType::iter() {
             let material_filenames = get_textures_of_type_from_material(mat, tex_type)?;
@@ -108,7 +109,7 @@ pub(crate) fn generate_materials(scene: &aiScene) -> Russult<Vec<Material>> {
                     } else {
                         let new_texture = create_texture_from(&textures[embedded_texture], true);
                         converted_textures
-                            .insert(embedded_texture, Rc::new(new_texture));
+                            .insert(embedded_texture, Arc::new(new_texture));
                         material_textures.insert(
                             tex_type,
                             converted_textures.get(&embedded_texture).unwrap().clone(),
@@ -265,13 +266,13 @@ fn get_properties(material: &aiMaterial) -> Vec<MaterialProperty> {
 #[derivative(Debug)]
 pub struct Material {
     pub properties: HashMap<MaterialPropertyKey, MaterialPropertyData>,
-    pub textures: HashMap<TextureType, Rc<Texture>>,
+    pub textures: HashMap<TextureType, Arc<Texture>>,
 }
 
 impl Material {
     fn new(
         properties: HashMap<MaterialPropertyKey, MaterialPropertyData>,
-        textures: HashMap<TextureType, Rc<Texture>>,
+        textures: HashMap<TextureType, Arc<Texture>>,
     ) -> Self {
         Self {
             properties,
