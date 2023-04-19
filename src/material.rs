@@ -9,7 +9,7 @@ use std::hash::Hash;
 use std::sync::Arc;
 use std::{
     collections::HashMap, ffi::CStr, mem::MaybeUninit, path::Path,
-    ptr::slice_from_raw_parts, rc::Rc,
+    ptr::slice_from_raw_parts
 };
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;

@@ -40,6 +40,7 @@ pub enum RussimpError {
     MeterialError(String),
     Primitive(String),
     TextureNotFound,
+    LogStreamNotAvailable
 }
 
 impl Display for RussimpError {

@@ -4,6 +4,8 @@ use crate::{
     metadata::MetaData, node::Node, sys::*, *,
 };
 use bitflags::bitflags;
+use std::rc::Weak;
+use std::sync::RwLock;
 use std::{
     ffi::{CStr, CString},
     rc::Rc,
@@ -399,6 +401,41 @@ pub struct PostProcess: u32 {
 }
 }
 
+pub trait Logger: Send {
+    fn log(&self, entry: &str);
+}
+
+#[derive(Default)]
+struct InMemoryLogger
+{
+    pub log: RwLock<Vec<String>>
+}
+
+impl Logger for InMemoryLogger
+{
+    fn log(&self, entry: &str) {
+        self.log.write().unwrap().push(entry.to_string());
+    }
+}
+
+unsafe extern "C" fn log_fn(log: *const ::std::os::raw::c_char, user_data: *mut ::std::os::raw::c_char)
+{
+    let logger: &Weak<dyn Logger> = std::mem::transmute(user_data);
+    let log = std::ffi::CStr::from_ptr(log);
+    if let Some(logger) = logger.upgrade()
+    {
+        logger.log(log.to_str().unwrap());
+    }
+}
+
+pub enum LogStream<'a> {
+    StdOut,
+    StdErr,
+    File(&'a str),
+    Debugger,
+    Custom(&'a std::sync::Weak<dyn Logger>)
+}
+
 impl Scene {
     fn new(scene: &aiScene) -> Russult<Self> {
         let root = unsafe { scene.mRootNode.as_ref() };
@@ -478,6 +515,41 @@ impl Scene {
         let error_buf = unsafe { aiGetErrorString() };
         let error = unsafe { CStr::from_ptr(error_buf).to_string_lossy().into_owned() };
         RussimpError::Import(error)
+    }
+
+    pub fn attach_log_stream(log_mode: LogStream) -> Russult<()>
+    {
+        let log_stream = if let LogStream::Custom(stream) = log_mode {
+            aiLogStream {
+                callback: Some(log_fn),
+                user: unsafe { std::mem::transmute(stream) }
+            }
+        }
+        else
+        {
+            let (stream_type, file) = match log_mode {
+                LogStream::StdOut => (aiDefaultLogStream_aiDefaultLogStream_STDOUT, std::ptr::null()),
+                LogStream::StdErr => (aiDefaultLogStream_aiDefaultLogStream_STDERR, std::ptr::null()),
+                LogStream::File(path) => (aiDefaultLogStream_aiDefaultLogStream_FILE, path.as_ptr()),
+                LogStream::Debugger => (aiDefaultLogStream_aiDefaultLogStream_DEBUGGER, std::ptr::null()),
+                LogStream::Custom(_) => unreachable!()
+            };
+            unsafe { aiGetPredefinedLogStream(stream_type, file as *const _) }
+        };
+
+        if log_stream.callback.is_none() {
+            Err(RussimpError::LogStreamNotAvailable)
+        }
+        else
+        {
+            unsafe { aiAttachLogStream(&log_stream); }
+            Ok(())
+        }
+    }
+
+    pub fn disable_logging()
+    {
+        unsafe { aiDetachAllLogStreams(); }
     }
 }
 
