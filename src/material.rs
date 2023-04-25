@@ -677,7 +677,7 @@ impl MaterialProperty {
             key: MaterialPropertyKey {
                 key: property.mKey.into(),
                 index: property.mIndex as usize,
-                semantic: FromPrimitive::from_u32(property.mSemantic as u32).unwrap(),
+                semantic: FromPrimitive::from_u32(property.mSemantic as u32).unwrap_or(TextureType::Unknown),
             },
             data,
         }
