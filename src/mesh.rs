@@ -60,11 +60,30 @@ impl From<&aiMesh> for Mesh {
 
 #[derive(Derivative)]
 #[derivative(Debug)]
-pub struct AnimMesh(pub Vec<Vector3D>);
+pub struct AnimMesh
+{
+    pub name: String,
+    pub vertices: Vec<Vector3D>,
+    pub normals: Vec<Vector3D>,
+    pub tangents: Vec<Vector3D>,
+    pub bitangents: Vec<Vector3D>,
+    pub colors: Vec<Option<Vec<Color4D>>>,
+    pub texture_coords: Vec<Option<Vec<Vector3D>>>,
+    pub weight: f32
+}
 
 impl From<&aiAnimMesh> for AnimMesh {
     fn from(mesh: &aiAnimMesh) -> Self {
-        Self(utils::get_vec(mesh.mBitangents, mesh.mNumVertices))
+        Self {
+            name: mesh.mName.into(),
+            vertices: utils::get_vec(mesh.mVertices, mesh.mNumVertices),
+            normals: utils::get_vec(mesh.mNormals, mesh.mNumVertices),
+            tangents: utils::get_vec(mesh.mTangents, mesh.mNumVertices),
+            bitangents: utils::get_vec(mesh.mBitangents, mesh.mNumVertices),
+            colors: utils::get_vec_of_vecs_from_raw(mesh.mColors, mesh.mNumVertices),
+            texture_coords: utils::get_vec_of_vecs_from_raw(mesh.mTextureCoords, mesh.mNumVertices),
+            weight: mesh.mWeight
+        }
     }
 }
 
