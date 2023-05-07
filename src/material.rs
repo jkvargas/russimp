@@ -39,6 +39,9 @@ pub enum TextureType {
     Roughness = aiTextureType_aiTextureType_DIFFUSE_ROUGHNESS as _,
     AmbientOcclusion = aiTextureType_aiTextureType_AMBIENT_OCCLUSION as _,
     Unknown = aiTextureType_aiTextureType_UNKNOWN as _,
+    Sheen = aiTextureType_aiTextureType_SHEEN as _,
+    ClearCoat = aiTextureType_aiTextureType_CLEARCOAT as _,
+    Transmission = aiTextureType_aiTextureType_TRANSMISSION as _,
     Force32bit = aiTextureType__aiTextureType_Force32Bit as _,
 }
 
@@ -513,6 +516,18 @@ mod test {
         },
         utils,
     };
+
+    #[test]
+    fn semantic_unwrap_panicking() {
+        use crate::{
+            scene::{PostProcess, Scene},
+            utils,
+        };
+
+        let box_file_path = utils::get_model("models/GLTF2/toycar_khronos/ToyCar.gltf");
+
+        Scene::from_file(box_file_path.as_str(), vec![PostProcess::ValidateDataStructure]).unwrap();
+    }
 
     #[test]
     fn material_for_box() {

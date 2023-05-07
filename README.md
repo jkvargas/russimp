@@ -63,6 +63,8 @@ vec![PostProcess::CalculateTangentSpace,
 ```
 
 ## Changelog
+### 2.0.5
+Adding Sheen, ClearCoat and Transmission texture types.
 
 ### 2.0.4
 Updating edition from 2018 to 2021.
