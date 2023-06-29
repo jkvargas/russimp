@@ -10,7 +10,7 @@ By default, russimp looks for the `assimp` library on your computer.  To install
 
 * OSX: You will need to update brew and install assimp with it.
 * Linux: You will need to install assimp through your package manager of choice.
-* Windows: You can use the prebuilt version ```russimp = { version = "1.0.5", features = ["prebuilt"] }```
+* Windows: You can use the prebuilt version ```russimp = { version = "2.0.6", features = ["prebuilt"] }```
 
 Alternately, you may prefer to use prebuilt assimp binaries or compile it yourself; in either case russimp will statically link assimp into your binary.  Russimp exposes the following Cargo features to manage the assimp dependency (this documentation is reproduced from [russimp-sys](https://github.com/jkvargas/russimp-sys)):
 
@@ -63,6 +63,10 @@ vec![PostProcess::CalculateTangentSpace,
 ```
 
 ## Changelog
+
+### 2.0.6
+Update russimp-sys to use new build system.
+
 ### 2.0.5
 Adding Sheen, ClearCoat and Transmission texture types.
 
