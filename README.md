@@ -52,15 +52,17 @@ Make sure to run cargo fmt before creating a pull request.
 
 # How to use it?
 
-Just call Scene::from_file with the filename and the flags you want. From the scene you will have access to the underlying structs.
+Use `Scene::from_file` to load a scene from a given file or `Scene::from_buffer` to load the scene directly from memory. If you want, you can give `PostProcess` flags to change the scene structure according to your needs. From the scene, you will have access to the underlying structs.
 
-```rust
+```rust        
 let scene = Scene::from_file("myfile.blend",
 vec![PostProcess::CalculateTangentSpace,
      PostProcess::Triangulate,
      PostProcess::JoinIdenticalVertices,
      PostProcess::SortByPrimitiveType]).unwrap();
+
+// Progress The Scene...
 ```
 ### Changelog
 
-The Changelog can be found [here](CHANGELOG.md)
+The Changelog can be found [Here](CHANGELOG.md)
