@@ -42,7 +42,7 @@ impl Node {
             meshes: utils::get_raw_vec(node.mMeshes, node.mNumMeshes),
             metadata: utils::get_raw(node.mMetaData),
             transformation: (&node.mTransformation).into(),
-            parent: parent.map(Rc::downgrade).unwrap_or_else(|| Weak::new()),
+            parent: parent.map(Rc::downgrade).unwrap_or_else(Weak::new),
         }
     }
 }

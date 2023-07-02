@@ -104,7 +104,7 @@ pub(crate) fn generate_materials(scene: &aiScene) -> Russult<Vec<Material>> {
                     if let Some(tex) = converted_textures.get(&embedded_texture) {
                         material_textures.insert(tex_type, tex.clone());
                     } else {
-                        let new_texture = create_texture_from(&textures[embedded_texture], true);
+                        let new_texture = create_texture_from(textures[embedded_texture], true);
                         converted_textures
                             .insert(embedded_texture, Rc::new(RefCell::new(new_texture)));
                         material_textures.insert(
@@ -203,7 +203,7 @@ fn create_texture_from(texture: &aiTexture, is_embedded: bool) -> Texture {
     }
 }
 
-fn get_embedded_texture(file_name: &String, textures: &Vec<&aiTexture>) -> Option<usize> {
+fn get_embedded_texture(file_name: &str, textures: &Vec<&aiTexture>) -> Option<usize> {
     if file_name.starts_with(EMBEDDED_TEXNAME_PREFIX) {
         let temp = file_name.split_at(1).1.to_string();
         let index = temp.parse::<usize>().unwrap();
@@ -214,10 +214,8 @@ fn get_embedded_texture(file_name: &String, textures: &Vec<&aiTexture>) -> Optio
         return Some(index);
     }
 
-    let path = Path::new(file_name.as_str());
-    if path.file_name().is_none() {
-        return None;
-    }
+    let path = Path::new(file_name);
+    path.file_name()?;
 
     for (tex_index, &texture) in textures.iter().enumerate() {
         let texture_filename: String = texture.mFilename.into();
@@ -457,14 +455,14 @@ impl MaterialProperty {
                 key: &property.mKey,
                 index: property.mIndex,
                 c_type: property.mSemantic,
-                mat: &material,
+                mat: material,
                 property_info: &property.mType,
             }),
             Box::new(FloatPropertyContent {
                 key: &property.mKey,
                 index: property.mIndex,
                 c_type: property.mSemantic,
-                mat: &material,
+                mat: material,
                 property_info: &property.mType,
                 data,
             }),
@@ -472,7 +470,7 @@ impl MaterialProperty {
                 key: &property.mKey,
                 index: property.mIndex,
                 c_type: property.mSemantic,
-                mat: &material,
+                mat: material,
                 property_info: &property.mType,
                 data,
             }),
@@ -501,7 +499,7 @@ impl MaterialProperty {
             key: property.mKey.into(),
             data,
             index: property.mIndex as usize,
-            semantic: FromPrimitive::from_u32(property.mSemantic as u32).unwrap(),
+            semantic: FromPrimitive::from_u32(property.mSemantic).unwrap(),
         }
     }
 }
@@ -511,9 +509,7 @@ mod test {
     const FILENAME_PROPERTY: &str = "$tex.file";
 
     use crate::{
-        material::{
-            DataContent, MaterialProperty, PropertyTypeInfo, TextureType,
-        },
+        material::{DataContent, MaterialProperty, PropertyTypeInfo, TextureType},
         utils,
     };
 
@@ -526,7 +522,11 @@ mod test {
 
         let box_file_path = utils::get_model("models/GLTF2/toycar_khronos/ToyCar.gltf");
 
-        Scene::from_file(box_file_path.as_str(), vec![PostProcess::ValidateDataStructure]).unwrap();
+        Scene::from_file(
+            box_file_path.as_str(),
+            vec![PostProcess::ValidateDataStructure],
+        )
+        .unwrap();
     }
 
     #[test]
@@ -687,7 +687,7 @@ mod test {
 
         assert!(matches!(
             &temp.data,
-            DataContent::Bytes(x) if x.len() > 0
+            DataContent::Bytes(x) if !x.is_empty()
         ));
     }
 }

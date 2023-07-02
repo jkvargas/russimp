@@ -1,7 +1,8 @@
 use crate::{sys::*, Color3D, Vector2D, Vector3D};
 use derivative::Derivative;
+use num_enum::Default;
 
-#[derive(Default, Derivative)]
+#[derive(Derivative)]
 #[derivative(Debug)]
 pub struct Light {
     pub up: Vector3D,
@@ -36,12 +37,12 @@ impl From<&aiLight> for Light {
             color_diffuse: (&light.mColorDiffuse).into(),
             direction: (&light.mDirection).into(),
             size: (&light.mSize).into(),
-            light_source_type: (light.mType as u32).into(),
+            light_source_type: (light.mType).into(),
         }
     }
 }
 
-#[derive(Derivative, num_enum::IntoPrimitive, num_enum::FromPrimitive, PartialEq)]
+#[derive(Derivative, num_enum::IntoPrimitive, num_enum::FromPrimitive, Default, PartialEq)]
 #[derivative(Debug)]
 #[repr(u32)]
 pub enum LightSourceType {
@@ -50,14 +51,8 @@ pub enum LightSourceType {
     Directional = aiLightSourceType_aiLightSource_DIRECTIONAL as _,
     Point = aiLightSourceType_aiLightSource_POINT as _,
     Spot = aiLightSourceType_aiLightSource_SPOT as _,
-    #[num_enum(default)]
+    #[default]
     Undefined = aiLightSourceType_aiLightSource_UNDEFINED as _,
-}
-
-impl Default for LightSourceType {
-    fn default() -> Self {
-        LightSourceType::Undefined
-    }
 }
 
 #[cfg(test)]
