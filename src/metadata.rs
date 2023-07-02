@@ -252,7 +252,7 @@ mod test {
         assert_eq!("SourceAsset_Format".to_string(), metadata.keys[0]);
 
         assert_eq!(
-            (&metadata.values[0]).0.as_ref().unwrap(),
+            metadata.values[0].0.as_ref().unwrap(),
             &MetadataType::String("Blender 3D Importer (http://www.blender3d.org)".to_string())
         );
     }

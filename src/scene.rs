@@ -53,11 +53,10 @@ pub enum PostProcess {
     /// space +X points to the right, +Y points upwards, and +Z points away
     /// from the viewer.
     ///
-    /// you’ll probably want to consider this flag if you use Direct3D for
-    /// rendering. The
-    /// [`ConvertToLeftHanded`](PostProcess::ConvertToLeftHanded) flag
-    /// supersedes this setting and bundles all conversions typically
-    /// required for D3D-based applications.
+    /// You'll probably want to consider this flag if you use Direct3D for
+    /// rendering. The #aiProcess_ConvertToLeftHanded flag supersedes this
+    /// setting and bundles all conversions typically required for D3D-based
+    /// applications.
     MakeLeftHanded = aiPostProcessSteps_aiProcess_MakeLeftHanded as _,
     /// Triangulates all faces of all meshes.
     ///
@@ -405,13 +404,13 @@ impl Scene {
         let root = unsafe { scene.mRootNode.as_ref() };
 
         Ok(Self {
-            materials: generate_materials(&scene)?,
+            materials: generate_materials(scene)?,
             meshes: utils::get_vec_from_raw(scene.mMeshes, scene.mNumMeshes),
             metadata: utils::get_raw(scene.mMetaData),
             animations: utils::get_vec_from_raw(scene.mAnimations, scene.mNumAnimations),
             cameras: utils::get_vec_from_raw(scene.mCameras, scene.mNumCameras),
             lights: utils::get_vec_from_raw(scene.mLights, scene.mNumLights),
-            root: root.map(|f| Node::new(f)),
+            root: root.map(Node::new),
             flags: scene.mFlags,
         })
     }

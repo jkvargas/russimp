@@ -46,7 +46,7 @@ impl From<&aiMesh> for Mesh {
             tangents: utils::get_vec(mesh.mTangents, mesh.mNumVertices),
             bitangents: utils::get_vec(mesh.mBitangents, mesh.mNumVertices),
             uv_components: mesh.mNumUVComponents.to_vec(),
-            primitive_types: mesh.mPrimitiveTypes as u32,
+            primitive_types: mesh.mPrimitiveTypes,
             bones: utils::get_vec_from_raw(mesh.mBones, mesh.mNumBones),
             material_index: mesh.mMaterialIndex,
             method: mesh.mMethod,
@@ -129,7 +129,7 @@ mod test {
         assert!(scene.meshes[0].tangents.is_empty());
         assert!(scene.meshes[0].bitangents.is_empty());
         assert_eq!(8, scene.meshes[0].uv_components.len());
-        assert_eq!(true, scene.meshes[0].uv_components.iter().all(|x| *x == 0));
+        assert!(scene.meshes[0].uv_components.iter().all(|x| *x == 0));
         assert_eq!(
             20,
             scene.meshes[0].primitive_types

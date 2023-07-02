@@ -46,10 +46,10 @@ impl Display for RussimpError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             RussimpError::Import(content) => {
-                return write!(f, "{}", content);
+                write!(f, "{}", content)
             }
             _ => {
-                return write!(f, "unknown error");
+                write!(f, "unknown error")
             }
         }
     }
@@ -194,15 +194,15 @@ impl From<&aiVector3D> for Vector3D {
     }
 }
 
-impl Into<RussimpError> for Utf8Error {
-    fn into(self) -> RussimpError {
-        RussimpError::Primitive(self.to_string())
+impl From<Utf8Error> for RussimpError {
+    fn from(val: Utf8Error) -> Self {
+        RussimpError::Primitive(val.to_string())
     }
 }
 
-impl Into<RussimpError> for IntoStringError {
-    fn into(self) -> RussimpError {
-        RussimpError::Primitive(self.to_string())
+impl From<IntoStringError> for RussimpError {
+    fn from(val: IntoStringError) -> Self {
+        RussimpError::Primitive(val.to_string())
     }
 }
 
