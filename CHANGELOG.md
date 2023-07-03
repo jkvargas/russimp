@@ -1,5 +1,9 @@
 ## Changelog
 
+### 2.0.7
+- Hotfix: Fix Compile Error on Windows
+- Update actions/checkout from v2 to v3
+
 ### 2.0.6
 - Moved to a Changelog File
 - Some Dependency Updates
