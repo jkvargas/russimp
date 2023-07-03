@@ -54,11 +54,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Update brew
-        run: brew update
+        run: brew update && brew upgrade
       - name: Install assimp
         run: brew install assimp
-      - name: Upgrade brew
-        run: brew upgrade
       - name: Install stable
         uses: actions-rs/toolchain@v1
         with:
