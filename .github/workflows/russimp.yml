@@ -57,6 +57,8 @@ jobs:
         run: brew update
       - name: Install assimp
         run: brew install assimp
+      - name: Upgrade brew
+        run: brew upgrade
       - name: Install stable
         uses: actions-rs/toolchain@v1
         with:
