@@ -9,7 +9,7 @@ jobs:
   lin-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Install assimp
@@ -52,7 +52,7 @@ jobs:
   macos-build:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Update brew
         run: brew update
       - name: Install assimp
@@ -75,7 +75,7 @@ jobs:
       CRATESIO_TOKEN: ${{ secrets.CRATESIO_TOKEN }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Install assimp
