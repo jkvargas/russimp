@@ -278,11 +278,11 @@ mod test {
             unimplemented!("write support");
         }
 
-        fn tell(&mut self) -> u64 {
+        fn tell(&mut self) -> usize {
             self.file.seek(SeekFrom::Current(0)).unwrap_or(0)
         }
 
-        fn size(&mut self) -> u64 {
+        fn size(&mut self) -> usize {
             self.file.metadata().expect("Missing metadata").len()
         }
 
