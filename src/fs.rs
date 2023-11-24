@@ -2,7 +2,7 @@
 //!
 //! Implement the FileSystem trait for your custom resource loading, with its open() method returning
 //! objects satisfying the FileOperations trait.
-use russimp_sys::{aiFile, aiFileIO, aiOrigin, aiReturn, size_t};
+use russimp_sys::{aiFile, aiFileIO, aiOrigin, aiReturn};
 use std::convert::TryInto;
 use std::ffi::CStr;
 use std::io::SeekFrom;
@@ -22,8 +22,8 @@ pub trait FileOperations {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize, ()>;
     /// Should return the number of bytes written, or Err if write unsuccessful.
     fn write(&mut self, buf: &[u8]) -> Result<usize, ()>;
-    fn tell(&mut self) -> u64;
-    fn size(&mut self) -> u64;
+    fn tell(&mut self) -> usize;
+    fn size(&mut self) -> usize;
     fn seek(&mut self, seek_from: SeekFrom) -> Result<(), ()>;
     fn flush(&mut self);
     fn close(&mut self);
@@ -121,9 +121,9 @@ impl<T: FileSystem> FileOperationsWrapper<T> {
     unsafe extern "C" fn io_read(
         ai_file: *mut aiFile,
         buffer: *mut std::os::raw::c_char,
-        size: size_t,
-        count: size_t,
-    ) -> size_t {
+        size: usize,
+        count: usize,
+    ) -> usize {
         let file = Self::get_file(ai_file);
         let mut buffer =
             std::slice::from_raw_parts_mut(buffer as *mut u8, (size * count).try_into().unwrap());
@@ -133,26 +133,26 @@ impl<T: FileSystem> FileOperationsWrapper<T> {
         if count == 0 {
             panic!("Count 0 is invalid");
         }
-        if size > std::usize::MAX as u64 {
+        if size > std::usize::MAX {
             panic!("huge read size not supported");
         }
         let size = size as usize;
         if size == 1 {
             // This looks like a memcpy.
-            if count > std::usize::MAX as u64 {
+            if count > std::usize::MAX {
                 panic!("huge read not supported");
             }
             let count = count as usize;
 
             let (buffer, _) = buffer.split_at_mut(count);
             match file.read(buffer) {
-                Ok(size) => size as u64,
-                Err(_) => std::u64::MAX,
+                Ok(size) => size,
+                Err(_) => std::usize::MAX,
             }
         } else {
             // We have to copy in strides. Implement this by looping for each object and tally the
             // count of full objects read.
-            let mut total: u64 = 0;
+            let mut total: usize = 0;
             for _ in 0..count {
                 let split = buffer.split_at_mut(size as usize);
                 buffer = split.1;
@@ -172,9 +172,9 @@ impl<T: FileSystem> FileOperationsWrapper<T> {
     unsafe extern "C" fn io_write(
         ai_file: *mut aiFile,
         buffer: *const std::os::raw::c_char,
-        size: size_t,
-        count: size_t,
-    ) -> size_t {
+        size: usize,
+        count: usize,
+    ) -> usize {
         let file = Self::get_file(ai_file);
         let mut buffer =
             std::slice::from_raw_parts(buffer as *mut u8, (size * count).try_into().unwrap());
@@ -184,25 +184,25 @@ impl<T: FileSystem> FileOperationsWrapper<T> {
         if count == 0 {
             panic!("Write of count 0");
         }
-        if size > std::usize::MAX as u64 {
+        if size > std::usize::MAX {
             panic!("huge write size not supported");
         }
         let size = size as usize;
         if size == 1 {
-            if count > std::usize::MAX as u64 {
+            if count > std::usize::MAX {
                 panic!("huge write not supported");
             }
             let count = count as usize;
 
             let (buffer, _) = buffer.split_at(count);
             match file.write(buffer) {
-                Ok(size) => size as u64,
-                Err(_) => std::u64::MAX,
+                Ok(size) => size,
+                Err(_) => std::usize::MAX,
             }
         } else {
             // Write in strides. Implement this by looping for each object and tally the
             // count of full objects written.
-            let mut total: u64 = 0;
+            let mut total: usize = 0;
             for _ in 0..count {
                 let split = buffer.split_at(size as usize);
                 buffer = split.1;
@@ -219,20 +219,20 @@ impl<T: FileSystem> FileOperationsWrapper<T> {
         }
     }
     // Implementation for aiFile::TellProc.
-    unsafe extern "C" fn io_tell(ai_file: *mut aiFile) -> size_t {
+    unsafe extern "C" fn io_tell(ai_file: *mut aiFile) -> usize {
         let file = Self::get_file(ai_file);
         file.tell()
     }
     // Implementation for aiFile::FileSizeProc.
-    unsafe extern "C" fn io_size(ai_file: *mut aiFile) -> size_t {
+    unsafe extern "C" fn io_size(ai_file: *mut aiFile) -> usize {
         let file = Self::get_file(ai_file);
         file.size()
     }
     // Implementation for aiFile::SeekProc.
-    unsafe extern "C" fn io_seek(ai_file: *mut aiFile, pos: size_t, origin: aiOrigin) -> aiReturn {
+    unsafe extern "C" fn io_seek(ai_file: *mut aiFile, pos: usize, origin: aiOrigin) -> aiReturn {
         let file = Self::get_file(ai_file);
         let seek_from = match origin {
-            russimp_sys::aiOrigin_aiOrigin_SET => SeekFrom::Start(pos),
+            russimp_sys::aiOrigin_aiOrigin_SET => SeekFrom::Start(pos as u64),
             russimp_sys::aiOrigin_aiOrigin_CUR => SeekFrom::Current(pos as i64),
             russimp_sys::aiOrigin_aiOrigin_END => SeekFrom::End(pos as i64),
             _ => panic!("Assimp passed invalid origin"),
