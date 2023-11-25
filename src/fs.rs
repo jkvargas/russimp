@@ -62,7 +62,7 @@ impl<T: FileSystem> FileOperationsWrapper<T> {
         mode: *const ::std::os::raw::c_char,
     ) -> *mut aiFile {
         let file_system = Box::leak(Box::from_raw(
-            (*ai_file_io).UserData as *mut &mut dyn FileSystem,
+            (*ai_file_io).UserData as *mut &dyn FileSystem,
         ));
 
         let file_path = CStr::from_ptr(file_path)
