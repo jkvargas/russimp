@@ -30,7 +30,7 @@ pub trait FileOperations {
 }
 
 /// This type allows us to generate C stubs for whatever trait object the user supplies.
-pub struct FileOperationsWrapper<T: FileSystem> {
+pub(crate) struct FileOperationsWrapper<T: FileSystem> {
     ai_file: aiFileIO,
     _phantom: std::marker::PhantomData<T>,
 }
