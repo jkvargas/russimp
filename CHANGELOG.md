@@ -3,6 +3,9 @@
 ### 3.0.0
 - Update to use russimp-sys 2.0.1
 
+### 2.0.7
+- MetaDataEntry contents changed to public
+
 ### 2.0.6
 - Moved to a Changelog File
 - Some Dependency Updates
