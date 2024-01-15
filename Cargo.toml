@@ -1,6 +1,6 @@
 [package]
 name = "russimp"
-version = "2.0.7"
+version = "3.0.0"
 authors = ["Jhonny Knaak de Vargas"]
 edition = "2021"
 license-file = "LICENSE"
@@ -17,7 +17,7 @@ name = "russimp"
 path = "src/lib.rs"
 
 [dependencies]
-russimp-sys = "1.0.3"
+russimp-sys = "2.0.1"
 num-derive = "0.4"
 num-traits = "0.2.15"
 num_enum = "0.6.1"
@@ -31,7 +31,6 @@ default = []
 prebuilt = ["russimp-sys/prebuilt"]
 static-link = ["russimp-sys/static-link"]
 nozlib = ["russimp-sys/nozlib"]
-nolibcxx = ["russimp-sys/nolibcxx"]
 
 [package.metadata.docs.rs]
 features = ["prebuilt"]
