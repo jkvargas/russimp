@@ -38,12 +38,7 @@ Builds from source need the following dependencies:
 
 By default `russimp-sys` will statically link zlibstatic, you can disable this feature if it conflicts with other dependencies.
 
-### `nolibcxx`
-
-By default `russimp-sys` links to `libstdc++` in linux and `libc++` in macos, turning this on `russimp-sys` won't link to the c++ standard library.
-
 # Helping
-
 
 You are very welcome to help with development, adding a feature, fixing a problem or just refactoring.
 Try to do it with tests =)
