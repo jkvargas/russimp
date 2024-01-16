@@ -263,7 +263,7 @@ mod test {
     use crate::scene::Scene;
     use crate::utils;
     use std::fs::File;
-    use std::io::{SeekFrom, prelude::*};
+    use std::io::{prelude::*, SeekFrom};
 
     struct MyFileOperations {
         file: File,
@@ -309,7 +309,7 @@ mod test {
             // We only support reading for this test.
             assert_eq!(mode, "rb");
             let file = File::open(file_path).expect("Couldn't open {file_path}");
-            Some(Box::new(MyFileOperations{file}))
+            Some(Box::new(MyFileOperations { file }))
         }
     }
 
@@ -328,7 +328,8 @@ mod test {
                 PostProcess::SortByPrimitiveType,
             ],
             &mut myfs,
-        ).unwrap();
+        )
+        .unwrap();
 
         assert_eq!(scene.meshes[0].texture_coords.len(), 8);
         assert_eq!(scene.materials.len(), 2);

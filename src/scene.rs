@@ -1,7 +1,15 @@
 use crate::material::generate_materials;
 use crate::{
-    animation::Animation, camera::Camera, fs::{FileSystem, FileOperationsWrapper}, light::Light, material::Material,
-    mesh::Mesh, metadata::MetaData, node::Node, sys::*, *,
+    animation::Animation,
+    camera::Camera,
+    fs::{FileOperationsWrapper, FileSystem},
+    light::Light,
+    material::Material,
+    mesh::Mesh,
+    metadata::MetaData,
+    node::Node,
+    sys::*,
+    *,
 };
 use std::{
     ffi::{CStr, CString},
@@ -430,7 +438,11 @@ impl Scene {
         result
     }
 
-    pub fn from_file_system<T: FileSystem>(file_path: &str, flags: PostProcessSteps, file_io: &mut T) -> Russult<Scene> {
+    pub fn from_file_system<T: FileSystem>(
+        file_path: &str,
+        flags: PostProcessSteps,
+        file_io: &mut T,
+    ) -> Russult<Scene> {
         let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
         let file_path = CString::new(file_path).unwrap();
 
@@ -474,7 +486,11 @@ impl Scene {
     }
 
     #[inline]
-    fn get_scene_from_filesystem<'a, T: FileSystem>(string: CString, flags: u32, fs: &mut T) -> Option<&'a aiScene> {
+    fn get_scene_from_filesystem<'a, T: FileSystem>(
+        string: CString,
+        flags: u32,
+        fs: &mut T,
+    ) -> Option<&'a aiScene> {
         let mut file_io = FileOperationsWrapper::new(fs);
         unsafe { aiImportFileEx(string.as_ptr(), flags, file_io.ai_file()).as_ref() }
     }
