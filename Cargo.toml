@@ -1,6 +1,6 @@
 [package]
 name = "russimp"
-version = "3.0.1"
+version = "3.1.0"
 authors = ["Jhonny Knaak de Vargas"]
 edition = "2021"
 license-file = "LICENSE"
