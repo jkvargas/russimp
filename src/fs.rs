@@ -279,11 +279,20 @@ mod test {
         }
 
         fn tell(&mut self) -> usize {
-            self.file.seek(SeekFrom::Current(0)).unwrap_or(0)
+            self.file
+                .seek(SeekFrom::Current(0))
+                .unwrap_or(0)
+                .try_into()
+                .unwrap_or(0)
         }
 
         fn size(&mut self) -> usize {
-            self.file.metadata().expect("Missing metadata").len()
+            self.file
+                .metadata()
+                .expect("Missing metadata")
+                .len()
+                .try_into()
+                .unwrap_or(0)
         }
 
         fn seek(&mut self, seek_from: SeekFrom) -> Result<(), ()> {
