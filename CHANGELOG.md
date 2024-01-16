@@ -1,5 +1,8 @@
 ## Changelog
 
+### 3.1.0
+- Adding filesystem loading feature
+
 ### 3.0.0
 - Update to use russimp-sys 2.0.1
 
