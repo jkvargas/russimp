@@ -25,6 +25,7 @@ pub mod animation;
 pub mod bone;
 pub mod camera;
 pub mod face;
+pub mod fs;
 pub mod light;
 pub mod material;
 pub mod mesh;
