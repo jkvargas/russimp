@@ -37,7 +37,7 @@ impl From<&aiLight> for Light {
             color_diffuse: (&light.mColorDiffuse).into(),
             direction: (&light.mDirection).into(),
             size: (&light.mSize).into(),
-            light_source_type: (light.mType).into(),
+            light_source_type: (light.mType as u32).into(),
         }
     }
 }
