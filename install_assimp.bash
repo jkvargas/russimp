@@ -11,7 +11,7 @@ fi
 apt install -y git cmake ninja-build
 
 if [ ! -d ${path_assimp_repo} ]; then
-	git clone --depth 1 --branch v5.2.5 https://github.com/assimp/assimp.git ${path_assimp_repo}
+	git clone --depth 1 --branch v5.3.1 https://github.com/assimp/assimp.git ${path_assimp_repo}
 fi
 
 if [ ! -d ${path_assimp_build} ]; then

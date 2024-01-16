@@ -1,5 +1,8 @@
 ## Changelog
 
+### 3.1.1
+- Fixing windows compilation. Thanks @Snowiiii for this.
+
 ### 3.1.0
 - Adding filesystem loading feature
 
