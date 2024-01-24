@@ -49,7 +49,7 @@ impl From<&aiMesh> for Mesh {
             primitive_types: mesh.mPrimitiveTypes,
             bones: utils::get_vec_from_raw(mesh.mBones, mesh.mNumBones),
             material_index: mesh.mMaterialIndex,
-            method: mesh.mMethod,
+            method: mesh.mMethod as u32,
             anim_meshes: utils::get_vec_from_raw(mesh.mAnimMeshes, mesh.mNumAnimMeshes),
             faces: utils::get_vec(mesh.mFaces, mesh.mNumFaces),
             colors: utils::get_vec_of_vecs_from_raw(mesh.mColors, mesh.mNumVertices),
