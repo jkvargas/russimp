@@ -1,4 +1,4 @@
-use std::ffi::CString;
+use std::ffi::CStr;
 
 use russimp_sys::{
     aiCreatePropertyStore, aiMatrix4x4, aiPropertyStore, aiReleasePropertyStore,
@@ -32,18 +32,18 @@ impl Default for PropertyStore {
 }
 
 impl PropertyStore {
-    pub fn set_integer(&mut self, name: &str, value: i32) {
-        let c_name = CString::new(name).unwrap();
+    pub fn set_integer(&mut self, name: &[u8], value: i32) {
+        let c_name = CStr::from_bytes_until_nul(name).unwrap();
         unsafe { aiSetImportPropertyInteger(self.ptr, c_name.as_ptr(), value) };
     }
 
-    pub fn set_float(&mut self, name: &str, value: f32) {
-        let c_name = CString::new(name).unwrap();
+    pub fn set_float(&mut self, name: &[u8], value: f32) {
+        let c_name = CStr::from_bytes_until_nul(name).unwrap();
         unsafe { aiSetImportPropertyFloat(self.ptr, c_name.as_ptr(), value) };
     }
 
-    pub fn set_string(&mut self, name: &str, value: &str) {
-        let c_name = CString::new(name).unwrap();
+    pub fn set_string(&mut self, name: &[u8], value: &str) {
+        let c_name = CStr::from_bytes_until_nul(name).unwrap();
         let bytes: &[::std::os::raw::c_char] = unsafe { std::mem::transmute(value.as_bytes()) };
         let mut string = aiString {
             length: bytes.len() as u32,
@@ -54,8 +54,8 @@ impl PropertyStore {
         unsafe { aiSetImportPropertyString(self.ptr, c_name.as_ptr(), &string as *const aiString) };
     }
 
-    pub fn set_matrix(&mut self, name: &str, value: [[f32; 4]; 4]) {
-        let c_name = CString::new(name).unwrap();
+    pub fn set_matrix(&mut self, name: &[u8], value: [[f32; 4]; 4]) {
+        let c_name = CStr::from_bytes_until_nul(name).unwrap();
         // NOTE: Assuming column-major matrix
         let matrix = aiMatrix4x4 {
             a1: value[0][0],
@@ -85,7 +85,7 @@ impl PropertyStore {
     }
 }
 
-impl<T: Iterator<Item = (&'static str, Property)>> From<T> for PropertyStore {
+impl<T: Iterator<Item = (&'static [u8], Property)>> From<T> for PropertyStore {
     fn from(value: T) -> Self {
         let mut props = Self::default();
         for (name, prop) in value {
