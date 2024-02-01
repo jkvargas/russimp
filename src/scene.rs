@@ -16,6 +16,8 @@ use std::{
     rc::Rc,
 };
 
+use self::property::PropertyStore;
+
 #[derive(Derivative)]
 #[derivative(Debug)]
 pub struct Scene {
@@ -426,16 +428,31 @@ impl Scene {
     pub fn from_file(file_path: &str, flags: PostProcessSteps) -> Russult<Scene> {
         let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
         let file_path = CString::new(file_path).unwrap();
-
-        let raw_scene = Scene::get_scene_from_file(file_path, bitwise_flag);
-        if raw_scene.is_none() {
-            return Err(Scene::get_error());
+        match Scene::get_scene_from_file(file_path, bitwise_flag) {
+            Some(raw_scene) => {
+                let result = Scene::new(raw_scene);
+                Scene::drop_scene(raw_scene);
+                result
+            }
+            None => Err(Scene::get_error()),
         }
+    }
 
-        let result = Scene::new(raw_scene.unwrap());
-        Scene::drop_scene(raw_scene);
-
-        result
+    pub fn from_file_with_props(
+        file_path: &str,
+        flags: PostProcessSteps,
+        props: &PropertyStore,
+    ) -> Russult<Scene> {
+        let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
+        let file_path = CString::new(file_path).unwrap();
+        match Scene::get_scene_from_file_with_props(file_path, bitwise_flag, Some(props)) {
+            Some(raw_scene) => {
+                let result = Scene::new(raw_scene);
+                Scene::drop_scene(raw_scene);
+                result
+            }
+            None => Err(Scene::get_error()),
+        }
     }
 
     pub fn from_file_system<T: FileSystem>(
@@ -445,44 +462,102 @@ impl Scene {
     ) -> Russult<Scene> {
         let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
         let file_path = CString::new(file_path).unwrap();
-
-        let raw_scene = Scene::get_scene_from_filesystem(file_path, bitwise_flag, file_io);
-        if raw_scene.is_none() {
-            return Err(Scene::get_error());
+        match Scene::get_scene_from_filesystem(file_path, bitwise_flag, file_io) {
+            Some(raw_scene) => {
+                let result = Scene::new(raw_scene);
+                Scene::drop_scene(raw_scene);
+                result
+            }
+            None => Err(Scene::get_error()),
         }
-
-        let result = Scene::new(raw_scene.unwrap());
-        Scene::drop_scene(raw_scene);
-
-        result
     }
+
+    pub fn from_file_system_with_props<T: FileSystem>(
+        file_path: &str,
+        flags: PostProcessSteps,
+        file_io: &mut T,
+        props: &PropertyStore,
+    ) -> Russult<Scene> {
+        let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
+        let file_path = CString::new(file_path).unwrap();
+        match Scene::get_scene_from_filesystem_with_props(
+            file_path,
+            bitwise_flag,
+            file_io,
+            Some(props),
+        ) {
+            Some(raw_scene) => {
+                let result = Scene::new(raw_scene);
+                Scene::drop_scene(raw_scene);
+                result
+            }
+            None => Err(Scene::get_error()),
+        }
+    }
+
     pub fn from_buffer(buffer: &[u8], flags: PostProcessSteps, hint: &str) -> Russult<Scene> {
         let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
         let hint = CString::new(hint).unwrap();
-
-        let raw_scene = Scene::get_scene_from_file_from_memory(buffer, bitwise_flag, hint);
-        if raw_scene.is_none() {
-            return Err(Scene::get_error());
+        match Scene::get_scene_from_file_from_memory(buffer, bitwise_flag, hint) {
+            Some(raw_scene) => {
+                let result = Scene::new(raw_scene);
+                Scene::drop_scene(raw_scene);
+                result
+            }
+            None => Err(Scene::get_error()),
         }
+    }
 
-        let result = Scene::new(raw_scene.unwrap());
-        Scene::drop_scene(raw_scene);
-
-        result
+    pub fn from_buffer_with_props(
+        buffer: &[u8],
+        flags: PostProcessSteps,
+        hint: &str,
+        props: &PropertyStore,
+    ) -> Russult<Scene> {
+        let bitwise_flag = flags.into_iter().fold(0, |acc, x| acc | (x as u32));
+        let hint = CString::new(hint).unwrap();
+        match Scene::get_scene_from_file_from_memory_with_props(
+            buffer,
+            bitwise_flag,
+            hint,
+            Some(props),
+        ) {
+            Some(raw_scene) => {
+                let result = Scene::new(raw_scene);
+                Scene::drop_scene(raw_scene);
+                result
+            }
+            None => Err(Scene::get_error()),
+        }
     }
 
     #[inline]
-    fn drop_scene(scene: Option<&aiScene>) {
-        if let Some(content) = scene {
-            unsafe {
-                aiReleaseImport(content);
-            }
+    fn drop_scene(scene: &aiScene) {
+        unsafe {
+            aiReleaseImport(scene);
         }
     }
 
     #[inline]
     fn get_scene_from_file<'a>(string: CString, flags: u32) -> Option<&'a aiScene> {
-        unsafe { aiImportFile(string.as_ptr(), flags).as_ref() }
+        Self::get_scene_from_file_with_props(string, flags, None)
+    }
+
+    #[inline]
+    fn get_scene_from_file_with_props<'a>(
+        string: CString,
+        flags: u32,
+        props: Option<&PropertyStore>,
+    ) -> Option<&'a aiScene> {
+        unsafe {
+            aiImportFileExWithProperties(
+                string.as_ptr(),
+                flags,
+                std::ptr::null_mut(),
+                props.map(|p| p.as_ptr()).unwrap_or(std::ptr::null_mut()),
+            )
+            .as_ref()
+        }
     }
 
     #[inline]
@@ -491,8 +566,26 @@ impl Scene {
         flags: u32,
         fs: &mut T,
     ) -> Option<&'a aiScene> {
+        Self::get_scene_from_filesystem_with_props(string, flags, fs, None)
+    }
+
+    #[inline]
+    fn get_scene_from_filesystem_with_props<'a, T: FileSystem>(
+        string: CString,
+        flags: u32,
+        fs: &mut T,
+        props: Option<&PropertyStore>,
+    ) -> Option<&'a aiScene> {
         let mut file_io = FileOperationsWrapper::new(fs);
-        unsafe { aiImportFileEx(string.as_ptr(), flags, file_io.ai_file()).as_ref() }
+        unsafe {
+            aiImportFileExWithProperties(
+                string.as_ptr(),
+                flags,
+                file_io.ai_file(),
+                props.map(|p| p.as_ptr()).unwrap_or(std::ptr::null_mut()),
+            )
+            .as_ref()
+        }
     }
 
     #[inline]
@@ -501,12 +594,23 @@ impl Scene {
         flags: u32,
         hint: CString,
     ) -> Option<&'a aiScene> {
+        Self::get_scene_from_file_from_memory_with_props(buffer, flags, hint, None)
+    }
+
+    #[inline]
+    fn get_scene_from_file_from_memory_with_props<'a>(
+        buffer: &[u8],
+        flags: u32,
+        hint: CString,
+        props: Option<&PropertyStore>,
+    ) -> Option<&'a aiScene> {
         unsafe {
-            aiImportFileFromMemory(
+            aiImportFileFromMemoryWithProperties(
                 buffer.as_ptr() as *const _,
                 buffer.len() as _,
                 flags,
                 hint.as_ptr(),
+                props.map(|p| p.as_ptr()).unwrap_or(std::ptr::null_mut()),
             )
             .as_ref()
         }
