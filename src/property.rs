@@ -252,15 +252,15 @@ mod test {
     fn import_pp_ptv_root_transformation() {
         let props: PropertyStore = [
             (
-                AI_CONFIG_IMPORT_COLLADA_IGNORE_UP_DIRECTION as &[u8],
+                AI_CONFIG_IMPORT_COLLADA_IGNORE_UP_DIRECTION,
                 Property::Integer(1),
             ),
             (
-                AI_CONFIG_PP_PTV_ADD_ROOT_TRANSFORMATION as &[u8],
+                AI_CONFIG_PP_PTV_ADD_ROOT_TRANSFORMATION,
                 Property::Integer(1),
             ),
             (
-                AI_CONFIG_PP_PTV_ROOT_TRANSFORMATION as &[u8],
+                AI_CONFIG_PP_PTV_ROOT_TRANSFORMATION,
                 Property::Matrix([
                     [1.0, 0.0, 0.0, 0.0],
                     [0.0, 0.0, -1.0, 0.0],
