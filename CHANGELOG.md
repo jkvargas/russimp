@@ -1,5 +1,8 @@
 ## Changelog
 
+### 3.2.0
+- Added ability to load scenes with property stores (see `load_scene_with_props` example)
+
 ### 3.1.1
 - Fixing windows compilation. Thanks @Snowiiii for this.
 
