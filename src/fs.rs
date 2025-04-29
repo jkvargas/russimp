@@ -41,7 +41,10 @@ impl<T: FileSystem> FileOperationsWrapper<T> {
         let trait_obj: &dyn FileSystem = file_system;
         let managed_box = Box::new(trait_obj);
         let user_data = Box::into_raw(managed_box);
+        #[cfg(any(target_arch = "x86", target_arch = "x86_64", target_os = "macos"))]
         let user_data = user_data as *mut i8;
+        #[cfg(all(any(target_arch = "arm", target_arch = "aarch64"), not(target_os = "macos")))]
+        let user_data = user_data as *mut u8;
         FileOperationsWrapper {
             ai_file: aiFileIO {
                 OpenProc: Some(FileOperationsWrapper::<T>::io_open),
@@ -80,7 +83,10 @@ impl<T: FileSystem> FileOperationsWrapper<T> {
         // raw pointer that can be stuffed in the UserData.
         let double_box = Box::new(file);
         let managed_box = Box::into_raw(double_box); // Cleaned up in io_close.
+        #[cfg(any(target_arch = "x86", target_arch = "x86_64", target_os = "macos"))]
         let user_data = managed_box as *mut i8;
+        #[cfg(all(any(target_arch = "arm", target_arch = "aarch64"), not(target_os = "macos")))]
+        let user_data = managed_box as *mut u8;
         let ai_file = aiFile {
             ReadProc: Some(Self::io_read),
             WriteProc: Some(Self::io_write),
