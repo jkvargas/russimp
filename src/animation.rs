@@ -181,7 +181,7 @@ impl From<&aiAnimation> for Animation {
 mod test {
     use crate::utils;
 
-    #[cfg(not(target_os = "mac_os"))]
+    #[cfg(not(target_os = "macos"))]
     #[test]
     fn camera_roll_animation_read() {
         use crate::scene::{PostProcess, Scene};
